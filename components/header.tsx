@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
-// import { LoginDialog } from "./LoginDialog";
-// import { RegisterDialog } from "./RegisterDialog";
+import { LoginDialog } from "@/components/LoginDialog";
+import { RegisterDialog } from "@/components/RegisterDialog";
 import { Briefcase, Menu, X } from "lucide-react";
+
 
 export function Header() {
     const pathname = usePathname();
@@ -129,24 +130,24 @@ export function Header() {
         </header>
 
         {/* Login Dialog */}
-        {/* <LoginDialog
+        <LoginDialog
             open={showLogin}
             onClose={() => setShowLogin(false)}
             onSwitchToRegister={() => {
             setShowLogin(false);
             setShowRegister(true);
             }}
-        /> */}
+        />
 
         {/* Register Dialog */}
-        {/* <RegisterDialog
+        <RegisterDialog
             open={showRegister}
             onClose={() => setShowRegister(false)}
             onSwitchToLogin={() => {
             setShowRegister(false);
             setShowLogin(true);
             }}
-        /> */}
+        />
         </>
     );
 }

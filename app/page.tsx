@@ -1,9 +1,19 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
+// import { JobCard } from "../components/JobCard";
+// import { JobFilters } from "../components/JobFilters";
+// import { JobDetail } from "../components/JobDetail";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+import { jobs } from "@/data/jobs";
 import { CompaniesPage } from "@/components/CompaniesPage";
 import { AboutPage } from "@/components/AboutPage";
+import { LoginDialog } from "@/components/LoginDialog";
+import { RegisterDialog } from "@/components/RegisterDialog";
+// import type { Job } from "@/types/job";
+
 
 export interface Job {
   id: string;
@@ -129,24 +139,24 @@ export default function App() {
       )} */}
 
       {/* Login Dialog */}
-      {/* <LoginDialog
+      <LoginDialog
         open={showLogin}
         onClose={() => setShowLogin(false)}
         onSwitchToRegister={() => {
           setShowLogin(false);
           setShowRegister(true);
         }}
-      /> */}
+      />
 
       {/* Register Dialog */}
-      {/* <RegisterDialog
+      <RegisterDialog
         open={showRegister}
         onClose={() => setShowRegister(false)}
         onSwitchToLogin={() => {
           setShowRegister(false);
           setShowLogin(true);
         }}
-      /> */}
+      />
     </main>
   );
 
