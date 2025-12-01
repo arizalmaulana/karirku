@@ -11,4 +11,9 @@ export interface Job {
     logo: string;
     category: string;
     level: string;
+    coordinates?: {
+        lat: number;
+        lng: number;
+    };
+    costOfLiving?: string;
 }  

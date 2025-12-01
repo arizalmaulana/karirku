@@ -1,10 +1,14 @@
+"use client";
+
 import { Briefcase, CheckCircle, Compass, MapPin, Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { jobs } from "@/data/jobs";
 import { JobLocationMap } from "@/components/JobLocationMap";
+import { ApplicationMonitoring } from "@/components/ApplicationMonitoring";
 
 type BadgeVariant = "default" | "secondary" | "outline";
 
@@ -45,6 +49,10 @@ export default function JobSeekerDashboardPage() {
 
     return (
         <div className="container mx-auto px-4 py-10 space-y-8">
+            {/* Monitoring Lamaran Section */}
+            <section>
+                <ApplicationMonitoring />
+            </section>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-blue-600">Selamat datang kembali 👋</p>

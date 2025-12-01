@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth-context";
 import "@/app/globals.css";
 import "@/styles/global.css";
 
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body>
-        <div className="min-h-screen bg-gray-50">
-          <Header />
-          {children}
-          <Toaster position="top-right" richColors expand={false} />
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen bg-gray-50">
+            <Header />
+            {children}
+            <Toaster position="top-right" richColors expand={false} />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
