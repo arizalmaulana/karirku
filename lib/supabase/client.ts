@@ -1,10 +1,10 @@
-// src/lib/supabase/client.ts
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr'
 import { Database } from '@/lib/types';
 
-// Client untuk digunakan di Server Actions (tanpa cookie handling) dan Client Components
-export const createBrowserClient = (): SupabaseClient<Database> =>
-  createClient<Database>(
+// Fungsi ini membuat client untuk digunakan di Client Components.
+export function createBrowserClient() {
+  return createSupabaseBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+}

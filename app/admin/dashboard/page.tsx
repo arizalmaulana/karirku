@@ -10,83 +10,51 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const summaryStats = [
-    {
-        title: "Total Pengguna",
-        value: "4.218",
-        delta: "+8% bulan ini",
-        icon: Users,
-    },
-    {
-        title: "Lowongan Aktif",
-        value: "182",
-        delta: "+12 posting baru",
-        icon: BriefcaseBusiness,
-    },
-    {
-        title: "Lamaran Masuk",
-        value: "1.094",
-        delta: "+4% vs minggu lalu",
-        icon: FileText,
-    },
-    {
-        title: "Kota Dengan Data Biaya Hidup",
-        value: "36",
-        delta: "3 pembaruan terbaru",
-        icon: Wallet,
-    },
-];
+export default async function AdminDashboardPage() {
+    const supabase = await createSupabaseServerClient();
 
-const recentJobs = [
-    {
-        title: "Frontend Engineer",
-        company: "TechCorp Indonesia",
+    // Fetch aggregate data in parallel
+    const [
+        { count: userCount },
+        { count: jobCount },
+        { count: applicationCount },
+        { count: cityCount },
+        { data: recentJobsData, error: jobsError },
+        { data: recentApplicationsData, error: applicationsError },
+    ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("job_listings").select("*", { count: "exact", head: true }),
+        supabase.from("applications").select("*", { count: "exact", head: true }),
+        supabase.from("living_costs").select("*", { count: "exact", head: true }),
+        supabase.from("job_listings").select("title, company_name, created_at").order("created_at", { ascending: false }).limit(3),
+        supabase.from("applications").select("*, profiles(full_name), job_listings(title)").order("submitted_at", { ascending: false }).limit(3),
+    ]);
+
+    // Transform data for display
+    const recentJobs = (recentJobsData || []).map((job: any) => ({
+        title: job.title,
+        company: job.company_name,
+        submitted: new Date(job.created_at).toLocaleDateString("id-ID"),
         status: "Aktif",
-        submitted: "23 Nov 2025",
-    },
-    {
-        title: "Product Designer",
-        company: "Creative Studio",
-        status: "Menunggu Review",
-        submitted: "22 Nov 2025",
-    },
-    {
-        title: "Data Analyst",
-        company: "Analytics Pro",
-        status: "Aktif",
-        submitted: "21 Nov 2025",
-    },
-];
+    }));
 
-const pendingApplications = [
-    {
-        candidate: "Alya Pratiwi",
-        job: "UI/UX Designer",
-        company: "Creative Studio",
-        status: "Review",
-    },
-    {
-        candidate: "Rizky Aditya",
-        job: "Backend Engineer",
-        company: "Startup Innovate",
-        status: "Interview",
-    },
-    {
-        candidate: "Dina Maharani",
-        job: "Digital Marketing",
-        company: "Growth Marketing Co",
-        status: "Submitted",
-    },
-];
+    const pendingApplications = (recentApplicationsData || []).map((app: any) => ({
+        candidate: app.profiles?.full_name || "Unknown",
+        job: app.job_listings?.title || "Unknown",
+        company: "Unknown",
+        status: app.status || "Pending",
+    }));
 
-const livingCostUpdates = [
-    { city: "Jakarta", rent: "Rp4.500.000", food: "Rp2.500.000", updatedAt: "24 Nov 2025" },
-    { city: "Bandung", rent: "Rp2.500.000", food: "Rp2.000.000", updatedAt: "22 Nov 2025" },
-    { city: "Surabaya", rent: "Rp3.000.000", food: "Rp2.200.000", updatedAt: "20 Nov 2025" },
-];
+    const summaryStats = [
+        { title: "Total Pengguna", value: userCount ?? 0, icon: Users, delta: undefined },
+        { title: "Lowongan Aktif", value: jobCount ?? 0, icon: BriefcaseBusiness, delta: undefined },
+        { title: "Total Lamaran", value: applicationCount ?? 0, icon: FileText, delta: undefined },
+        { title: "Data Biaya Hidup", value: cityCount ?? 0, icon: Wallet, delta: undefined },
+    ];
 
-export default function AdminDashboardPage() {
     return (
         <div className="container mx-auto px-4 py-10 space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -98,9 +66,11 @@ export default function AdminDashboardPage() {
                         terkini.
                     </p>
                 </div>
-                <Button className="w-full lg:w-fit" size="lg">
-                    Tambah Lowongan Baru
-                </Button>
+                    <Button className="w-full lg:w-fit bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
+                        <Link href="/admin/jobs/new">
+                            Tambah Lowongan Baru
+                        </Link>
+                    </Button>
             </div>
 
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -112,7 +82,7 @@ export default function AdminDashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-semibold">{stat.value}</div>
-                            <p className="text-sm text-emerald-600">{stat.delta}</p>
+                            {stat.delta && <p className="text-sm text-emerald-600">{stat.delta}</p>}
                         </CardContent>
                     </Card>
                 ))}
@@ -120,105 +90,88 @@ export default function AdminDashboardPage() {
 
             <section className="grid gap-6 lg:grid-cols-3">
                 <Card className="lg:col-span-2">
-                    <CardHeader className="flex-row items-center justify-between">
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>Lowongan Terbaru</CardTitle>
                             <CardDescription>Lowongan yang baru diajukan oleh recruiter</CardDescription>
                         </div>
-                        <Button variant="outline" size="sm">
-                            Lihat Semua
-                            <ArrowUpRight className="ml-2 h-4 w-4" />
+                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                            <Link href="/admin/jobs">
+                                Lihat Semua
+                                <ArrowUpRight className="ml-2 h-4 w-4" />
+                            </Link>
                         </Button>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {recentJobs.map((job) => (
-                                <div key={job.title} className="flex items-center justify-between rounded-xl border p-4">
-                                    <div>
-                                        <p className="font-semibold text-gray-900">{job.title}</p>
-                                        <p className="text-sm text-gray-500">{job.company}</p>
-                                        <p className="text-xs text-gray-400 mt-1">Diajukan pada {job.submitted}</p>
+                            {recentJobs.length > 0 ? (
+                                recentJobs.map((job: { title: string; company: string; submitted: string; status: string }, index: number) => (
+                                    <div key={`${job.title}-${index}`} className="flex items-center justify-between rounded-xl border p-4">
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{job.title}</p>
+                                            <p className="text-sm text-gray-500">{job.company}</p>
+                                            <p className="text-xs text-gray-400 mt-1">Diajukan pada {job.submitted}</p>
+                                        </div>
+                                        <Badge variant={job.status === "Aktif" ? "default" : "secondary"}>{job.status}</Badge>
                                     </div>
-                                    <Badge variant={job.status === "Aktif" ? "default" : "secondary"}>{job.status}</Badge>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-500">Tidak ada lowongan terbaru</p>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Aktivitas Lamaran</CardTitle>
+                            <CardDescription>Follow up lamaran yang masih menunggu tindakan</CardDescription>
+                        </div>
+                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                            <Link href="/admin/applications">
+                                Lihat Semua
+                                <ArrowUpRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {pendingApplications.length > 0 ? (
+                            pendingApplications.map((application: { candidate: string; job: string; company: string; status: string }, index: number) => (
+                                <div key={`${application.candidate}-${index}`} className="rounded-xl border p-4">
+                                    <p className="font-semibold text-gray-900">{application.candidate}</p>
+                                    <p className="text-sm text-gray-600">
+                                        {application.job} • {application.company}
+                                    </p>
+                                    <Badge className="mt-3 w-fit" variant="outline">
+                                        Status: {application.status}
+                                    </Badge>
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Aktivitas Lamaran</CardTitle>
-                        <CardDescription>Follow up lamaran yang masih menunggu tindakan</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {pendingApplications.map((application) => (
-                            <div key={application.candidate} className="rounded-xl border p-4">
-                                <p className="font-semibold text-gray-900">{application.candidate}</p>
-                                <p className="text-sm text-gray-600">
-                                    {application.job} • {application.company}
-                                </p>
-                                <Badge className="mt-3 w-fit" variant="outline">
-                                    Status: {application.status}
-                                </Badge>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500">Tidak ada lamaran yang menunggu</p>
+                        )}
                     </CardContent>
                 </Card>
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Pembaruan Data Biaya Hidup</CardTitle>
-                        <CardDescription>Pastikan estimasi biaya selalu relevan</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Kota</TableHead>
-                                    <TableHead>Sewa (avg)</TableHead>
-                                    <TableHead>Makan (avg)</TableHead>
-                                    <TableHead>Pembaruan</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {livingCostUpdates.map((cost) => (
-                                    <TableRow key={cost.city}>
-                                        <TableCell>{cost.city}</TableCell>
-                                        <TableCell>{cost.rent}</TableCell>
-                                        <TableCell>{cost.food}</TableCell>
-                                        <TableCell>{cost.updatedAt}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Checklist Admin</CardTitle>
-                        <CardDescription>Tugas prioritas minggu ini</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="rounded-xl border p-4">
-                            <p className="font-semibold">Verifikasi 12 lowongan baru</p>
-                            <p className="text-sm text-gray-500">Pastikan detail gaji & biaya hidup sudah terisi</p>
-                        </div>
-                        <div className="rounded-xl border p-4">
-                            <p className="font-semibold">Pantau 4 laporan penyalahgunaan</p>
-                            <p className="text-sm text-gray-500">Tinjau laporan profil recruiter bermasalah</p>
-                        </div>
-                        <div className="rounded-xl border p-4">
-                            <p className="font-semibold">Update dataset kota baru</p>
-                            <p className="text-sm text-gray-500">Tambahkan data biaya hidup untuk kota-kota sekunder</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </section>
+            {/* Bagian Checklist Admin bisa tetap statis sebagai pengingat tugas */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Checklist Admin</CardTitle>
+                    <CardDescription>Tugas prioritas untuk menjaga kualitas platform</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="rounded-xl border p-4">
+                        <p className="font-semibold">Verifikasi lowongan baru</p>
+                        <p className="text-sm text-gray-500">Pastikan detail gaji & biaya hidup sudah terisi</p>
+                    </div>
+                    <div className="rounded-xl border p-4">
+                        <p className="font-semibold">Update dataset kota baru</p>
+                        <p className="text-sm text-gray-500">Tambahkan data biaya hidup untuk kota-kota sekunder</p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
-

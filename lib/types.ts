@@ -13,6 +13,7 @@ export interface Profile {
     full_name: string | null;
     headline: string | null;
     location_city: string | null;
+    major: string | null; // Jurusan pendidikan
     skills: string[];
     created_at: string;
 }
@@ -43,6 +44,7 @@ export interface JobListing {
     description: string | null;
     requirements: string[] | null;
     skills_required: string[] | null;
+    major_required: string | null; // Jurusan yang dibutuhkan (opsional)
     living_cost_id: string | null;
     featured: boolean | null;
     created_at: string;
