@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ApplicationForm } from "@/components/job-seeker/ApplicationForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound, redirect } from "next/navigation";
+import type { JobListing } from "@/lib/types";
 
 async function getJob(id: string) {
     const supabase = await createSupabaseServerClient();
@@ -14,7 +15,7 @@ async function getJob(id: string) {
     if (error || !data) {
         return null;
     }
-    return data;
+    return data as JobListing;
 }
 
 async function checkExistingApplication(userId: string, jobId: string) {

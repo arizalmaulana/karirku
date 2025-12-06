@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { JobCard } from "../components/JobCard";
 import { JobFilters } from "../components/JobFilters";
 import { JobDetail } from "../components/JobDetail";
@@ -13,6 +14,9 @@ import { jobs } from "../data/jobs";
 import type { Job } from "../types/job";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { createBrowserClient } from "@/lib/supabase/client";
+import type { UserRole } from "@/lib/types";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,6 +29,40 @@ export default function HomePage() {
     category: "all",
     level: "all",
   });
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const supabase = useMemo(() => createBrowserClient(), []);
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      // Fetch user profile to get role
+      supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data: profile }) => {
+          if (profile) {
+            const role = profile.role as UserRole;
+            const roleRedirectMap: Record<UserRole, string> = {
+              admin: "/admin/dashboard",
+              recruiter: "/recruiter/dashboard",
+              jobseeker: "/job-seeker/dashboard",
+            };
+            const destination = roleRedirectMap[role] || "/job-seeker/dashboard";
+            router.push(destination);
+          } else {
+            // If no profile, default to job-seeker dashboard
+            router.push("/job-seeker/dashboard");
+          }
+        })
+        .catch(() => {
+          // On error, default to job-seeker dashboard
+          router.push("/job-seeker/dashboard");
+        });
+    }
+  }, [user, loading, router, supabase]);
 
   // Check for jobId in URL params to open job detail after login
   useEffect(() => {
@@ -41,6 +79,11 @@ export default function HomePage() {
       }
     }
   }, []);
+
+  // Don't render landing page if user is logged in (will redirect)
+  if (!loading && user) {
+    return null;
+  }
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =

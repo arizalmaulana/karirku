@@ -18,7 +18,7 @@ import { LoginDialog } from "./LoginDialog";
 import { ApplicationForm } from "./ApplicationForm";
 
 interface JobDetailProps {
-  job: Job;
+    job: Job;
   open: boolean;
   onClose: () => void;
 }
@@ -122,7 +122,8 @@ export function JobDetail({ job, open, onClose }: JobDetailProps) {
           setShowLogin(false);
           // You might want to handle register dialog here
         }}
-        redirectTo={`/?jobId=${job.id}`}
+        // Setelah login dari flow "Lamar Sekarang", arahkan ke halaman lowongan dengan jobId
+        redirectTo={`/job-seeker/jobs?jobId=${job.id}`}
         message="Anda harus login untuk melamar pekerjaan."
       />
 

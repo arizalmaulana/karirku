@@ -136,3 +136,7 @@ export function JobCard({ job, onClick }: JobCardProps) {
     </Card>
   );
 }
+
+
+
+

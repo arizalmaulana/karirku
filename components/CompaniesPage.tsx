@@ -76,7 +76,7 @@ export function CompaniesPage() {
             <div className="hidden lg:block relative animate-float">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1630283017802-785b7aff9aac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjB3b3Jrc3BhY2V8ZW58MXx8fHwxNzYzOTkxNTg0fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="https://i.pinimg.com/736x/f0/10/99/f01099db495cc3619e81628dd77ea69f.jpg"
                   alt="Modern Office"
                   className="w-full h-auto"
                 />
