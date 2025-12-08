@@ -18,7 +18,7 @@ export function JobSeekerSidebar() {
   const navItems = [
     { href: "/job-seeker/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/job-seeker/jobs", label: "Lowongan", icon: Briefcase },
-    { href: "/companies", label: "Perusahaan", icon: Building2 },
+    { href: "/job-seeker/perusahaan", label: "Perusahaan", icon: Building2 },
     { href: "/job-seeker/applications", label: "Riwayat Lamar", icon: FileText },
     { href: "/job-seeker/profile", label: "Profil", icon: User },
   ];

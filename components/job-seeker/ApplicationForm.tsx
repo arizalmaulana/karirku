@@ -97,6 +97,14 @@ export function ApplicationForm({ jobId, jobTitle }: ApplicationFormProps) {
             if (error) throw error;
 
             toast.success("Lamaran berhasil dikirim!");
+            
+            // Dispatch custom event to notify other components
+            if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("application-submitted", {
+                    detail: { jobId }
+                }));
+            }
+            
             router.push("/job-seeker/applications");
             router.refresh();
         } catch (error: any) {

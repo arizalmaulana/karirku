@@ -15,6 +15,12 @@ export interface Profile {
     location_city: string | null;
     major: string | null; // Jurusan pendidikan
     skills: string[];
+    avatar_url: string | null; // URL foto profile
+    email: string | null; // Email (dari auth.users atau manual)
+    phone: string | null; // Nomor telepon
+    bio: string | null; // Bio/deskripsi diri
+    experience: string | null; // Pengalaman kerja
+    education: string | null; // Pendidikan
     created_at: string;
 }
 

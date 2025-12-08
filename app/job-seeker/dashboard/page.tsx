@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
+import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 import { 
     Send, 
     ArrowUpRight, 
@@ -312,8 +313,19 @@ export default async function JobSeekerDashboardPage() {
             <Card className="border shadow-sm">
                 <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                            {profile.full_name?.charAt(0).toUpperCase() || "U"}
+                        <div className="relative">
+                            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                                {profile.avatar_url ? (
+                                    <ImageWithFallback
+                                        src={profile.avatar_url}
+                                        alt={profile.full_name || "User"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    profile.full_name?.charAt(0).toUpperCase() || "U"
+                                )}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
                         </div>
                         <div className="flex-1">
                             <h3 className="text-xl font-semibold text-gray-900 mb-1">

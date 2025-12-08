@@ -15,8 +15,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Briefcase, Menu, X, User, LogOut, LayoutDashboard, Settings, LogIn, UserPlus } from "lucide-react";
+import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 
 
 export function Header() {
@@ -88,8 +89,11 @@ export function Header() {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild className="cursor-pointer">
                                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarFallback className="bg-blue-600 text-white">
+                                            <Avatar className="h-10 w-10 border-2 border-purple-200">
+                                                {profile.avatar_url ? (
+                                                    <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
+                                                ) : null}
+                                                <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white">
                                                     {getInitials()}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -312,3 +316,6 @@ export function Header() {
         </>
     );
 }
+
+// Export default untuk kompatibilitas
+export default Header;

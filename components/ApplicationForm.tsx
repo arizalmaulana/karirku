@@ -151,21 +151,118 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
 
       // Try to find job in database by title and company
       let jobListingId: string | null = null;
-      const { data: jobListing } = await supabase
-        .from("job_listings")
-        .select("id")
-        .eq("title", job.title)
-        .eq("company_name", job.company)
-        .limit(1)
-        .maybeSingle();
+      
+      // First, try to find by job.id if it's a valid UUID
+      if (job.id) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidRegex.test(job.id)) {
+          const { data: verifyJob } = await supabase
+            .from("job_listings")
+            .select("id")
+            .eq("id", job.id)
+            .maybeSingle();
+          
+          if (verifyJob) {
+            jobListingId = verifyJob.id;
+          }
+        }
+      }
 
-      if (jobListing) {
-        jobListingId = jobListing.id;
+      // If not found by ID, try to find by title and company
+      if (!jobListingId) {
+        const { data: jobListing, error: jobSearchError } = await supabase
+          .from("job_listings")
+          .select("id")
+          .eq("title", job.title)
+          .eq("company_name", job.company)
+          .limit(1)
+          .maybeSingle();
+
+        if (jobListing) {
+          jobListingId = jobListing.id;
+        } else if (jobSearchError) {
+          console.warn("Error searching for job listing:", jobSearchError);
+        }
+      }
+
+      // If still not found, create a new job listing in database
+      if (!jobListingId) {
+        console.log("Job not found, creating new job listing...");
+        
+        // Parse location
+        const locationParts = job.location.split(",");
+        const locationCity = locationParts[0]?.trim() || job.location;
+        const locationProvince = locationParts[1]?.trim() || null;
+
+        // Parse employment type
+        const employmentTypeMap: Record<string, string> = {
+          "Full Time": "fulltime",
+          "Part Time": "parttime",
+          "Contract": "contract",
+          "Internship": "internship",
+          "Remote": "remote",
+          "Hybrid": "hybrid",
+        };
+        const employmentType = employmentTypeMap[job.type] || "fulltime";
+
+        // Create job listing
+        const { data: newJobListing, error: createError } = await supabase
+          .from("job_listings")
+          .insert({
+            title: job.title,
+            company_name: job.company,
+            location_city: locationCity,
+            location_province: locationProvince,
+            employment_type: employmentType as any,
+            description: job.description,
+            requirements: job.requirements || [],
+            skills_required: job.requirements || [],
+          })
+          .select("id")
+          .single();
+
+        if (createError) {
+          console.error("Error creating job listing:", createError);
+          // Fallback: save to localStorage only
+          toast.warning("Job tidak ditemukan di database. Lamaran disimpan secara lokal.");
+          const applications = JSON.parse(localStorage.getItem("applications") || "[]");
+          applications.push({
+            id: `local-${Date.now()}-${Math.random()}`,
+            jobTitle: job.title,
+            company: job.company,
+            job_id: null,
+            job_seeker_id: user.id,
+            status: "submitted",
+            cv_url: cvUrl,
+            portfolio_url: formData.portfolio || null,
+            cover_letter: JSON.stringify({
+              namaLengkap: formData.namaLengkap,
+              email: formData.email,
+              nomorTelepon: formData.nomorTelepon,
+              domisili: formData.domisili,
+              pendidikanTerakhir: formData.pendidikanTerakhir,
+              pengalamanKerja: formData.pengalamanKerja,
+              skill: formData.skill,
+              dokumenTambahan: docUrl,
+            }),
+            tanggalLamaran: new Date().toISOString(),
+          });
+          localStorage.setItem("applications", JSON.stringify(applications));
+          toast.success("Lamaran berhasil disimpan secara lokal!");
+          onClose();
+          if (onSuccess) onSuccess();
+          return;
+        }
+
+        if (newJobListing) {
+          jobListingId = newJobListing.id;
+          console.log("New job listing created:", jobListingId);
+        }
       }
 
       // Prepare application data
       const applicationData = {
-        job_id: jobListingId || job.id, // Use job_listings.id if found, otherwise use job.id
+        job_id: jobListingId,
         job_seeker_id: user.id,
         status: "submitted",
         cv_url: cvUrl,
@@ -183,9 +280,11 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
       };
 
       // Save application to database
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from("applications")
-        .insert(applicationData);
+        .insert(applicationData)
+        .select()
+        .single();
 
       // Always save to localStorage as backup
       const applications = JSON.parse(localStorage.getItem("applications") || "[]");
@@ -199,11 +298,24 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
       localStorage.setItem("applications", JSON.stringify(applications));
 
       if (insertError) {
-        // If database insert fails, we've already saved to localStorage
-        console.warn("Database insert error, using localStorage:", insertError);
+        console.error("Database insert error:", insertError);
+        throw new Error(`Gagal menyimpan lamaran: ${insertError.message}`);
       }
 
+      // Success - application saved
+      console.log("Application saved successfully:", insertedData);
       toast.success("Lamaran berhasil dikirim!");
+      
+      // Dispatch custom event to notify other components
+      if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("application-submitted", {
+              detail: { 
+                  jobId: jobListingId,
+                  applicationId: insertedData?.id 
+              }
+          }));
+      }
+
       setFormData({
         namaLengkap: "",
         email: "",

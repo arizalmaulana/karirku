@@ -31,24 +31,20 @@ export default async function ProfilePage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-semibold text-gray-900">Profil Saya</h1>
-                <p className="text-gray-500 mt-1">
-                    Kelola informasi profil Anda untuk meningkatkan peluang matching pekerjaan
-                </p>
+            {/* Header dengan gradient */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 p-8 text-white shadow-lg">
+                <div className="relative z-10">
+                    <h1 className="text-3xl font-bold mb-2">Profil Saya</h1>
+                    <p className="text-purple-100">
+                        Kelola informasi profil Anda untuk meningkatkan peluang matching pekerjaan
+                    </p>
+                </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Informasi Profil</CardTitle>
-                    <CardDescription>
-                        Lengkapi profil Anda untuk mendapatkan rekomendasi pekerjaan yang lebih akurat
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ProfileForm initialData={profile} />
-                </CardContent>
-            </Card>
+            {/* Profile Form */}
+            <ProfileForm initialData={profile} />
         </div>
     );
 }
