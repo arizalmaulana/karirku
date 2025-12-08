@@ -1,7 +1,5 @@
-"use client";
-
 import { CompaniesPage } from "@/components/CompaniesPage";
 
-export default function Companies() {
+export default async function Companies() {
     return <CompaniesPage />;
 } 

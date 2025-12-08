@@ -15,6 +15,7 @@ import type { Job } from "../types/job";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useAuth } from "@/lib/auth-context";
 import { LoginDialog } from "./LoginDialog";
+import { RegisterDialog } from "./RegisterDialog";
 import { ApplicationForm } from "./ApplicationForm";
 
 interface JobDetailProps {
@@ -26,6 +27,7 @@ interface JobDetailProps {
 export function JobDetail({ job, open, onClose }: JobDetailProps) {
   const { user, loading } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
   const handleApply = () => {
@@ -120,11 +122,21 @@ export function JobDetail({ job, open, onClose }: JobDetailProps) {
         onClose={() => setShowLogin(false)}
         onSwitchToRegister={() => {
           setShowLogin(false);
-          // You might want to handle register dialog here
+          setShowRegister(true);
         }}
         // Setelah login dari flow "Lamar Sekarang", arahkan ke halaman lowongan dengan jobId
         redirectTo={`/job-seeker/jobs?jobId=${job.id}`}
         message="Anda harus login untuk melamar pekerjaan."
+      />
+
+      {/* Register Dialog */}
+      <RegisterDialog
+        open={showRegister}
+        onClose={() => setShowRegister(false)}
+        onSwitchToLogin={() => {
+          setShowRegister(false);
+          setShowLogin(true);
+        }}
       />
 
       {/* Application Form */}

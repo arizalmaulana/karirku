@@ -1,7 +1,7 @@
 import { Card } from "./ui/card";
 import { Label } from "./ui/label";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Filter, Sparkles } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Filter } from "lucide-react";
 
 interface JobFiltersProps {
   filters: {
@@ -11,6 +11,37 @@ interface JobFiltersProps {
   };
   onFilterChange: (filters: any) => void;
 }
+
+// Mapping dari database value ke display value
+const employmentTypeOptions = [
+  { value: "all", label: "Semua Tipe" },
+  { value: "fulltime", label: "Full Time" },
+  { value: "parttime", label: "Part Time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+];
+
+const categoryOptions = [
+  { value: "all", label: "Semua Kategori" },
+  { value: "Technology", label: "Technology" },
+  { value: "Design", label: "Design" },
+  { value: "Marketing", label: "Marketing" },
+  { value: "Business", label: "Business" },
+  { value: "Finance", label: "Finance" },
+  { value: "Healthcare", label: "Healthcare" },
+  { value: "Education", label: "Education" },
+  { value: "Other", label: "Other" },
+];
+
+const levelOptions = [
+  { value: "all", label: "Semua Level" },
+  { value: "Entry Level", label: "Entry Level" },
+  { value: "Mid Level", label: "Mid Level" },
+  { value: "Senior Level", label: "Senior Level" },
+  { value: "Executive", label: "Executive" },
+];
 
 export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
   const handleFilterChange = (key: string, value: string) => {
@@ -29,115 +60,61 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
       {/* Job Type */}
       <div className="mb-6 pb-6 border-b border-gray-100">
         <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Tipe Pekerjaan</Label>
-        <RadioGroup
+        <Select
           value={filters.type}
           onValueChange={(value) => handleFilterChange("type", value)}
         >
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="all" id="type-all" className="border-gray-300" />
-            <Label htmlFor="type-all" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Semua
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Full-time" id="type-fulltime" className="border-gray-300" />
-            <Label htmlFor="type-fulltime" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Full-time
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Part-time" id="type-parttime" className="border-gray-300" />
-            <Label htmlFor="type-parttime" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Part-time
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Remote" id="type-remote" className="border-gray-300" />
-            <Label htmlFor="type-remote" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Remote
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Freelance" id="type-freelance" className="border-gray-300" />
-            <Label htmlFor="type-freelance" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Freelance
-            </Label>
-          </div>
-        </RadioGroup>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Pilih tipe pekerjaan" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+            {employmentTypeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Category */}
       <div className="mb-6 pb-6 border-b border-gray-100">
         <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Kategori</Label>
-        <RadioGroup
+        <Select
           value={filters.category}
           onValueChange={(value) => handleFilterChange("category", value)}
         >
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="all" id="cat-all" className="border-gray-300" />
-            <Label htmlFor="cat-all" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Semua
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Technology" id="cat-tech" className="border-gray-300" />
-            <Label htmlFor="cat-tech" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Technology
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Design" id="cat-design" className="border-gray-300" />
-            <Label htmlFor="cat-design" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Design
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Marketing" id="cat-marketing" className="border-gray-300" />
-            <Label htmlFor="cat-marketing" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Marketing
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Business" id="cat-business" className="border-gray-300" />
-            <Label htmlFor="cat-business" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Business
-            </Label>
-          </div>
-        </RadioGroup>
+          <SelectTrigger className="w-full ">
+            <SelectValue placeholder="Pilih kategori" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+            {categoryOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Level */}
       <div>
         <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Level</Label>
-        <RadioGroup
+        <Select
           value={filters.level}
           onValueChange={(value) => handleFilterChange("level", value)}
         >
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="all" id="level-all" className="border-gray-300" />
-            <Label htmlFor="level-all" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Semua
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Entry Level" id="level-entry" className="border-gray-300" />
-            <Label htmlFor="level-entry" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Entry Level
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 mb-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Mid Level" id="level-mid" className="border-gray-300" />
-            <Label htmlFor="level-mid" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Mid Level
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 transition">
-            <RadioGroupItem value="Senior Level" id="level-senior" className="border-gray-300" />
-            <Label htmlFor="level-senior" className="cursor-pointer flex-1" style={{ fontSize: '14px' }}>
-              Senior Level
-            </Label>
-          </div>
-        </RadioGroup>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Pilih level" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+            {levelOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </Card>
   );

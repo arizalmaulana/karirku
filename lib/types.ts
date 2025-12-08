@@ -36,6 +36,9 @@ export interface LivingCost {
     updated_at: string;
 }
 
+export type JobCategory = 'Technology' | 'Design' | 'Marketing' | 'Business' | 'Finance' | 'Healthcare' | 'Education' | 'Other';
+export type JobLevel = 'Entry Level' | 'Mid Level' | 'Senior Level' | 'Executive';
+
 export interface JobListing {
     id: string;
     recruiter_id: string | null;
@@ -51,6 +54,8 @@ export interface JobListing {
     requirements: string[] | null;
     skills_required: string[] | null;
     major_required: string | null; // Jurusan yang dibutuhkan (opsional)
+    category: JobCategory | null; // Kategori pekerjaan (untuk filter)
+    job_level: JobLevel | null; // Level pekerjaan (untuk filter)
     living_cost_id: string | null;
     featured: boolean | null;
     created_at: string;

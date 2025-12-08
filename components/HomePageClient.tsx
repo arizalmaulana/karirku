@@ -1,16 +1,32 @@
-import { HomePageClient } from "@/components/HomePageClient";
-import { fetchJobsFromDatabase, fetchStats } from "@/lib/utils/jobData";
+"use client";
 
-export default async function HomePage() {
-  // Fetch data dari database
-  const jobs = await fetchJobsFromDatabase();
-  const stats = await fetchStats();
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { JobCard } from "./JobCard";
+import { JobFilters } from "./JobFilters";
+import { JobDetail } from "./JobDetail";
+import { MapModal } from "./MapModal";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Search, Map, Sparkles, TrendingUp, Zap, Briefcase, Users, Building2 } from "lucide-react";
+import type { Job } from "../types/job";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useAuth } from "@/lib/auth-context";
+import { createBrowserClient } from "@/lib/supabase/client";
+import type { UserRole } from "@/lib/types";
 
-  return <HomePageClient initialJobs={jobs} stats={stats} />;
+interface HomePageClientProps {
+  initialJobs: Job[];
+  stats: {
+    totalJobs: number;
+    totalCompanies: number;
+    totalUsers: number;
+  };
+}
+
+export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedJob, setSelectedJob] = useState<Job | null>(
-    null,
-  );
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [filters, setFilters] = useState({
     type: "all",
@@ -58,7 +74,7 @@ export default async function HomePage() {
       const params = new URLSearchParams(window.location.search);
       const jobId = params.get("jobId");
       if (jobId) {
-        const job = jobs.find((j) => j.id === jobId);
+        const job = initialJobs.find((j) => j.id === jobId);
         if (job) {
           setSelectedJob(job);
           // Clean up URL
@@ -66,39 +82,40 @@ export default async function HomePage() {
         }
       }
     }
-  }, []);
+  }, [initialJobs]);
 
   // Don't render landing page if user is logged in (will redirect)
   if (!loading && user) {
     return null;
   }
 
-  const filteredJobs = jobs.filter((job) => {
+  const filteredJobs = initialJobs.filter((job) => {
     const matchesSearch =
-      job.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      job.company
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      job.location
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesType =
-      filters.type === "all" || job.type === filters.type;
-    const matchesCategory =
-      filters.category === "all" ||
-      job.category === filters.category;
-    const matchesLevel =
-      filters.level === "all" || job.level === filters.level;
+    // Mapping untuk type: database value (fulltime, parttime, etc) ke display value (Full-time, Part-time, etc)
+    const typeMapping: Record<string, string> = {
+      fulltime: "Full-time",
+      parttime: "Part-time",
+      contract: "Contract",
+      internship: "Internship",
+      remote: "Remote",
+      hybrid: "Hybrid",
+    };
+    
+    // Check if filter matches: job.type sudah dalam format display (Full-time), filter dalam format database (fulltime)
+    // Jadi kita perlu membandingkan job.type dengan mapped value
+    const matchesType = 
+      filters.type === "all" || 
+      job.type === typeMapping[filters.type] ||
+      job.type === filters.type; // Fallback untuk direct match
 
-    return (
-      matchesSearch &&
-      matchesType &&
-      matchesCategory &&
-      matchesLevel
-    );
+    const matchesCategory = filters.category === "all" || job.category === filters.category;
+    const matchesLevel = filters.level === "all" || job.level === filters.level;
+
+    return matchesSearch && matchesType && matchesCategory && matchesLevel;
   });
 
   return (
@@ -142,9 +159,7 @@ export default async function HomePage() {
                     type="text"
                     placeholder="Cari posisi, perusahaan, atau kata kunci..."
                     value={searchQuery}
-                    onChange={(e) =>
-                      setSearchQuery(e.target.value)
-                    }
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 bg-transparent"
                   />
                 </div>
@@ -165,7 +180,7 @@ export default async function HomePage() {
                       <Briefcase className="w-5 h-5 text-yellow-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">1000+</div>
+                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalJobs}+</div>
                   <div className="text-indigo-200" style={{ fontSize: '14px' }}>Lowongan Aktif</div>
                 </div>
                 <div className="text-center">
@@ -174,7 +189,7 @@ export default async function HomePage() {
                       <Building2 className="w-5 h-5 text-cyan-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">500+</div>
+                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalCompanies}+</div>
                   <div className="text-indigo-200" style={{ fontSize: '14px' }}>Perusahaan</div>
                 </div>
                 <div className="text-center">
@@ -183,7 +198,7 @@ export default async function HomePage() {
                       <Users className="w-5 h-5 text-pink-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">10K+</div>
+                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalUsers}+</div>
                   <div className="text-indigo-200" style={{ fontSize: '14px' }}>Pengguna Aktif</div>
                 </div>
               </div>
@@ -231,8 +246,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
@@ -317,3 +330,4 @@ export default async function HomePage() {
     </>
   );
 }
+
