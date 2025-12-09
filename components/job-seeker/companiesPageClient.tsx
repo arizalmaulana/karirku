@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Users, Building2, ExternalLink, Sparkles, TrendingUp, Star } from "lucide-react";
-import { companies, Company } from "@/data/companies";
+import { fetchCompaniesFromDatabase } from "@/lib/utils/companyData";
+import type { Company } from "@/data/companies";
 import {ImageWithFallback} from "@/components/figma/ImageWithFallback";
 import type { Profile } from "@/lib/types";
 

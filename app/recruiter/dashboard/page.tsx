@@ -151,8 +151,8 @@ export default async function RecruiterDashboardPage() {
         <div className="space-y-8 max-w-7xl mx-auto">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-blue-600">Dashboard Recruiter</p>
-                    <h1 className="text-3xl font-semibold text-gray-900 mt-1">
+                    <p className="text-sm font-semibold text-purple-600">Dashboard Recruiter</p>
+                    <h1 className="text-3xl font-semibold text-purple-900 mt-1">
                         Kelola Pipeline Kandidat
                     </h1>
                     <p className="text-gray-500">
@@ -167,9 +167,9 @@ export default async function RecruiterDashboardPage() {
                 </Button>
             </div>
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {pipelineStats.map((stat) => (
-                    <Card key={stat.label}>
+                    <Card key={stat.label} className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium text-gray-500">
                                 {stat.label}
@@ -185,7 +185,7 @@ export default async function RecruiterDashboardPage() {
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2">
+                <Card className="lg:col-span-2 border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>Lowongan Aktif</CardTitle>
@@ -193,7 +193,7 @@ export default async function RecruiterDashboardPage() {
                                 Update status tiap lowongan untuk menjaga pipeline rapih
                             </CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
                             <Link href="/recruiter/jobs">
                                 Kelola Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -265,7 +265,7 @@ export default async function RecruiterDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm">
                     <CardHeader>
                         <CardTitle>Pelamar Terbaru</CardTitle>
                         <CardDescription>Kandidat yang baru mendaftar</CardDescription>

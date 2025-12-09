@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
                         terkini.
                     </p>
                 </div>
-                    <Button className="w-full lg:w-fit bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
                         <Link href="/admin/jobs/new">
                             Tambah Lowongan Baru
                         </Link>

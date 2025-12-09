@@ -93,14 +93,14 @@ export default async function RecruiterJobsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-3xl font-semibold text-gray-900">Lowongan Saya</h1>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
+                <div >
+                    <h1 className="text-3xl font-semibold text-purple-900">Lowongan Saya</h1>
                     <p className="text-gray-500 mt-1">
                         Kelola semua lowongan pekerjaan yang telah Anda publikasikan
                     </p>
                 </div>
-                <Button size="lg" asChild>
+                <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/30">
                     <Link href="/recruiter/jobs/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Tambah Lowongan Baru
@@ -108,7 +108,7 @@ export default async function RecruiterJobsPage() {
                 </Button>
             </div>
 
-            <Card>
+            <Card className="lg:col-span-2 border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
@@ -186,7 +186,7 @@ export default async function RecruiterJobsPage() {
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-gray-500">Belum ada lowongan pekerjaan</p>
-                            <Button className="mt-4" asChild>
+                            <Button className="mt-4" asChild >
                                 <Link href="/recruiter/jobs/new">Tambah Lowongan Pertama</Link>
                             </Button>
                         </div>
