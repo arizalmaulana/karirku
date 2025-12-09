@@ -151,7 +151,7 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
 
       // Try to find job in database by title and company
       let jobListingId: string | null = null;
-      const { data: jobListing } = await supabase
+      const jobListingResult = await supabase
         .from("job_listings")
         .select("id")
         .eq("title", job.title)
@@ -159,15 +159,21 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
         .limit(1)
         .maybeSingle();
 
-      if (jobListing) {
-        jobListingId = jobListing.id;
+      if (!jobListingResult.error && jobListingResult.data) {
+        jobListingId = (jobListingResult.data as { id: string }).id;
+      }
+
+      // Ensure we have a valid job_id
+      const finalJobId = jobListingId || job.id;
+      if (!finalJobId) {
+        throw new Error("Job ID tidak ditemukan. Silakan coba lagi.");
       }
 
       // Prepare application data
       const applicationData = {
-        job_id: jobListingId || job.id, // Use job_listings.id if found, otherwise use job.id
+        job_id: finalJobId,
         job_seeker_id: user.id,
-        status: "submitted",
+        status: "submitted" as const,
         cv_url: cvUrl,
         portfolio_url: formData.portfolio || null,
         cover_letter: JSON.stringify({
@@ -185,7 +191,7 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
       // Save application to database
       const { error: insertError } = await supabase
         .from("applications")
-        .insert(applicationData);
+        .insert([applicationData] as any);
 
       // Always save to localStorage as backup
       const applications = JSON.parse(localStorage.getItem("applications") || "[]");

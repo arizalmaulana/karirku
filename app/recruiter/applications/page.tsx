@@ -1,45 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import Link from "next/link";
-import { Eye, Filter } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { redirect } from "next/navigation";
-import { ApplicationsList } from "@/components/recruiter/ApplicationsList";
+import { ApplicantsTable } from "@/components/recruiter/ApplicantsTable";
 
-function getStatusBadgeVariant(status: string) {
-    switch (status) {
-        case "accepted":
-            return "default";
-        case "rejected":
-            return "destructive";
-        case "interview":
-            return "secondary";
-        case "review":
-            return "outline";
-        default:
-            return "outline";
-    }
-}
-
-function getStatusLabel(status: string) {
-    const labels: Record<string, string> = {
-        draft: "Draft",
-        submitted: "Dikirim",
-        review: "Dalam Review",
-        interview: "Interview",
-        accepted: "Diterima",
-        rejected: "Ditolak",
-    };
-    return labels[status] || status;
-}
 
 async function getRecruiterJobs(userId: string) {
     const supabase = await createSupabaseServerClient();
@@ -57,31 +20,36 @@ async function getRecruiterJobs(userId: string) {
 }
 
 async function getApplications(userId: string, jobId?: string, status?: string) {
-    const supabase = await createSupabaseServerClient();
-    let query = supabase
-        .from("applications")
-        .select(`
-            *,
-            job_listings!inner(title, company_name, recruiter_id),
-            profiles(full_name, skills, major)
-        `)
-        .eq("job_listings.recruiter_id", userId);
+    try {
+        const supabase = await createSupabaseServerClient();
+        let query = supabase
+            .from("applications")
+            .select(`
+                *,
+                job_listings!inner(title, company_name, recruiter_id),
+                profiles(full_name, skills, major, phone, email)
+            `)
+            .eq("job_listings.recruiter_id", userId);
 
-    if (jobId) {
-        query = query.eq("job_id", jobId);
-    }
+        if (jobId) {
+            query = query.eq("job_id", jobId);
+        }
 
-    if (status) {
-        query = query.eq("status", status);
-    }
+        if (status) {
+            query = query.eq("status", status);
+        }
 
-    const { data, error } = await query.order("submitted_at", { ascending: false });
+        const { data, error } = await query.order("submitted_at", { ascending: false });
 
-    if (error) {
-        console.error("Error fetching applications:", error);
+        if (error) {
+            console.error("Error fetching applications:", error);
+            return [];
+        }
+        return data || [];
+    } catch (error) {
+        console.error("Unexpected error in getApplications:", error);
         return [];
     }
-    return data || [];
 }
 
 async function getUserProfile(userId: string) {
@@ -101,7 +69,7 @@ async function getUserProfile(userId: string) {
 export default async function RecruiterApplicationsPage({
     searchParams,
 }: {
-    searchParams: { job?: string; status?: string };
+    searchParams: Promise<{ job?: string; status?: string }> | { job?: string; status?: string };
 }) {
     const supabase = await createSupabaseServerClient();
     const {
@@ -117,35 +85,32 @@ export default async function RecruiterApplicationsPage({
         redirect("/");
     }
 
+    // Handle searchParams as Promise (Next.js 15) or object (Next.js 14)
+    const params = searchParams instanceof Promise ? await searchParams : searchParams;
+
     const [jobs, applications] = await Promise.all([
         getRecruiterJobs(user.id),
-        getApplications(user.id, searchParams.job, searchParams.status),
+        getApplications(user.id, params.job, params.status),
     ]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
                 <div>
-                    <h1 className="text-3xl font-semibold text-gray-900">Pelamar</h1>
-                    <p className="text-gray-500 mt-1">
+                    <h1 className="text-3xl font-semibold text-purple-900">Pelamar</h1>
+                    <p className="text-gray-600 mt-1">
                         Kelola dan tinjau semua lamaran yang masuk untuk lowongan Anda
                     </p>
                 </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daftar Pelamar</CardTitle>
-                    <CardDescription>
-                        Total {applications.length} lamaran
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ApplicationsList
+            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
+                <CardContent className="p-6">
+                    <ApplicantsTable
                         applications={applications}
                         jobs={jobs}
-                        initialJobFilter={searchParams.job}
-                        initialStatusFilter={searchParams.status}
+                        initialJobFilter={params.job}
+                        initialStatusFilter={params.status}
                     />
                 </CardContent>
             </Card>
