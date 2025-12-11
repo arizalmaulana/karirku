@@ -14,10 +14,10 @@ export function RecruiterSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="hidden w-64 flex-col border-r bg-white p-4 lg:flex">
+        <aside className="hidden w-64 flex-col border-r bg-pink p-4 lg:flex">
             <div className="mb-8 flex items-center gap-2">
-                <Briefcase className="h-6 w-6 text-blue-600" />
-                <p className="text-lg font-semibold">Recruiter Panel</p>
+               
+                <p className="text-lg font-semibold text-purple-6000\">Recruiter Panel</p>
             </div>
             <nav className="flex flex-col gap-2">
                 {navItems.map((item) => {

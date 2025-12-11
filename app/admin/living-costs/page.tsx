@@ -43,7 +43,7 @@ export default async function LivingCostsPage() {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold text-gray-900">Manajemen Biaya Hidup</h1>
+                    <h1 className="text-3xl font-semibold text-blue-900">Manajemen Biaya Hidup</h1>
                     <p className="text-gray-500 mt-1">
                         Kelola data biaya hidup untuk setiap daerah
                     </p>
@@ -56,7 +56,7 @@ export default async function LivingCostsPage() {
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Data Biaya Hidup</CardTitle>
                     <CardDescription>

@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-blue-600">Dashboard Admin</p>
-                    <h1 className="text-3xl font-semibold text-gray-900 mt-1">Kontrol Sistem Terpadu</h1>
+                    <h1 className="text-3xl font-semibold text-blue-900 mt-1">Kontrol Sistem Terpadu</h1>
                     <p className="text-gray-500">
                         Pantau metrik utama, verifikasi lowongan baru, dan pastikan data biaya hidup selalu
                         terkini.
@@ -73,7 +73,7 @@ export default async function AdminDashboardPage() {
                     </Button>
             </div>
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 border border-blue-200 bg-gradient-to-br from-blue-50 to-pink-100/50 shadow-sm rounded-2xl p-6">
                 {summaryStats.map((stat) => (
                     <Card key={stat.title}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -88,7 +88,7 @@ export default async function AdminDashboardPage() {
                 ))}
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-3">
+            <section className="grid gap-6 lg:grid-cols-3 border border-blue-00 bg-gradient-to-br from-purple-100 to-blue-100/80 shadow-sm rounded-2xl p-6">
                 <Card className="lg:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
@@ -156,7 +156,7 @@ export default async function AdminDashboardPage() {
             </section>
 
             {/* Bagian Checklist Admin bisa tetap statis sebagai pengingat tugas */}
-            <Card>
+            <Card className="border border-blue-200 bg-gradient-to-br from-pink-50 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Checklist Admin</CardTitle>
                     <CardDescription>Tugas prioritas untuk menjaga kualitas platform</CardDescription>

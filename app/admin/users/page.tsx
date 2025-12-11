@@ -87,13 +87,13 @@ export default async function UsersManagementPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold text-gray-900">Manajemen Pengguna</h1>
+                <h1 className="text-3xl font-semibold text-blue-900">Manajemen Pengguna</h1>
                 <p className="text-gray-500 mt-1">
                     Kelola dan pantau semua pengguna di platform
                 </p>
             </div>
 
-            <Card>
+            <Card className="border border-purple-200 bg-gradient-to-br from-blue-100 to-pink-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Daftar Pengguna</CardTitle>
                     <CardDescription>

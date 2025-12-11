@@ -43,7 +43,7 @@ export default async function JobsManagementPage() {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold text-gray-900">Manajemen Lowongan</h1>
+                    <h1 className="text-3xl font-semibold text-blue-900">Manajemen Lowongan</h1>
                     <p className="text-gray-500 mt-1">
                         Kelola semua lowongan pekerjaan di platform
                     </p>
@@ -56,7 +56,7 @@ export default async function JobsManagementPage() {
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border border-pink-200 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
@@ -66,7 +66,7 @@ export default async function JobsManagementPage() {
                 <CardContent>
                     {jobs.length > 0 ? (
                         <Table>
-                            <TableHeader>
+                            <TableHeader >
                                 <TableRow>
                                     <TableHead>Judul</TableHead>
                                     <TableHead>Perusahaan</TableHead>
