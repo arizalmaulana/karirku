@@ -380,36 +380,6 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
             </div>
           </div>
 
-          {/* Upload Dokumen Tambahan */}
-          <div className="space-y-2">
-            <Label htmlFor="dokumenTambahan">Upload Dokumen Tambahan (PDF/JPG) - Opsional</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="dokumenTambahan"
-                type="file"
-                accept=".pdf,.jpg,.jpeg"
-                onChange={(e) => handleFileChange("dokumenTambahan", e.target.files?.[0] || null)}
-                className="hidden"
-              />
-              <label
-                htmlFor="dokumenTambahan"
-                className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-gray-50"
-              >
-                <Upload className="w-4 h-4" />
-                {formData.dokumenTambahan ? formData.dokumenTambahan.name : "Pilih File"}
-              </label>
-              {formData.dokumenTambahan && (
-                <button
-                  type="button"
-                  onClick={() => handleFileChange("dokumenTambahan", null)}
-                  className="text-red-500"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <Button

@@ -10,11 +10,10 @@ import Image from "next/image";
 interface ApplicationDocumentViewerProps {
     documentUrl: string | null;
     title: string;
-    type: 'cv' | 'portfolio';
     jobSeekerId: string;
 }
 
-export function ApplicationDocumentViewer({ documentUrl, title, type, jobSeekerId }: ApplicationDocumentViewerProps) {
+export function ApplicationDocumentViewer({ documentUrl, title, jobSeekerId }: ApplicationDocumentViewerProps) {
     const [signedUrl, setSignedUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -39,10 +38,10 @@ export function ApplicationDocumentViewer({ documentUrl, title, type, jobSeekerI
             try {
                 const supabase = createBrowserClient();
                 
-                // Tentukan folder berdasarkan type
-                const folder = type === 'cv' ? 'cv' : 'portfolio';
+                // CV diambil dari bucket applications folder cv
+                const folder = 'cv';
                 
-                // Daftar ekstensi yang mungkin
+                // Daftar ekstensi yang mungkin untuk CV
                 const possibleExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
                 
                 let success = false;
@@ -79,7 +78,7 @@ export function ApplicationDocumentViewer({ documentUrl, title, type, jobSeekerI
                     }
                 }
 
-                // Jika tidak ditemukan dengan ekstensi, coba list files di folder
+                // Jika tidak ditemukan dengan ekstensi, coba list files di folder cv
                 if (!success) {
                     try {
                         const { data: files, error: listError } = await supabase.storage
@@ -186,7 +185,7 @@ export function ApplicationDocumentViewer({ documentUrl, title, type, jobSeekerI
         }
 
         getSignedUrl();
-    }, [documentUrl, jobSeekerId, type]);
+    }, [documentUrl, jobSeekerId]);
 
     const handleDownload = () => {
         if (signedUrl) {

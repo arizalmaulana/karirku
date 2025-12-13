@@ -284,7 +284,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 )}
                             </div>
                             <p className="text-xs text-gray-500 mt-2">
-                                Format: JPG, PNG (maks. 5MB)
+                                Format: JPEG, PNG, JPG (maks. 5MB)
                             </p>
                         </div>
                     </div>

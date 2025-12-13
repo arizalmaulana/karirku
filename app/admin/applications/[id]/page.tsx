@@ -7,6 +7,7 @@ import { ArrowLeft, Download, ExternalLink, Pencil, Trash2, Calendar, MapPin, Fi
 import { notFound } from "next/navigation";
 import { DeleteApplicationButton } from "@/components/admin/DeleteApplicationButton";
 import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
+import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -93,56 +94,57 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 </div>
             </div>
 
+            {/* Informasi Pelamar dan Lowongan */}
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Informasi Pelamar</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Nama Lengkap</p>
-                            <p className="font-medium">{profile?.full_name || "Tidak ada nama"}</p>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Nama Lengkap</p>
+                            <p className="text-sm font-medium text-gray-900">{profile?.full_name || "Tidak ada nama"}</p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Email</p>
-                            <p className="font-medium">{profile?.email || "-"}</p>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Email</p>
+                            <p className="text-sm text-gray-900">{profile?.email || "-"}</p>
                         </div>
                         {profile?.phone && (
-                            <div>
-                                <p className="text-sm text-gray-500">Nomor Telepon</p>
-                                <p className="font-medium">{profile.phone}</p>
+                            <div className="space-y-1">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Nomor Telepon</p>
+                                <p className="text-sm text-gray-900">{profile.phone}</p>
                             </div>
                         )}
-                        <div>
-                            <p className="text-sm text-gray-500">Lokasi</p>
-                            <p className="font-medium">{profile?.location_city || "-"}</p>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Lokasi</p>
+                            <p className="text-sm text-gray-900">{profile?.location_city || "-"}</p>
                         </div>
                         {profile?.skills && profile.skills.length > 0 && (
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Skills</p>
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Skills</p>
                                 <div className="flex flex-wrap gap-2">
                                     {profile.skills.map((skill: string, index: number) => (
-                                        <Badge key={index} variant="outline">{skill}</Badge>
+                                        <Badge key={index} variant="outline" className="text-xs">{skill}</Badge>
                                     ))}
                                 </div>
                             </div>
                         )}
                         {profile?.bio && (
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Bio</p>
-                                <p className="text-sm whitespace-pre-wrap">{profile.bio}</p>
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Bio</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
                             </div>
                         )}
                         {profile?.experience && (
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Pengalaman</p>
-                                <p className="text-sm whitespace-pre-wrap">{profile.experience}</p>
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Pengalaman</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{profile.experience}</p>
                             </div>
                         )}
                         {profile?.education && (
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Pendidikan</p>
-                                <p className="text-sm whitespace-pre-wrap">{profile.education}</p>
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Pendidikan</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{profile.education}</p>
                             </div>
                         )}
                     </CardContent>
@@ -153,63 +155,66 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         <CardTitle>Informasi Lowongan</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Judul Pekerjaan</p>
-                            <p className="font-medium">{job?.title || "Unknown"}</p>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Judul Pekerjaan</p>
+                            <p className="text-sm font-medium text-gray-900">{job?.title || "Unknown"}</p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Perusahaan</p>
-                            <p className="font-medium">{job?.company_name || "Unknown"}</p>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Perusahaan</p>
+                            <p className="text-sm text-gray-900">{job?.company_name || "Unknown"}</p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Lokasi</p>
-                            <p className="font-medium">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Lokasi</p>
+                            <p className="text-sm text-gray-900">
                                 {job?.location_province 
                                     ? `${job.location_city}, ${job.location_province}`
                                     : job?.location_city || "-"}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Tipe Pekerjaan</p>
-                            <Badge variant="outline">{job?.employment_type || "-"}</Badge>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Tipe Pekerjaan</p>
+                            <Badge variant="outline" className="text-xs">{job?.employment_type || "-"}</Badge>
                         </div>
                         {job?.description && (
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Deskripsi</p>
-                                <p className="text-sm whitespace-pre-wrap line-clamp-4">{job.description}</p>
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Deskripsi</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4 leading-relaxed">{job.description}</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Status & Timeline */}
             <Card>
                 <CardHeader>
                     <CardTitle>Status & Timeline</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div>
-                        <p className="text-sm text-gray-500 mb-2">Status Lamaran</p>
-                        <Badge variant={getStatusBadgeVariant(application.status)} className="text-sm py-1 px-3">
-                            {getStatusLabel(application.status)}
-                        </Badge>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500">Tanggal Submit</p>
-                        <p className="font-medium">
-                            {new Date(application.submitted_at).toLocaleDateString("id-ID", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                            })}
-                        </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Status Lamaran</p>
+                            <Badge variant={getStatusBadgeVariant(application.status)} className="text-sm py-1 px-3">
+                                {getStatusLabel(application.status)}
+                            </Badge>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Tanggal Submit</p>
+                            <p className="text-sm text-gray-900">
+                                {new Date(application.submitted_at).toLocaleDateString("id-ID", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
+                            </p>
+                        </div>
                     </div>
                     {application.updated_at && application.updated_at !== application.submitted_at && (
-                        <div>
-                            <p className="text-sm text-gray-500">Terakhir Diupdate</p>
-                            <p className="font-medium">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Terakhir Diupdate</p>
+                            <p className="text-sm text-gray-900">
                                 {new Date(application.updated_at).toLocaleDateString("id-ID", {
                                     year: "numeric",
                                     month: "long",
@@ -221,12 +226,12 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         </div>
                     )}
                     {application.interview_date && (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 Jadwal Interview
                             </p>
-                            <p className="font-medium">
+                            <p className="text-sm text-gray-900">
                                 {new Date(application.interview_date).toLocaleDateString("id-ID", {
                                     year: "numeric",
                                     month: "long",
@@ -238,30 +243,30 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         </div>
                     )}
                     {application.interview_location && (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
                                 <MapPin className="h-4 w-4" />
                                 Lokasi Interview
                             </p>
-                            <p className="font-medium">{application.interview_location}</p>
+                            <p className="text-sm text-gray-900">{application.interview_location}</p>
                         </div>
                     )}
                     {application.rejection_reason && (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-2">Alasan Penolakan</p>
+                        <div className="space-y-2">
+                            <p className="text-xs font-semibold text-gray-500 uppercase">Alasan Penolakan</p>
                             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                                <p className="text-sm text-red-800 whitespace-pre-wrap">{application.rejection_reason}</p>
+                                <p className="text-sm text-red-800 whitespace-pre-wrap leading-relaxed">{application.rejection_reason}</p>
                             </div>
                         </div>
                     )}
                     {application.notes && (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-2 flex items-center gap-2">
+                        <div className="space-y-2">
+                            <p className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
                                 <MessageSquare className="h-4 w-4" />
                                 Catatan
                             </p>
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <p className="text-sm text-blue-800 whitespace-pre-wrap">{application.notes}</p>
+                                <p className="text-sm text-blue-800 whitespace-pre-wrap leading-relaxed">{application.notes}</p>
                             </div>
                         </div>
                     )}
@@ -334,12 +339,6 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                                                         <p className="text-sm">{parsed.portfolio}</p>
                                                     </div>
                                                 )}
-                                                {parsed.dokumenTambahan && (
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Dokumen Tambahan</p>
-                                                        <p className="text-sm text-gray-600">{parsed.dokumenTambahan}</p>
-                                                    </div>
-                                                )}
                                             </div>
                                         );
                                     }
@@ -362,14 +361,10 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 <ApplicationDocumentViewer
                     documentUrl={application.cv_url}
                     title="CV / Resume"
-                    type="cv"
                     jobSeekerId={application.job_seeker_id}
                 />
-                <ApplicationDocumentViewer
-                    documentUrl={application.portfolio_url}
-                    title="Portfolio"
-                    type="portfolio"
-                    jobSeekerId={application.job_seeker_id}
+                <PortfolioViewer
+                    portfolioUrl={application.portfolio_url}
                 />
             </div>
         </div>
