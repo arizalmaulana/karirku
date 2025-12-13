@@ -38,17 +38,33 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
   const supabase = useMemo(() => createBrowserClient(), []);
 
   // Redirect to dashboard if user is already logged in
+  // Skip redirect jika sedang di halaman dashboard atau ada query param
   useEffect(() => {
     if (!loading && user) {
+      // Jangan redirect jika sudah di dashboard atau ada query param
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/admin') || 
+          currentPath.startsWith('/recruiter') || 
+          currentPath.startsWith('/job-seeker')) {
+        return;
+      }
+      
       // Fetch user profile to get role
       supabase
         .from("profiles")
-        .select("role")
+        .select("role, is_approved")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data: profile }) => {
           if (profile) {
             const role = profile.role as UserRole;
+            
+            // Untuk recruiter, cek approval
+            if (role === 'recruiter' && profile.is_approved !== true) {
+              // Jangan redirect, biarkan user di home dengan pesan
+              return;
+            }
+            
             const roleRedirectMap: Record<UserRole, string> = {
               admin: "/admin/dashboard",
               recruiter: "/recruiter/dashboard",

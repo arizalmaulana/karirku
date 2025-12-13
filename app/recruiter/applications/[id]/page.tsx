@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { ApplicationStatusForm } from "@/components/recruiter/ApplicationStatusForm";
+import { ApplicationStatusFormEnhanced } from "@/components/recruiter/ApplicationStatusFormEnhanced";
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -41,7 +41,7 @@ async function getApplication(id: string, userId: string) {
         .select(`
             *,
             job_listings!inner(title, company_name, location_city, location_province, employment_type, recruiter_id),
-            profiles(full_name, headline, location_city, skills, major)
+            profiles(full_name, headline, location_city, skills, major, email)
         `)
         .eq("id", id)
         .eq("job_listings.recruiter_id", userId)
@@ -255,9 +255,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ApplicationStatusForm
+                            <ApplicationStatusFormEnhanced
                                 applicationId={application.id}
                                 currentStatus={application.status}
+                                jobSeekerEmail={profile?.email}
                             />
                         </CardContent>
                     </Card>

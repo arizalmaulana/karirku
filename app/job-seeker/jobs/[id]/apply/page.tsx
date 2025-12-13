@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ApplicationForm } from "@/components/job-seeker/ApplicationForm";
+import { ApplicationFormEnhanced } from "@/components/job-seeker/ApplicationFormEnhanced";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound, redirect } from "next/navigation";
 import type { JobListing } from "@/lib/types";
@@ -20,11 +20,13 @@ async function getJob(id: string) {
 
 async function checkExistingApplication(userId: string, jobId: string) {
     const supabase = await createSupabaseServerClient();
+    // Cek apakah ada aplikasi yang sudah submitted (bukan draft)
     const { data } = await supabase
         .from("applications")
-        .select("id")
+        .select("id, status")
         .eq("job_seeker_id", userId)
         .eq("job_id", jobId)
+        .neq("status", "draft") // Draft tidak dianggap sebagai aplikasi yang sudah ada
         .maybeSingle();
 
     return data;
@@ -70,7 +72,7 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ApplicationForm jobId={params.id} jobTitle={job.title} />
+                    <ApplicationFormEnhanced jobId={params.id} jobTitle={job.title} />
                 </CardContent>
             </Card>
         </div>

@@ -21,6 +21,8 @@ export interface Profile {
     bio: string | null; // Bio/deskripsi diri
     experience: string | null; // Pengalaman kerja
     education: string | null; // Pendidikan
+    company_license_url: string | null; // URL surat izin perusahaan (untuk recruiter)
+    is_approved: boolean | null; // Status approval (untuk recruiter)
     created_at: string;
 }
 
@@ -69,6 +71,10 @@ export interface Application {
     cv_url: string | null;
     portfolio_url: string | null;
     cover_letter: string | null;
+    notes: string | null; // Catatan dari recruiter
+    rejection_reason: string | null; // Alasan penolakan
+    interview_date: string | null; // Jadwal interview
+    interview_location: string | null; // Lokasi interview
     submitted_at: string;
     updated_at: string;
 }

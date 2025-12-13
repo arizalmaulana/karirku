@@ -56,8 +56,16 @@ export async function middleware(req: NextRequest) {
     }
 
     // Jika profil belum ada atau peran bukan 'admin', alihkan ke halaman utama
-    if (!profile || (profile.role as UserRole) !== 'admin') {
-      console.log('Admin access denied:', {
+    if (!profile) {
+      console.error('Admin access denied: No profile found', {
+        userId: user.id,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+    
+    if ((profile.role as UserRole) !== 'admin') {
+      console.log('Admin access denied: Wrong role', {
         hasProfile: !!profile,
         role: profile?.role,
         userId: user.id,
@@ -75,7 +83,7 @@ export async function middleware(req: NextRequest) {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_approved, company_license_url')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -95,6 +103,22 @@ export async function middleware(req: NextRequest) {
         path: req.nextUrl.pathname
       })
       return NextResponse.redirect(new URL('/', req.url))
+    }
+
+    // Cek approval status untuk recruiter
+    const isApproved = profile.is_approved === true
+    const hasLicense = !!profile.company_license_url
+
+    // Jika belum approved, redirect ke home dengan pesan
+    if (!isApproved) {
+      if (!hasLicense) {
+        // Belum upload license (seharusnya tidak terjadi karena wajib saat registrasi)
+        // Tapi untuk safety, redirect ke home dengan pesan
+        return NextResponse.redirect(new URL('/?message=Akun Anda belum lengkap. Silakan hubungi admin.', req.url))
+      } else {
+        // Sudah upload tapi belum approved, redirect ke home dengan pesan
+        return NextResponse.redirect(new URL('/?message=Akun Anda sedang menunggu persetujuan admin', req.url))
+      }
     }
   }
 
@@ -118,8 +142,16 @@ export async function middleware(req: NextRequest) {
       })
     }
 
-    if (!profile || (profile.role as UserRole) !== 'jobseeker') {
-      console.log('Job-seeker access denied:', {
+    if (!profile) {
+      console.error('Job-seeker access denied: No profile found', {
+        userId: user.id,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+    
+    if ((profile.role as UserRole) !== 'jobseeker') {
+      console.log('Job-seeker access denied: Wrong role', {
         hasProfile: !!profile,
         role: profile?.role,
         userId: user.id,

@@ -71,19 +71,27 @@ export function LoginDialog({
       // Ambil role dari user_metadata terlebih dahulu sebagai fallback
       const userMetadata = data.user.user_metadata;
       let role: UserRole = (userMetadata?.role as UserRole) || "jobseeker";
+      let isApproved: boolean | null = null;
+      let companyLicenseUrl: string | null = null;
 
       // Coba fetch profil, tapi jangan biarkan error memblokir login
       try {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("role")
+          .select("role, is_approved, company_license_url")
           .eq("id", userId)
           .maybeSingle();
 
         // Jika tidak ada error dan data ada, gunakan role dari profil
         if (!profileError && profileData) {
-          const profile = profileData as { role?: UserRole };
+          const profile = profileData as { 
+            role?: UserRole; 
+            is_approved?: boolean | null;
+            company_license_url?: string | null;
+          };
           role = profile.role ?? role;
+          isApproved = profile.is_approved ?? null;
+          companyLicenseUrl = profile.company_license_url ?? null;
         } else if (profileError && profileError.code !== "PGRST116") {
           // Jika error selain "not found", log dan tetap lanjutkan
           console.warn("Profile fetch error during login:", {
@@ -101,6 +109,22 @@ export function LoginDialog({
         });
       }
 
+      // Cek approval untuk recruiter
+      if (role === "recruiter") {
+        // Jika belum approved, cek apakah sudah upload surat izin
+        if (isApproved !== true) {
+          if (!companyLicenseUrl) {
+            // Belum upload surat izin (seharusnya tidak terjadi karena wajib saat registrasi)
+            toast.error("Akun Anda belum lengkap. Silakan hubungi admin untuk bantuan.");
+            return;
+          } else {
+            // Sudah upload tapi belum approved, tampilkan pesan
+            toast.error("Akun Anda sedang menunggu persetujuan admin. Silakan tunggu hingga admin menyetujui akun Anda.");
+            return;
+          }
+        }
+      }
+
       // Pastikan role valid
       if (!role || !roleRedirectMap[role]) {
         role = "jobseeker";
@@ -111,11 +135,18 @@ export function LoginDialog({
       toast.success("Berhasil masuk, mengarahkan ke dashboard Anda.");
       onClose();
 
-      // Delay untuk memastikan session cookie sudah ter-set dan middleware bisa jalan
+      // Tunggu sedikit untuk memastikan session ter-set
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Gunakan router.push untuk navigasi yang lebih smooth
+      router.push(destination);
+      
+      // Fallback: jika router.push tidak bekerja, gunakan window.location
       setTimeout(() => {
-        // Full page reload supaya middleware dijalankan
-        window.location.href = destination;
-      }, 300);
+        if (window.location.pathname === '/') {
+          window.location.href = destination;
+        }
+      }, 1000);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Terjadi kesalahan saat login";

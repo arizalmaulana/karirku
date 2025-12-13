@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
+import { ApplicationTimeline } from "@/components/ApplicationTimeline";
+import { WithdrawApplicationButton } from "@/components/job-seeker/WithdrawApplicationButton";
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -158,9 +160,55 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                                 </p>
                             </div>
                         )}
+                        {/* Interview info jika status interview */}
+                        {application.status === "interview" && (application as any).interview_date && (
+                            <div>
+                                <p className="text-sm text-gray-500">Jadwal Interview</p>
+                                <p className="font-medium">
+                                    {new Date((application as any).interview_date).toLocaleDateString("id-ID", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </p>
+                                {(application as any).interview_location && (
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        Lokasi: {(application as any).interview_location}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        {/* Rejection reason jika ditolak */}
+                        {application.status === "rejected" && (application as any).rejection_reason && (
+                            <div>
+                                <p className="text-sm text-gray-500">Alasan Penolakan</p>
+                                <p className="font-medium text-red-600">
+                                    {(application as any).rejection_reason}
+                                </p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Timeline */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Timeline Status</CardTitle>
+                    <CardDescription>
+                        Pantau perkembangan status lamaran Anda
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ApplicationTimeline
+                        currentStatus={application.status}
+                        submittedAt={application.submitted_at}
+                        updatedAt={application.updated_at}
+                    />
+                </CardContent>
+            </Card>
 
             {application.cover_letter && (
                 <Card>
@@ -207,6 +255,24 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                     )}
                 </CardContent>
             </Card>
+
+            {/* Withdraw Button */}
+            {application.status !== "draft" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Aksi</CardTitle>
+                        <CardDescription>
+                            Tarik lamaran jika Anda tidak lagi tertarik dengan posisi ini
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <WithdrawApplicationButton 
+                            applicationId={application.id} 
+                            currentStatus={application.status} 
+                        />
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
