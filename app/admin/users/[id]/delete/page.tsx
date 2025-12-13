@@ -1,18 +1,18 @@
-import { DeleteLivingCostForm } from "@/components/admin/DeleteLivingCostForm";
+import { DeleteUserForm } from "@/components/admin/DeleteUserForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function DeleteLivingCostPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DeleteUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold text-gray-900">Hapus Data Biaya Hidup</h1>
+                <h1 className="text-3xl font-semibold text-gray-900">Hapus Pengguna</h1>
                 <p className="text-gray-500 mt-1">
-                    Konfirmasi penghapusan data biaya hidup
+                    Konfirmasi penghapusan pengguna
                 </p>
             </div>
 
@@ -27,10 +27,11 @@ export default async function DeleteLivingCostPage({ params }: { params: Promise
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <DeleteLivingCostForm livingCostId={id} />
+                    <DeleteUserForm userId={id} />
                 </CardContent>
             </Card>
         </div>
     );
 }
+
 

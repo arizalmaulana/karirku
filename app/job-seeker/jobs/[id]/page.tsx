@@ -70,7 +70,7 @@ async function checkExistingApplication(userId: string, jobId: string) {
         .eq("job_id", jobId)
         .maybeSingle();
 
-    return data;
+    return data as { id: string; status: string } | null;
 }
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {

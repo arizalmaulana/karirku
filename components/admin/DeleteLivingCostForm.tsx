@@ -27,7 +27,7 @@ export function DeleteLivingCostForm({ livingCostId }: DeleteLivingCostFormProps
                 .single();
             
             if (data) {
-                setCityName(data.city);
+                setCityName((data as any).city);
             }
         }
         fetchLivingCost();

@@ -1,7 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { JobsPageClient } from "@/components/job-seeker/JobsPageClient";
-import { jobs } from "@/data/jobs";
+import { fetchJobsFromDatabase, convertJobListingToJob } from "@/lib/utils/jobData";
+import type { JobListing } from "@/lib/types";
+import type { Job } from "@/types/job";
 
 async function getUserProfile(userId: string) {
     const supabase = await createSupabaseServerClient();
@@ -32,6 +34,9 @@ export default async function JobsPage({
     }
 
     const profile = await getUserProfile(user.id);
+    
+    // Fetch jobs from database
+    const jobs = await fetchJobsFromDatabase();
 
     return (
         <JobsPageClient

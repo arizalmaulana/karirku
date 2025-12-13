@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2, Clock, XCircle, FileSearch, Hourglass } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/components/ui/utils";
 import type { ApplicationStatus } from "@/lib/types";
 
 interface TimelineEvent {

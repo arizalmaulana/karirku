@@ -83,7 +83,7 @@ export function ApplicationForm({ jobId, jobTitle }: ApplicationFormProps) {
                 throw new Error("User not authenticated");
             }
 
-            const { error } = await supabase.from("applications").insert([
+            const { error } = await (supabase.from("applications") as any).insert([
                 {
                     job_id: jobId,
                     job_seeker_id: user.id,

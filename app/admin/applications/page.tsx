@@ -11,19 +11,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Eye } from "lucide-react";
+import { Eye, Trash2, Pencil } from "lucide-react";
 import type { Application } from "@/lib/types";
+import { DeleteApplicationButton } from "@/components/admin/DeleteApplicationButton";
 
-async function getApplications() {
+async function getApplications(statusFilter?: string) {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
+    let query = supabase
         .from("applications")
         .select(`
             *,
             profiles(full_name),
             job_listings(title, company_name)
-        `)
-        .order("submitted_at", { ascending: false });
+        `);
+
+    // Apply status filter if provided
+    if (statusFilter) {
+        const statuses = statusFilter.split(',');
+        if (statuses.length > 1) {
+            query = query.in("status", statuses);
+        } else {
+            query = query.eq("status", statusFilter);
+        }
+    }
+
+    const { data, error } = await query.order("submitted_at", { ascending: false });
 
     if (error) {
         console.error("Error fetching applications:", error);
@@ -59,8 +71,13 @@ function getStatusLabel(status: string) {
     return labels[status] || status;
 }
 
-export default async function ApplicationsManagementPage() {
-    const applications = await getApplications();
+export default async function ApplicationsManagementPage({ 
+    searchParams 
+}: { 
+    searchParams?: { status?: string } 
+}) {
+    const statusFilter = searchParams?.status;
+    const applications = await getApplications(statusFilter);
 
     return (
         <div className="space-y-6">
@@ -73,9 +90,13 @@ export default async function ApplicationsManagementPage() {
 
             <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
-                    <CardTitle>Daftar Lamaran</CardTitle>
+                    <CardTitle>
+                        {statusFilter ? "Lamaran Menunggu Tindakan" : "Daftar Lamaran"}
+                    </CardTitle>
                     <CardDescription>
-                        Total {applications.length} lamaran pekerjaan
+                        {statusFilter 
+                            ? `${applications.length} lamaran dengan status ${statusFilter}`
+                            : `Total ${applications.length} lamaran pekerjaan`}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -108,11 +129,19 @@ export default async function ApplicationsManagementPage() {
                                             {new Date(app.submitted_at).toLocaleDateString("id-ID")}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/admin/applications/${app.id}`}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/applications/${app.id}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/applications/${app.id}/edit`}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <DeleteApplicationButton applicationId={app.id} />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

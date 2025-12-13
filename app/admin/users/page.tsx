@@ -9,9 +9,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Eye, UserCheck, UserX, Plus, Pencil, Trash2 } from "lucide-react";
 import type { Profile } from "@/lib/types";
 
-async function getUsers() {
+async function getUsers(filter?: string) {
     const supabase = await createSupabaseServerClient();
     
     // First, check if current user is admin
@@ -42,13 +45,17 @@ async function getUsers() {
         return [];
     }
 
+    // Build query based on filter
+    let query = supabase.from("profiles").select("*");
+    
+    if (filter === "pending") {
+        query = query.eq("role", "recruiter").eq("is_approved", false);
+    }
+
     // Try to fetch all users
     // This will work if the RLS policy "Admin can read all profiles" exists
     // If it doesn't work, you need to run the SQL in supabase/admin_policies.sql
-    const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
         console.error("Error fetching users:", error);
@@ -81,23 +88,40 @@ function getRoleBadgeVariant(role: string) {
     }
 }
 
-export default async function UsersManagementPage() {
-    const users = await getUsers();
+export default async function UsersManagementPage({ 
+    searchParams 
+}: { 
+    searchParams?: { filter?: string } 
+}) {
+    const filter = searchParams?.filter;
+    const users = await getUsers(filter);
 
     return (
         <div className="space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 className="text-3xl font-semibold text-blue-900">Manajemen Pengguna</h1>
                 <p className="text-gray-500 mt-1">
                     Kelola dan pantau semua pengguna di platform
                 </p>
+                </div>
+                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
+                    <Link href="/admin/users/new">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Tambah Pengguna
+                    </Link>
+                </Button>
             </div>
 
             <Card className="border border-purple-200 bg-gradient-to-br from-blue-100 to-pink-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
-                    <CardTitle>Daftar Pengguna</CardTitle>
+                    <CardTitle>
+                        {filter === "pending" ? "Recruiter Menunggu Persetujuan" : "Daftar Pengguna"}
+                    </CardTitle>
                     <CardDescription>
-                        Total {users.length} pengguna terdaftar
+                        {filter === "pending" 
+                            ? `${users.length} recruiter menunggu persetujuan`
+                            : `Total ${users.length} pengguna terdaftar`}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -109,7 +133,9 @@ export default async function UsersManagementPage() {
                                     <TableHead>Role</TableHead>
                                     <TableHead>Lokasi</TableHead>
                                     <TableHead>Skills</TableHead>
+                                    <TableHead>Status</TableHead>
                                     <TableHead>Tanggal Bergabung</TableHead>
+                                    <TableHead className="text-right">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -130,7 +156,35 @@ export default async function UsersManagementPage() {
                                                 : "-"}
                                         </TableCell>
                                         <TableCell>
+                                            {user.role === "recruiter" ? (
+                                                <Badge variant={user.is_approved ? "default" : "secondary"}>
+                                                    {user.is_approved ? "Approved" : "Pending"}
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline">Active</Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
                                             {new Date(user.created_at).toLocaleDateString("id-ID")}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/users/${user.id}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/users/${user.id}/edit`}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/users/${user.id}/delete`}>
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

@@ -16,7 +16,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { createBrowserClient } from "@/lib/supabase/client";
-import type { EmploymentType } from "@/lib/types";
+import type { EmploymentType, JobCategory, JobLevel, JobListing } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 interface RecruiterJobFormProps {
@@ -41,6 +41,8 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
         requirements: initialData?.requirements?.join("\n") || "",
         skills_required: initialData?.skills_required?.join(", ") || "",
         major_required: initialData?.major_required || "",
+        category: (initialData?.category || "Technology") as JobCategory,
+        job_level: (initialData?.job_level || "Mid Level") as JobLevel,
         featured: initialData?.featured || false,
     });
 
@@ -68,19 +70,21 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 currency: formData.currency,
                 description: formData.description || null,
                 requirements: formData.requirements
-                    ? formData.requirements.split("\n").filter((r) => r.trim())
+                    ? formData.requirements.split("\n").filter((r: string) => r.trim())
                     : null,
                 skills_required: formData.skills_required
-                    ? formData.skills_required.split(",").map((s) => s.trim()).filter((s) => s)
+                    ? formData.skills_required.split(",").map((s: string) => s.trim()).filter((s: string) => s)
                     : null,
                 major_required: formData.major_required || null,
+                category: formData.category || null,
+                job_level: formData.job_level || null,
                 featured: formData.featured,
                 recruiter_id: user.id,
             };
 
             if (jobId) {
-                const { error } = await supabase
-                    .from("job_listings")
+                const { error } = await (supabase
+                    .from("job_listings") as any)
                     .update(jobData)
                     .eq("id", jobId)
                     .eq("recruiter_id", user.id);
@@ -88,8 +92,8 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 if (error) throw error;
                 toast.success("Lowongan berhasil diperbarui");
             } else {
-                const { error } = await supabase
-                    .from("job_listings")
+                const { error } = await (supabase
+                    .from("job_listings") as any)
                     .insert([jobData]);
 
                 if (error) throw error;
@@ -231,6 +235,48 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     onChange={(e) => setFormData({ ...formData, major_required: e.target.value })}
                     placeholder="Contoh: Teknik Informatika, Sistem Informasi, dll"
                 />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                    <Label htmlFor="category">Kategori *</Label>
+                    <Select
+                        value={formData.category}
+                        onValueChange={(value) => setFormData({ ...formData, category: value as JobCategory })}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Technology">Technology</SelectItem>
+                            <SelectItem value="Design">Design</SelectItem>
+                            <SelectItem value="Marketing">Marketing</SelectItem>
+                            <SelectItem value="Business">Business</SelectItem>
+                            <SelectItem value="Finance">Finance</SelectItem>
+                            <SelectItem value="Healthcare">Healthcare</SelectItem>
+                            <SelectItem value="Education">Education</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="job_level">Level Pekerjaan *</Label>
+                    <Select
+                        value={formData.job_level}
+                        onValueChange={(value) => setFormData({ ...formData, job_level: value as JobLevel })}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Entry Level">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level">Senior Level</SelectItem>
+                            <SelectItem value="Executive">Executive</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="flex items-center space-x-2">

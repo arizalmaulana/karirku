@@ -197,8 +197,8 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                 skills: skills,
             };
 
-            const { error } = await supabase
-                .from("profiles")
+            const { error } = await (supabase
+                .from("profiles") as any)
                 .upsert(profileData, {
                     onConflict: "id",
                 });

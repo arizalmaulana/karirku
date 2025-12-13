@@ -45,16 +45,16 @@ export function LivingCostForm({ initialData, livingCostId }: LivingCostFormProp
             };
 
             if (livingCostId) {
-                const { error } = await supabase
-                    .from("living_costs")
+                const { error } = await (supabase
+                    .from("living_costs") as any)
                     .update(livingCostData)
                     .eq("id", livingCostId);
 
                 if (error) throw error;
                 toast.success("Data biaya hidup berhasil diperbarui");
             } else {
-                const { error } = await supabase
-                    .from("living_costs")
+                const { error } = await (supabase
+                    .from("living_costs") as any)
                     .insert([livingCostData]);
 
                 if (error) throw error;

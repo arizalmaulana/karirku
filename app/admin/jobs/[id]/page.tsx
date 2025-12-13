@@ -7,6 +7,9 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { JobListing } from "@/lib/types";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 function formatCurrency(amount: number | null): string {
     if (!amount) return "Tidak disebutkan";
     return new Intl.NumberFormat("id-ID", {
@@ -30,8 +33,9 @@ async function getJob(id: string) {
     return data as JobListing;
 }
 
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
-    const job = await getJob(params.id);
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const job = await getJob(id);
 
     if (!job) {
         notFound();

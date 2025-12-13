@@ -3,6 +3,9 @@ import { LivingCostForm } from "@/components/admin/LivingCostForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getLivingCost(id: string) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
@@ -17,8 +20,9 @@ async function getLivingCost(id: string) {
     return data;
 }
 
-export default async function EditLivingCostPage({ params }: { params: { id: string } }) {
-    const livingCost = await getLivingCost(params.id);
+export default async function EditLivingCostPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const livingCost = await getLivingCost(id);
 
     if (!livingCost) {
         notFound();
@@ -41,7 +45,7 @@ export default async function EditLivingCostPage({ params }: { params: { id: str
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <LivingCostForm initialData={livingCost} livingCostId={params.id} />
+                    <LivingCostForm initialData={livingCost} livingCostId={id} />
                 </CardContent>
             </Card>
         </div>

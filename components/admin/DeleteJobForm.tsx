@@ -27,7 +27,7 @@ export function DeleteJobForm({ jobId }: DeleteJobFormProps) {
                 .single();
             
             if (data) {
-                setJobTitle(data.title);
+                setJobTitle((data as any).title);
             }
         }
         fetchJob();

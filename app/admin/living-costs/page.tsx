@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import type { LivingCost } from "@/lib/types";
 
 function formatCurrency(amount: number | null): string {
@@ -88,6 +88,11 @@ export default async function LivingCostsPage() {
                                         <TableCell>{formatCurrency(cost.salary_reference)}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/living-costs/${cost.id}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/living-costs/${cost.id}/edit`}>
                                                         <Pencil className="h-4 w-4" />

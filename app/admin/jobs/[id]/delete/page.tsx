@@ -2,8 +2,11 @@ import { DeleteJobForm } from "@/components/admin/DeleteJobForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
-export default function DeleteJobPage({ params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
+export default async function DeleteJobPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     return (
         <div className="space-y-6">
             <div>
@@ -24,7 +27,7 @@ export default function DeleteJobPage({ params }: { params: { id: string } }) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <DeleteJobForm jobId={params.id} />
+                    <DeleteJobForm jobId={id} />
                 </CardContent>
             </Card>
         </div>

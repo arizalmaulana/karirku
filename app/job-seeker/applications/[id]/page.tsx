@@ -50,7 +50,7 @@ async function getApplication(id: string, userId: string) {
     if (error || !data) {
         return null;
     }
-    return data;
+    return data as any;
 }
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {

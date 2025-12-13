@@ -170,8 +170,8 @@ export function RegisterDialog({
                             path: filePathDocuments,
                             error: uploadErr,
                             message: uploadErr.message,
-                            statusCode: uploadErr.statusCode,
-                            name: uploadErr.name
+                            statusCode: (uploadErr as any).statusCode,
+                            name: (uploadErr as any).name
                         });
                     } else {
                         console.log('Upload success:', uploadData);
@@ -246,8 +246,8 @@ export function RegisterDialog({
                         // Try to get more error details
                         const errorDetails: any = {
                             message: errorMessage,
-                            statusCode: uploadError.statusCode,
-                            name: uploadError.name,
+                            statusCode: (uploadError as any).statusCode,
+                            name: (uploadError as any).name,
                             error: uploadError
                         };
                         

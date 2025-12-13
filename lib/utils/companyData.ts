@@ -147,7 +147,7 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
   // Group by company_name
   const companyMap = new Map<string, any>();
 
-  data.forEach((job) => {
+  data.forEach((job: any) => {
     const companyName = job.company_name;
     if (!companyMap.has(companyName)) {
       companyMap.set(companyName, {

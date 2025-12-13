@@ -40,8 +40,8 @@ export function ApplicationStatusForm({ applicationId, currentStatus }: Applicat
         setIsLoading(true);
 
         try {
-            const { error } = await supabase
-                .from("applications")
+            const { error } = await (supabase
+                .from("applications") as any)
                 .update({
                     status: status,
                     updated_at: new Date().toISOString(),

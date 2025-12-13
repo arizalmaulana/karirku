@@ -89,8 +89,8 @@ export function ApplicationStatusFormEnhanced({
                 updateData.notes = notes.trim();
             }
 
-            const { error } = await supabase
-                .from("applications")
+            const { error } = await (supabase
+                .from("applications") as any)
                 .update(updateData)
                 .eq("id", applicationId);
 

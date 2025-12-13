@@ -48,11 +48,12 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
                     .maybeSingle();
 
                 if (data) {
-                    setDraftId(data.id);
+                    const draftData = data as any;
+                    setDraftId(draftData.id);
                     setFormData({
-                        cover_letter: data.cover_letter || "",
-                        cv_url: data.cv_url || "",
-                        portfolio_url: data.portfolio_url || "",
+                        cover_letter: draftData.cover_letter || "",
+                        cv_url: draftData.cv_url || "",
+                        portfolio_url: draftData.portfolio_url || "",
                     });
                     toast.info("Draft lamaran ditemukan dan dimuat");
                 }
@@ -154,16 +155,16 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
             let result;
             if (draftId) {
                 // Update existing draft
-                result = await supabase
-                    .from("applications")
+                result = await (supabase
+                    .from("applications") as any)
                     .update(draftData)
                     .eq("id", draftId)
                     .select()
                     .single();
             } else {
                 // Create new draft
-                result = await supabase
-                    .from("applications")
+                result = await (supabase
+                    .from("applications") as any)
                     .insert([draftData])
                     .select()
                     .single();
@@ -172,7 +173,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
             if (result.error) throw result.error;
 
             if (result.data) {
-                setDraftId(result.data.id);
+                setDraftId((result.data as any).id);
                 setLastSaved(new Date());
                 if (!silent) {
                     toast.success("Draft berhasil disimpan");
@@ -218,8 +219,8 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
             // Jika ada draft, update statusnya. Jika tidak, buat baru
             let result;
             if (draftId) {
-                result = await supabase
-                    .from("applications")
+                result = await (supabase
+                    .from("applications") as any)
                     .update({
                         status: "submitted",
                         cover_letter: formData.cover_letter,
@@ -232,8 +233,8 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
                     .select()
                     .single();
             } else {
-                result = await supabase
-                    .from("applications")
+                result = await (supabase
+                    .from("applications") as any)
                     .insert([
                         {
                             job_id: jobId,

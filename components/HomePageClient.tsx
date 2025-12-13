@@ -50,17 +50,20 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
       }
       
       // Fetch user profile to get role
-      supabase
-        .from("profiles")
-        .select("role, is_approved")
-        .eq("id", user.id)
-        .maybeSingle()
-        .then(({ data: profile }) => {
+      (async () => {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role, is_approved")
+            .eq("id", user.id)
+            .maybeSingle();
+
           if (profile) {
-            const role = profile.role as UserRole;
+            const profileData = profile as any;
+            const role = profileData.role as UserRole;
             
             // Untuk recruiter, cek approval
-            if (role === 'recruiter' && profile.is_approved !== true) {
+            if (role === 'recruiter' && profileData.is_approved !== true) {
               // Jangan redirect, biarkan user di home dengan pesan
               return;
             }
@@ -76,11 +79,11 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
             // If no profile, default to job-seeker dashboard
             router.push("/job-seeker/dashboard");
           }
-        })
-        .catch(() => {
+        } catch {
           // On error, default to job-seeker dashboard
           router.push("/job-seeker/dashboard");
-        });
+        }
+      })();
     }
   }, [user, loading, router, supabase]);
 
