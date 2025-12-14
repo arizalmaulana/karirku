@@ -87,6 +87,7 @@ export interface Company {
     industry: string | null;
     location_city: string | null;
     location_province: string | null;
+    address: string | null; // Alamat lengkap perusahaan
     description: string | null;
     website_url: string | null;
     size: string | null;

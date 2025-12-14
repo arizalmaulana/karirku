@@ -185,9 +185,14 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                         {/* Info Items */}
                         <div className="space-y-2.5 mb-4">
                             {(company.location || company.location_city) && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                    <span>{company.location || company.location_city}</span>
+                                <div className="flex items-start gap-2 text-sm text-gray-600">
+                                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span>{company.location || company.location_city}</span>
+                                        {company.address && (
+                                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{company.address}</p>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                             {company.openPositions !== undefined && company.openPositions > 0 && (

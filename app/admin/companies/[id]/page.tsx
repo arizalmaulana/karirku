@@ -174,6 +174,15 @@ export default async function CompanyDetailPage({
                                         </p>
                                     </div>
                                 )}
+                                {company.address && (
+                                    <div className="md:col-span-2">
+                                        <p className="text-sm text-gray-500">Alamat Lengkap</p>
+                                        <p className="font-medium flex items-start gap-2">
+                                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                            <span className="whitespace-pre-wrap">{company.address}</span>
+                                        </p>
+                                    </div>
+                                )}
                                 {company.website_url && (
                                     <div>
                                         <p className="text-sm text-gray-500">Website</p>

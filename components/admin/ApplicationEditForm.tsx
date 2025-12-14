@@ -52,8 +52,35 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
             : ""
     );
     const [interviewLocation, setInterviewLocation] = useState(initialData.interview_location || "");
+    const [acceptedNotes, setAcceptedNotes] = useState(
+        initialData.status === "accepted" && initialData.notes ? initialData.notes : ""
+    );
 
     const selectedStatus = statusOptions.find(opt => opt.value === status);
+
+    // Handle status change
+    const handleStatusChange = (newStatus: ApplicationStatus) => {
+        setStatus(newStatus);
+        // Reset acceptedNotes jika status bukan accepted
+        if (newStatus !== "accepted") {
+            setAcceptedNotes("");
+        } else if (newStatus === "accepted" && initialData.notes && !acceptedNotes) {
+            // Jika status berubah ke accepted dan belum ada acceptedNotes, ambil dari initialData
+            setAcceptedNotes(initialData.notes);
+        }
+    };
+
+    // Get minimum date for interview (today, current time)
+    const getMinInterviewDate = () => {
+        const now = new Date();
+        // Format: YYYY-MM-DDTHH:mm (datetime-local format)
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -79,6 +106,18 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                     setIsLoading(false);
                     return;
                 }
+                // Validasi: tanggal interview tidak boleh di hari sebelumnya
+                const selectedDate = new Date(interviewDate);
+                const now = new Date();
+                // Set waktu ke 00:00:00 untuk perbandingan tanggal saja
+                const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                if (selectedDateOnly < todayOnly) {
+                    toast.error("Tanggal interview tidak boleh di hari sebelumnya. Pilih tanggal hari ini atau setelahnya.");
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Prepare update data
@@ -87,11 +126,19 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 updated_at: new Date().toISOString(),
             };
 
-            // Set notes
-            if (notes.trim()) {
-                updateData.notes = notes.trim();
+            // Set notes - untuk accepted, gunakan acceptedNotes; untuk lainnya gunakan notes
+            if (status === "accepted") {
+                if (acceptedNotes.trim()) {
+                    updateData.notes = acceptedNotes.trim();
+                } else {
+                    updateData.notes = null;
+                }
             } else {
-                updateData.notes = null;
+                if (notes.trim()) {
+                    updateData.notes = notes.trim();
+                } else {
+                    updateData.notes = null;
+                }
             }
 
             // Set rejection reason
@@ -138,7 +185,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={status} onValueChange={(value) => setStatus(value as ApplicationStatus)}>
+                        <Select value={status} onValueChange={(value) => handleStatusChange(value as ApplicationStatus)}>
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
@@ -174,10 +221,11 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                             onChange={(e) => setInterviewDate(e.target.value)}
                             disabled={status !== "interview"}
                             required={status === "interview"}
+                            min={status === "interview" ? getMinInterviewDate() : undefined}
                         />
                         <p className="text-xs text-gray-500">
                             {status === "interview" 
-                                ? "Wajib diisi untuk status Interview"
+                                ? "Wajib diisi untuk status Interview. Tanggal tidak boleh di hari sebelumnya."
                                 : "Aktif jika status adalah Interview"}
                         </p>
                     </div>
@@ -195,6 +243,33 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                             {status === "interview" 
                                 ? "Wajib diisi untuk status Interview"
                                 : "Aktif jika status adalah Interview"}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Informasi Penerimaan</CardTitle>
+                    <CardDescription>
+                        Isi jika status adalah Diterima
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="accepted_notes">Informasi Lebih Lanjut (Opsional)</Label>
+                        <Textarea
+                            id="accepted_notes"
+                            value={acceptedNotes}
+                            onChange={(e) => setAcceptedNotes(e.target.value)}
+                            rows={4}
+                            placeholder="Contoh: Nomor telepon yang bisa dihubungi: 081234567890, Email: hr@company.com, atau informasi lainnya untuk follow-up..."
+                            disabled={status !== "accepted"}
+                        />
+                        <p className="text-xs text-gray-500">
+                            {status === "accepted" 
+                                ? "Informasi ini akan dikirim ke pelamar. Bisa diisi dengan nomor telepon, email, atau informasi kontak lainnya untuk follow-up."
+                                : "Aktif jika status adalah Diterima"}
                         </p>
                     </div>
                 </CardContent>
@@ -228,29 +303,31 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Catatan</CardTitle>
-                    <CardDescription>
-                        Catatan tambahan untuk lamaran ini
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="notes">Catatan (Opsional)</Label>
-                        <Textarea
-                            id="notes"
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            rows={4}
-                            placeholder="Catatan tambahan untuk lamaran ini..."
-                        />
-                        <p className="text-xs text-gray-500">
-                            Catatan internal yang tidak akan dikirim ke pelamar
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+            {status !== "accepted" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Catatan Internal</CardTitle>
+                        <CardDescription>
+                            Catatan tambahan untuk lamaran ini (tidak dikirim ke pelamar)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">Catatan (Opsional)</Label>
+                            <Textarea
+                                id="notes"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows={4}
+                                placeholder="Catatan internal untuk lamaran ini..."
+                            />
+                            <p className="text-xs text-gray-500">
+                                Catatan internal yang tidak akan dikirim ke pelamar
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="flex gap-2">
                 <Button 

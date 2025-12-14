@@ -33,6 +33,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
         industry: initialData?.industry || "",
         location_city: initialData?.location_city || "",
         location_province: initialData?.location_province || "",
+        address: initialData?.address || "",
         description: initialData?.description || "",
         website_url: initialData?.website_url || "",
         size: initialData?.size || "",
@@ -47,6 +48,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 industry: initialData.industry || "",
                 location_city: initialData.location_city || "",
                 location_province: initialData.location_province || "",
+                address: initialData.address || "",
                 description: initialData.description || "",
                 website_url: initialData.website_url || "",
                 size: initialData.size || "",
@@ -298,6 +300,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 industry: formData.industry || null,
                 location_city: formData.location_city || null,
                 location_province: formData.location_province || null,
+                address: formData.address || null,
                 description: formData.description || null,
                 website_url: formData.website_url || null,
                 size: formData.size || null,
@@ -501,7 +504,24 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                                 required
                             />
                         </div>
+                    </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="address">Alamat Lengkap Perusahaan <span className="text-red-500">*</span></Label>
+                        <Textarea
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                            placeholder="Contoh: Jl. Sudirman No. 123, Gedung ABC, Lantai 5, Jakarta Pusat"
+                            rows={3}
+                            required
+                        />
+                        <p className="text-xs text-gray-500">
+                            Alamat lengkap kantor perusahaan (opsional)
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="website_url">Website <span className="text-red-500">*</span></Label>
                             <Input

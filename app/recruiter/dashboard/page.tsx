@@ -248,11 +248,11 @@ export default async function RecruiterDashboardPage() {
                         className="w-full sm:w-fit bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all" 
                         asChild
                     >
-                        <Link href="/recruiter/jobs/new">
-                            <Briefcase className="mr-2 h-4 w-4" />
-                            Buat Lowongan Baru
-                        </Link>
-                    </Button>
+                    <Link href="/recruiter/jobs/new">
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Buat Lowongan Baru
+                    </Link>
+                </Button>
                     <Button 
                         size="lg" 
                         variant="outline"
@@ -364,19 +364,19 @@ export default async function RecruiterDashboardPage() {
                     return (
                         <Link key={stat.label} href={stat.link || "#"} className="block">
                             <Card className="border-2 border-purple-200/50 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer h-full">
-                                <CardHeader className="flex flex-row items-center justify-between pb-3">
-                                    <CardTitle className="text-sm font-semibold text-gray-600">
-                                        {stat.label}
-                                    </CardTitle>
-                                    <div className={`p-3 rounded-xl shadow-md bg-gradient-to-br ${iconBgClass}`}>
-                                        <stat.icon className="h-5 w-5 text-white" />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                                    <p className="text-sm text-gray-600 font-medium">{stat.subtext}</p>
-                                </CardContent>
-                            </Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-3">
+                                <CardTitle className="text-sm font-semibold text-gray-600">
+                                    {stat.label}
+                                </CardTitle>
+                                <div className={`p-3 rounded-xl shadow-md bg-gradient-to-br ${iconBgClass}`}>
+                                    <stat.icon className="h-5 w-5 text-white" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                                <p className="text-sm text-gray-600 font-medium">{stat.subtext}</p>
+                            </CardContent>
+                        </Card>
                         </Link>
                     );
                 })}
