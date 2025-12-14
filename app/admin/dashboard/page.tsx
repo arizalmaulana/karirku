@@ -148,7 +148,7 @@ export default async function AdminDashboardPage() {
 
             <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {summaryStats.map((stat) => (
-                    <Card key={stat.title} className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-50 via-blue-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card key={stat.title} className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-100 via-blue-50/50 to-blue shadow-lg text-black-700 hover:bg-purple-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                             <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
                             <div className="p-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-md">
@@ -164,13 +164,13 @@ export default async function AdminDashboardPage() {
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border-2 border-gray-200/50 shadow-lg">
+                <Card className="lg:col-span-2 border-2 shadow-lg border-blue-300 text-black-700 hover:bg-blue-50">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
                             <CardTitle className="text-xl font-bold">Lowongan Terbaru</CardTitle>
                             <CardDescription>Lowongan yang baru diajukan oleh recruiter</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/jobs">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
