@@ -90,12 +90,12 @@ export default async function LivingCostsPage() {
                                             <div className="flex justify-end gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/living-costs/${cost.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/living-costs/${cost.id}/edit`}>
-                                                        <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>

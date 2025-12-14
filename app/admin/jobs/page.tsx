@@ -48,12 +48,6 @@ export default async function JobsManagementPage() {
                         Kelola semua lowongan pekerjaan di platform
                     </p>
                 </div>
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
-                    <Link href="/admin/jobs/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Lowongan Baru
-                    </Link>
-                </Button>
             </div>
 
             <Card className="border border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
@@ -68,13 +62,13 @@ export default async function JobsManagementPage() {
                         <Table>
                             <TableHeader >
                                 <TableRow>
-                                    <TableHead>Judul</TableHead>
-                                    <TableHead>Perusahaan</TableHead>
-                                    <TableHead>Lokasi</TableHead>
-                                    <TableHead>Gaji</TableHead>
-                                    <TableHead>Tipe</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Judul</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Perusahaan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Lokasi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Gaji</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Tipe</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700">Status</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-right">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -94,7 +88,7 @@ export default async function JobsManagementPage() {
                                                 : "Tidak disebutkan"}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">{job.employment_type}</Badge>
+                                            <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-purple-100/50 border-purple-200 text-gray-700 shadow-sm">{job.employment_type}</Badge>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={job.featured ? "default" : "secondary"}>
@@ -105,12 +99,12 @@ export default async function JobsManagementPage() {
                                             <div className="flex justify-end gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/jobs/${job.id}`}>
-                                                        <Eye className="h-4 w-4 text-black-600" />
+                                                        <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/jobs/${job.id}/edit`}>
-                                                        <Pencil className="h-4 w-4 text-blue-600" />
+                                                        <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>

@@ -58,7 +58,7 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
                         <Link href={`/admin/living-costs/${livingCost.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
@@ -73,8 +73,8 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
+            <div className="grid gap-6 md:grid-cols-2 ">
+                <Card className="bg-gradient-to-br from-purple-50 to-red-100/50">
                     <CardHeader>
                         <CardTitle>Informasi Lokasi</CardTitle>
                     </CardHeader>
@@ -89,12 +89,12 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Mata Uang</p>
-                            <Badge variant="outline">{livingCost.currency || "IDR"}</Badge>
+                            <Badge variant="outline" className="bg-gradient-to-r from-blue-50 to-green-100">{livingCost.currency || "IDR"}</Badge>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-red-50 to-blue-100/50">
                     <CardHeader>
                         <CardTitle>Rincian Biaya</CardTitle>
                     </CardHeader>
@@ -113,14 +113,14 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Gaji Referensi (per bulan)</p>
-                            <p className="font-medium text-lg text-blue-600">{formatCurrency(livingCost.salary_reference)}</p>
+                            <p className="font-medium text-lg">{formatCurrency(livingCost.salary_reference)}</p>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {livingCost.updated_at && (
-                <Card>
+                <Card className="bg-gradient-to-br from-pink-50 to-blue-100/50">
                     <CardHeader>
                         <CardTitle>Informasi Update</CardTitle>
                     </CardHeader>

@@ -103,7 +103,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="title">Judul Lowongan *</Label>
+                    <Label htmlFor="title" className="text-sm font-semibold text-gray-700">Judul Lowongan <span className="text-sm text-red-700">*</span></Label>
                     <Input
                         id="title"
                         value={formData.title}
@@ -113,7 +113,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="company_name">Nama Perusahaan *</Label>
+                    <Label htmlFor="company_name" className="text-sm font-semibold text-gray-700">Nama Perusahaan <span className="text-sm text-red-700">*</span></Label>
                     <Input
                         id="company_name"
                         value={formData.company_name}
@@ -125,7 +125,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="location_city">Kota *</Label>
+                    <Label htmlFor="location_city" className="text-sm font-semibold text-gray-700">Kota <span className="text-sm text-red-700">*</span></Label>
                     <Input
                         id="location_city"
                         value={formData.location_city}
@@ -135,7 +135,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="location_province">Provinsi</Label>
+                    <Label htmlFor="location_province" className="text-sm font-semibold text-gray-700">Provinsi <span className="text-sm text-red-700">*</span></Label>
                     <Input
                         id="location_province"
                         value={formData.location_province}
@@ -146,7 +146,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
 
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                    <Label htmlFor="employment_type">Tipe Pekerjaan *</Label>
+                    <Label htmlFor="employment_type" className="text-sm font-semibold text-gray-700">Tipe Pekerjaan <span className="text-sm text-red-700">*</span></Label>
                     <Select
                         value={formData.employment_type}
                         onValueChange={(value) => setFormData({ ...formData, employment_type: value as EmploymentType })}
@@ -154,19 +154,19 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="fulltime">Full Time</SelectItem>
-                            <SelectItem value="parttime">Part Time</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="internship">Internship</SelectItem>
-                            <SelectItem value="remote">Remote</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                        <SelectContent className=" bg-white text-sm text-gray-700">
+                            <SelectItem value="fulltime" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Full Time</SelectItem>
+                            <SelectItem value="parttime" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Part Time</SelectItem>
+                            <SelectItem value="contract" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Contract</SelectItem>
+                            <SelectItem value="internship" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Internship</SelectItem>
+                            <SelectItem value="remote" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Remote</SelectItem>
+                            <SelectItem value="hybrid" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Hybrid</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="min_salary">Gaji Minimum</Label>
+                    <Label htmlFor="min_salary" className="text-sm font-semibold text-gray-700">Gaji Minimum</Label>
                     <Input
                         id="min_salary"
                         type="number"
@@ -176,7 +176,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="max_salary">Gaji Maksimum</Label>
+                    <Label htmlFor="max_salary" className="text-sm font-semibold text-gray-700">Gaji Maksimum</Label>
                     <Input
                         id="max_salary"
                         type="number"
@@ -187,7 +187,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="description">Deskripsi Pekerjaan</Label>
+                <Label htmlFor="description" className="text-sm font-semibold text-gray-700">Deskripsi Pekerjaan</Label>
                 <Textarea
                     id="description"
                     value={formData.description}
@@ -197,7 +197,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="requirements">Persyaratan (satu per baris)</Label>
+                <Label htmlFor="requirements" className="text-sm font-semibold text-gray-700">Persyaratan (satu per baris)</Label>
                 <Textarea
                     id="requirements"
                     value={formData.requirements}
@@ -208,7 +208,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="skills_required">Skills yang Diperlukan (pisahkan dengan koma)</Label>
+                <Label htmlFor="skills_required" className="text-sm font-semibold text-gray-700">Skills yang Diperlukan (pisahkan dengan koma)</Label>
                 <Input
                     id="skills_required"
                     value={formData.skills_required}
@@ -218,7 +218,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="major_required">Jurusan yang Diperlukan (opsional)</Label>
+                <Label htmlFor="major_required" className="text-sm font-semibold text-gray-700">Jurusan yang Diperlukan (opsional)</Label>
                 <Input
                     id="major_required"
                     value={formData.major_required}
@@ -232,7 +232,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="category">Kategori *</Label>
+                    <Label htmlFor="category" className="text-sm font-semibold text-gray-700">Kategori <span className="text-sm text-red-700">*</span></Label>
                     <Select
                         value={formData.category}
                         onValueChange={(value) => setFormData({ ...formData, category: value as JobCategory })}
@@ -240,21 +240,21 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Technology">Technology</SelectItem>
-                            <SelectItem value="Design">Design</SelectItem>
-                            <SelectItem value="Marketing">Marketing</SelectItem>
-                            <SelectItem value="Business">Business</SelectItem>
-                            <SelectItem value="Finance">Finance</SelectItem>
-                            <SelectItem value="Healthcare">Healthcare</SelectItem>
-                            <SelectItem value="Education">Education</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
+                        <SelectContent className=" bg-white text-sm text-gray-700">
+                            <SelectItem value="Technology" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Technology</SelectItem>
+                            <SelectItem value="Design" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Design</SelectItem>
+                            <SelectItem value="Marketing" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Marketing</SelectItem>
+                            <SelectItem value="Business" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Business</SelectItem>
+                            <SelectItem value="Finance" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Finance</SelectItem>
+                            <SelectItem value="Healthcare" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Healthcare</SelectItem>
+                            <SelectItem value="Education" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Education</SelectItem>
+                            <SelectItem value="Other" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="job_level">Level Pekerjaan *</Label>
+                    <Label htmlFor="job_level" className="text-sm font-semibold text-gray-700">Level Pekerjaan <span className="text-sm text-red-700">*</span></Label>
                     <Select
                         value={formData.job_level}
                         onValueChange={(value) => setFormData({ ...formData, job_level: value as JobLevel })}
@@ -262,11 +262,11 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Entry Level">Entry Level</SelectItem>
-                            <SelectItem value="Mid Level">Mid Level</SelectItem>
-                            <SelectItem value="Senior Level">Senior Level</SelectItem>
-                            <SelectItem value="Executive">Executive</SelectItem>
+                        <SelectContent className=" bg-white text-sm text-gray-700">
+                            <SelectItem value="Entry Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Senior Level</SelectItem>
+                            <SelectItem value="Executive" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Executive</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -298,6 +298,7 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/admin/jobs")}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all"
                 >
                     Batal
                 </Button>

@@ -54,8 +54,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     <h1 className="text-3xl font-semibold text-gray-900">{job.title}</h1>
                     <p className="text-gray-500 mt-1">{job.company_name}</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" asChild>
+                <div className="flex gap-1">
+                    <Button variant="outline" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" size="default">
                         <Link href={`/admin/jobs/${job.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
@@ -71,9 +71,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <Card>
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-100/50">
                     <CardHeader>
-                        <CardTitle>Informasi Umum</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-gray-700">Informasi Umum</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
@@ -89,7 +89,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                         </div>
                         <div>
                             <p className="text-sm text-black-500">Tipe Pekerjaan</p>
-                            <Badge variant="outline">{job.employment_type}</Badge>
+                            <Badge variant="outline" className="bg-gradient-to-br from-green-50 to-green-100/50">{job.employment_type}</Badge>
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Gaji</p>
@@ -120,9 +120,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Detail Pekerjaan</CardTitle>
+                <Card className="bg-gradient-to-br from-blue-50 to-pink-200/50">
+                    <CardHeader className="text-2xl font-bold text-gray-700">
+                        <CardTitle >Detail Pekerjaan</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {job.description && (
@@ -148,7 +148,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                                 <p className="text-sm text-gray-500 mb-2">Skills yang Diperlukan</p>
                                 <div className="flex flex-wrap gap-2">
                                     {job.skills_required.map((skill, index) => (
-                                        <Badge key={index} variant="outline">{skill}</Badge>
+                                        <Badge key={index} variant="outline" className="bg-gradient-to-br from-blue-100 to-blue-100/50">{skill}</Badge>
                                     ))}
                                 </div>
                             </div>

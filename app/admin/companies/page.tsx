@@ -197,7 +197,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={!filter ? "default" : "outline"}
                         size="sm" 
-                        className="hover:bg-blue-600 hover:text-white transition-all duration-300"
+                        className="hover:bg-blue-400 hover:text-white transition-all duration-300"
                     >
                         Semua ({stats.total})
                     </Button>
@@ -206,7 +206,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "pending" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-yellow-600 hover:text-white transition-all duration-300"
+                        className="hover:bg-purple-400 hover:text-white transition-all duration-300"
                     >
                         Menunggu ({stats.pending})
                     </Button>
@@ -215,7 +215,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "approved" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-green-600 hover:text-white transition-all duration-300"
+                        className="hover:bg-green-400 hover:text-white transition-all duration-300"
                     >
                         Disetujui ({stats.approved})
                     </Button>
@@ -224,7 +224,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "rejected" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-red-600 hover:text-white transition-all duration-300"
+                        className="hover:bg-red-400 hover:text-white transition-all duration-300"
                     >
                         Ditolak ({stats.rejected})
                     </Button>
@@ -258,7 +258,7 @@ export default async function CompaniesManagementPage({
                                     <TableHead>Recruiter</TableHead>
                                     <TableHead>Industri</TableHead>
                                     <TableHead>Lokasi</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead >Status</TableHead>
                                     <TableHead>Tanggal Daftar</TableHead>
                                     <TableHead className="text-right">Aksi</TableHead>
                                 </TableRow>
@@ -270,8 +270,8 @@ export default async function CompaniesManagementPage({
                                             <div className="flex items-center gap-2">
                                                 {company.name}
                                                 {company.is_blocked && (
-                                                    <Badge variant="destructive" className="text-xs">
-                                                        <Lock className="h-3 w-3 mr-1" />
+                                                    <Badge variant="destructive" className="text-xs bg-red-100 text-red-500">
+                                                        <Lock className="h-3 w-3 mr-1 text-red-500" />
                                                         Diblokir
                                                     </Badge>
                                                 )}
@@ -280,7 +280,7 @@ export default async function CompaniesManagementPage({
                                         <TableCell>
                                             {company.profiles?.full_name || "-"}
                                             {company.profiles?.email && (
-                                                <p className="text-xs text-gray-500">{company.profiles.email}</p>
+                                                <p className="text-xs text-red-500">{company.profiles.email}</p>
                                             )}
                                         </TableCell>
                                         <TableCell>{company.industry || "-"}</TableCell>
@@ -302,9 +302,9 @@ export default async function CompaniesManagementPage({
                                             {new Date(company.created_at).toLocaleDateString("id-ID")}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" asChild>
+                                            <Button variant="ghost" size="sm" asChild className="hover:text-blue-500 transition-all duration-300 rounded-xl">
                                                 <Link href={`/admin/companies/${company.id}`}>
-                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    <Eye className="h-4 w-4 mr-2 text-blue-500" />
                                                     Detail
                                                 </Link>
                                             </Button>
