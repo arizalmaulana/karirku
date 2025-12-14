@@ -226,6 +226,7 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
   const { data, error } = await supabase
     .from("job_listings")
     .select("*")
+    .eq("is_closed", false) // Hanya ambil lowongan yang belum ditutup
     .order("created_at", { ascending: false });
 
   if (error) {

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Mail, Lock, Eye, EyeOff, Loader2, Upload, FileText } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -39,9 +39,6 @@ export function RegisterDialog({
 }: RegisterDialogProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [licenseFile, setLicenseFile] = useState<File | null>(null);
-    const [isUploadingLicense, setIsUploadingLicense] = useState(false);
-    const [licensePreviewUrl, setLicensePreviewUrl] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -51,6 +48,7 @@ export function RegisterDialog({
         agreeToTerms: false,
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
     const router = useRouter();
     const supabase = useMemo(() => createBrowserClient(), []);
 
@@ -64,43 +62,34 @@ export function RegisterDialog({
             role: "jobseeker",
             agreeToTerms: false,
         });
-        setLicenseFile(null);
-        setLicensePreviewUrl(null);
+        setEmailError(null);
     };
 
-    const handleLicenseFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (!selectedFile) return;
-
-        // Validate file type (PDF, JPG, PNG)
-        const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-        if (!validTypes.includes(selectedFile.type)) {
-            toast.error('File harus berupa PDF, JPG, atau PNG');
+    // Handler untuk validasi format email saat blur
+    const handleEmailBlur = () => {
+        const email = formData.email.trim();
+        if (!email) {
+            setEmailError(null);
             return;
         }
 
-        // Validate file size (max 10MB)
-        if (selectedFile.size > 10 * 1024 * 1024) {
-            toast.error('Ukuran file maksimal 10MB');
-            return;
-        }
-
-        setLicenseFile(selectedFile);
-
-        // Create preview for images
-        if (selectedFile.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setLicensePreviewUrl(reader.result as string);
-            };
-            reader.readAsDataURL(selectedFile);
+        // Validasi format email dasar
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setEmailError("Format email tidak valid");
         } else {
-            setLicensePreviewUrl(null);
+            setEmailError(null);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validasi email
+        if (emailError) {
+            toast.error(emailError);
+            return;
+        }
 
         if (formData.password !== formData.confirmPassword) {
             toast.error("Password dan konfirmasi tidak sama.");
@@ -112,15 +101,14 @@ export function RegisterDialog({
             return;
         }
 
-        // Validasi untuk recruiter: harus upload surat izin
-        if (formData.role === "recruiter" && !licenseFile) {
-            toast.error("Recruiter harus mengupload surat izin perusahaan.");
-            return;
-        }
-
         setIsLoading(true);
 
         try {
+            // Cek apakah email sudah terdaftar dengan mencoba cek di auth.users
+            // Kita tidak bisa akses langsung ke auth.users, jadi kita cek dengan cara lain:
+            // Cek apakah ada profile dengan email yang sama (jika email disimpan di profile)
+            // Atau lebih baik: cek setelah signUp apakah user benar-benar dibuat
+
             const { data, error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
@@ -133,211 +121,261 @@ export function RegisterDialog({
             });
 
             if (error) {
-                throw error;
+                // Handle error khusus untuk email yang sudah terdaftar
+                const errorMessage = error.message.toLowerCase();
+                const errorCode = error.status || error.code || '';
+                
+                // Cek berbagai kemungkinan error untuk email yang sudah terdaftar
+                if (errorMessage.includes('user already registered') || 
+                    errorMessage.includes('email already exists') ||
+                    errorMessage.includes('already registered') ||
+                    errorMessage.includes('user already exists') ||
+                    errorCode === 'signup_disabled' ||
+                    (errorMessage.includes('email') && errorMessage.includes('already'))) {
+                    const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                    setEmailError(errorMsg);
+                    toast.error(errorMsg);
+                    setIsLoading(false);
+                    return;
+                }
+                
+                // Handle error lainnya
+                const errorMsg = error.message || "Terjadi kesalahan saat registrasi. Silakan coba lagi.";
+                toast.error(errorMsg);
+                setIsLoading(false);
+                return;
             }
 
-            if (!data.user) {
-                throw new Error("Gagal membuat akun pengguna");
+            // Cek apakah user benar-benar dibuat
+            // Jika email sudah terdaftar, Supabase mungkin tidak mengembalikan error
+            // tapi juga tidak membuat user baru (data.user akan null atau undefined)
+            if (!data || !data.user || !data.user.id) {
+                // User tidak dibuat, kemungkinan email sudah terdaftar
+                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsg);
+                toast.error(errorMsg);
+                setIsLoading(false);
+                return;
             }
 
-            // Upload surat izin jika recruiter
-            let licenseUrl: string | null = null;
-            if (formData.role === "recruiter" && licenseFile) {
-                setIsUploadingLicense(true);
+            // Verifikasi bahwa user benar-benar baru dibuat
+            // Cek apakah profile sudah ada untuk user ID ini dengan data lengkap
+            const { data: existingProfile, error: checkError } = await supabase
+                .from("profiles")
+                .select("id, full_name, role")
+                .eq("id", data.user.id)
+                .maybeSingle();
+
+            // Jika profile sudah ada dengan data lengkap (full_name tidak kosong), berarti email terdaftar
+            if (existingProfile && existingProfile.full_name && existingProfile.full_name.trim().length > 0) {
+                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsg);
+                toast.error(errorMsg);
+                setIsLoading(false);
+                // Sign out jika ada session
                 try {
-                    const fileExt = licenseFile.name.split('.').pop();
-                    const fileName = `license_${data.user.id}_${Date.now()}.${fileExt}`;
-                    // Upload langsung ke root bucket, tidak perlu subfolder
-                    const filePath = fileName;
+                    await supabase.auth.signOut();
+                } catch (e) {
+                    // Ignore error
+                }
+                return;
+            }
 
-                    // Try documents bucket first (more reliable, supports all file types)
-                    // Fallback to company_licenses if documents fails
-                    let bucketName = 'documents';
-                    let uploadError: any = null;
-                    const filePathDocuments = `licenses/${fileName}`;
+            // Tunggu sebentar dan verifikasi session ter-set dengan benar
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Verifikasi session sudah ter-set
+            const { data: { user: currentUser }, error: sessionError } = await supabase.auth.getUser();
+            
+            // Jika tidak ada session (misalnya karena perlu email confirmation), 
+            // skip pembuatan profil - akan dibuat otomatis saat login pertama kali
+            if (!currentUser || currentUser.id !== data.user.id) {
+                console.log("Session belum ter-set (mungkin perlu email confirmation). Profil akan dibuat otomatis saat login.");
+            } else {
+                // Buat profil di tabel profiles setelah registrasi
+                const profileData: any = {
+                    id: data.user.id,
+                    full_name: formData.name,
+                    role: formData.role,
+                };
 
-                    const { data: uploadData, error: uploadErr } = await supabase.storage
-                        .from(bucketName)
-                        .upload(filePathDocuments, licenseFile, {
-                            cacheControl: '3600',
-                            upsert: false,
-                        });
-                    
-                    // Log untuk debugging
-                    if (uploadErr) {
-                        console.log('Upload error:', {
-                            bucket: bucketName,
-                            path: filePathDocuments,
-                            error: uploadErr,
-                            message: uploadErr.message,
-                            statusCode: (uploadErr as any).statusCode,
-                            name: (uploadErr as any).name
-                        });
-                    } else {
-                        console.log('Upload success:', uploadData);
-                    }
+                // Coba insert dulu, jika gagal karena sudah ada, gunakan upsert
+                let profileResult: any = null;
+                let profileError: any = null;
 
-                    if (uploadErr) {
-                        // Extract error message
-                        const errMsg = uploadErr.message || 
-                                      (typeof uploadErr === 'string' ? uploadErr : JSON.stringify(uploadErr)) || 
-                                      '';
-                        
-                        // If documents bucket fails (MIME type, RLS, or not found), try applications bucket
-                        const lowerMsg = errMsg.toLowerCase();
-                        if (lowerMsg.includes('not found') || 
-                            lowerMsg.includes('bucket') ||
-                            lowerMsg.includes('row-level security') ||
-                            lowerMsg.includes('rls') ||
-                            lowerMsg.includes('mime type') ||
-                            lowerMsg.includes('not supported') ||
-                            lowerMsg.includes('mime') ||
-                            lowerMsg.includes('policy')) {
-                            console.warn('documents bucket error, trying applications bucket...', uploadErr);
-                            bucketName = 'applications';
-                            const filePathApplications = `licenses/${fileName}`;
-                            const { error: applicationsError } = await supabase.storage
-                                .from('applications')
-                                .upload(filePathApplications, licenseFile, {
-                                    cacheControl: '3600',
-                                    upsert: false,
-                                });
-                            
-                            if (applicationsError) {
-                                // Last fallback: try company_licenses
-                                console.warn('applications bucket error, trying company_licenses bucket...', applicationsError);
-                                bucketName = 'company_licenses';
-                                const { error: companyLicensesError } = await supabase.storage
-                                    .from('company_licenses')
-                                    .upload(filePath, licenseFile, {
-                                        cacheControl: '3600',
-                                        upsert: false,
-                                    });
-                                
-                                if (companyLicensesError) {
-                                    uploadError = companyLicensesError;
-                                } else {
-                                    const { data: urlData } = supabase.storage
-                                        .from('company_licenses')
-                                        .getPublicUrl(filePath);
-                                    licenseUrl = urlData.publicUrl;
-                                }
-                            } else {
-                                const { data: urlData } = supabase.storage
-                                    .from('applications')
-                                    .getPublicUrl(filePathApplications);
-                                licenseUrl = urlData.publicUrl;
+                // Coba insert terlebih dahulu
+                const { data: insertData, error: insertError } = await (supabase
+                    .from("profiles") as any)
+                    .insert(profileData)
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    // Jika error karena duplicate (profil sudah ada)
+                    if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
+                        // Cek apakah profile sudah ada dengan data lengkap
+                        const { data: existingProfileCheck } = await supabase
+                            .from("profiles")
+                            .select("id, full_name, role")
+                            .eq("id", data.user.id)
+                            .maybeSingle();
+
+                        if (existingProfileCheck && existingProfileCheck.full_name && existingProfileCheck.full_name.trim().length > 0) {
+                            // Profile sudah ada dengan data lengkap, berarti email terdaftar
+                            const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                            setEmailError(errorMsg);
+                            toast.error(errorMsg);
+                            setIsLoading(false);
+                            try {
+                                await supabase.auth.signOut();
+                            } catch (e) {
+                                // Ignore
                             }
-                        } else {
-                            uploadError = uploadErr;
+                            return;
                         }
-                    } else {
-                        const { data: urlData } = supabase.storage
-                            .from(bucketName)
-                            .getPublicUrl(filePathDocuments);
-                        licenseUrl = urlData.publicUrl;
-                    }
 
-                    if (uploadError) {
-                        // Log detailed error for debugging
-                        const errorMessage = uploadError.message || 
-                                           (typeof uploadError === 'string' ? uploadError : JSON.stringify(uploadError)) || 
-                                           'Unknown error';
-                        // Try to get more error details
-                        const errorDetails: any = {
-                            message: errorMessage,
-                            statusCode: (uploadError as any).statusCode,
-                            name: (uploadError as any).name,
-                            error: uploadError
-                        };
+                        // Profile ada tapi kosong atau tidak lengkap, gunakan upsert
+                        console.log("Profile already exists but empty, using upsert instead");
+                        const { data: upsertData, error: upsertError } = await (supabase
+                            .from("profiles") as any)
+                            .upsert(profileData, {
+                                onConflict: "id",
+                            })
+                            .select()
+                            .single();
                         
-                        // Try to stringify with all properties
+                        profileResult = upsertData;
+                        profileError = upsertError;
+                    } else {
+                        profileError = insertError;
+                    }
+                } else {
+                    profileResult = insertData;
+                }
+
+                // Verifikasi bahwa profile benar-benar dibuat/updated
+                if (profileError) {
+                    // Jika masih ada error setelah upsert, kemungkinan ada masalah
+                    console.error("Error creating/updating profile:", profileError);
+                    // Tapi jangan throw error, karena user sudah dibuat
+                } else {
+                    // Verifikasi bahwa profile benar-benar tersimpan dengan data yang benar
+                    const { data: verifyProfile } = await supabase
+                        .from("profiles")
+                        .select("id, full_name, role")
+                        .eq("id", data.user.id)
+                        .maybeSingle();
+
+                    if (!verifyProfile) {
+                        // Profile tidak dibuat, ada masalah
+                        console.warn("Profile tidak berhasil dibuat");
+                    } else if (verifyProfile.full_name && verifyProfile.full_name.trim() !== formData.name.trim()) {
+                        // Profile sudah ada dengan nama berbeda, berarti email terdaftar
+                        const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                        setEmailError(errorMsg);
+                        toast.error(errorMsg);
+                        setIsLoading(false);
                         try {
-                            errorDetails.fullError = JSON.stringify(uploadError, Object.getOwnPropertyNames(uploadError), 2);
+                            await supabase.auth.signOut();
                         } catch (e) {
-                            errorDetails.fullError = String(uploadError);
+                            // Ignore
                         }
-                        
-                        console.error("Upload error details:", errorDetails);
-                        
-                        // Check for specific error types
-                        const lowerMsg = errorMessage.toLowerCase();
-                        if (lowerMsg.includes('row-level security') || 
-                            lowerMsg.includes('rls') ||
-                            lowerMsg.includes('violates row-level security') ||
-                            lowerMsg.includes('policy')) {
-                            throw new Error('Gagal mengunggah surat izin: Policy keamanan belum dikonfigurasi. Pastikan sudah menjalankan script fix_storage_rls_policy.sql untuk semua bucket (company_licenses, documents, applications).');
-                        }
-                        
-                        if (lowerMsg.includes('mime type') || lowerMsg.includes('not supported')) {
-                            throw new Error('Gagal mengunggah surat izin: Format file tidak didukung. Pastikan bucket storage dikonfigurasi untuk menerima PDF, JPG, atau PNG.');
-                        }
-                        
-                        throw new Error(`Gagal mengunggah surat izin: ${errorMessage || 'Unknown error. Cek console untuk detail.'}`);
+                        return;
+                    } else {
+                        // Profile berhasil dibuat dengan benar
+                        console.log("Profile created successfully:", verifyProfile);
                     }
-                } catch (uploadError: any) {
-                    console.error("Error uploading license:", uploadError);
-                    
-                    // Extract error message
-                    const errorMessage = uploadError?.message || 
-                                       (typeof uploadError === 'string' ? uploadError : JSON.stringify(uploadError)) ||
-                                       'Unknown error occurred';
-                    
-                    const lowerMsg = errorMessage.toLowerCase();
-                    // Re-throw dengan pesan yang lebih jelas
-                    if (lowerMsg.includes('row-level security') || 
-                        lowerMsg.includes('rls') ||
-                        lowerMsg.includes('violates row-level security') ||
-                        lowerMsg.includes('policy')) {
-                        throw new Error('Gagal mengunggah surat izin: Policy keamanan belum dikonfigurasi. Pastikan sudah menjalankan script fix_storage_rls_policy.sql untuk semua bucket (company_licenses, documents, applications).');
+                }
+
+                // Log error dengan detail lengkap jika ada
+                if (profileError) {
+                const errorInfo: any = {
+                    hasError: true,
+                    errorType: typeof profileError,
+                    errorConstructor: profileError?.constructor?.name,
+                };
+
+                // Coba ambil semua properti yang mungkin ada
+                if (profileError.message) errorInfo.message = profileError.message;
+                if (profileError.code) errorInfo.code = profileError.code;
+                if (profileError.details) errorInfo.details = profileError.details;
+                if (profileError.hint) errorInfo.hint = profileError.hint;
+                if (profileError.statusCode) errorInfo.statusCode = profileError.statusCode;
+
+                // Coba stringify
+                try {
+                    errorInfo.errorString = JSON.stringify(profileError, null, 2);
+                } catch (e) {
+                    errorInfo.stringifyError = String(e);
+                }
+
+                // Coba ambil semua keys
+                try {
+                    errorInfo.keys = Object.keys(profileError);
+                    errorInfo.ownPropertyNames = Object.getOwnPropertyNames(profileError);
+                } catch (e) {
+                    // ignore
+                }
+
+                errorInfo.profileData = profileData;
+                errorInfo.userId = data.user.id;
+
+                console.error("Error creating profile:", errorInfo);
+                
+                    // Jika error bukan karena profil sudah ada, tampilkan warning
+                    if (profileError.code !== '23505' && !profileError.message?.includes('duplicate')) {
+                        console.warn("Gagal membuat profil, tetapi user sudah dibuat. Profil mungkin akan dibuat otomatis saat login.");
                     }
+                } else {
+                    console.log("Profile created successfully:", profileResult);
                     
-                    throw new Error(`Gagal mengunggah surat izin: ${errorMessage}`);
-                } finally {
-                    setIsUploadingLicense(false);
+                    // Untuk recruiter, update is_approved menjadi true setelah insert
+                    // (karena trigger akan set false, kita perlu override)
+                    if (formData.role === "recruiter") {
+                        const { error: updateError } = await (supabase
+                            .from("profiles") as any)
+                            .update({ is_approved: true })
+                            .eq("id", data.user.id);
+                        
+                        if (updateError) {
+                            console.warn("Gagal update is_approved untuk recruiter:", {
+                                message: updateError.message,
+                                code: updateError.code,
+                                details: updateError.details
+                            });
+                        } else {
+                            console.log("is_approved updated to true for recruiter");
+                        }
+                    }
                 }
             }
 
-            // Buat profil di tabel profiles setelah registrasi
-            // Gunakan upsert untuk menghindari error jika profil sudah ada
-            const profileData: any = {
-                id: data.user.id,
-                full_name: formData.name,
-                role: formData.role,
-            };
+            // Verifikasi final: pastikan profile benar-benar tersimpan sebelum menampilkan success
+            const { data: finalCheck } = await supabase
+                .from("profiles")
+                .select("id, full_name, role")
+                .eq("id", data.user.id)
+                .single();
 
-            // Tambahkan company_license_url jika recruiter
-            if (formData.role === "recruiter") {
-                profileData.company_license_url = licenseUrl;
-                profileData.is_approved = false; // Default false untuk recruiter baru
-            } else {
-                profileData.is_approved = true; // Admin dan jobseeker langsung approved
+            if (!finalCheck || !finalCheck.full_name || finalCheck.full_name.trim() !== formData.name.trim()) {
+                // Profile tidak sesuai atau tidak tersimpan, kemungkinan email terdaftar
+                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsg);
+                toast.error(errorMsg);
+                setIsLoading(false);
+                try {
+                    await supabase.auth.signOut();
+                } catch (e) {
+                    // Ignore
+                }
+                return;
             }
 
-            const { error: profileError } = await (supabase
-                .from("profiles") as any)
-                .upsert(profileData, {
-                    onConflict: "id",
-                });
-
-            if (profileError) {
-                // Log error tapi jangan throw, karena user sudah dibuat
-                console.error("Error creating profile:", profileError);
-            }
-
-            // Untuk recruiter, tidak langsung redirect ke dashboard karena perlu approval
-            if (formData.role === "recruiter") {
-                toast.success("Registrasi berhasil! Akun Anda sedang menunggu persetujuan admin. Anda akan mendapat notifikasi setelah disetujui.");
-                closeDialog();
-                // Redirect ke home karena belum approved
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1500);
-            } else {
             const dashboardPath = {
                 admin: "/admin/dashboard",
+                recruiter: "/recruiter/dashboard",
                 jobseeker: "/job-seeker/dashboard",
-                }[formData.role] || "/job-seeker/dashboard";
+            }[formData.role] || "/job-seeker/dashboard";
 
             if (data.session) {
                 toast.success("Registrasi berhasil! Mengarahkan ke dashboard Anda.");
@@ -348,7 +386,6 @@ export function RegisterDialog({
             } else {
                 toast.success("Registrasi berhasil! Silakan konfirmasi email Anda sebelum masuk.");
                 closeDialog();
-                }
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : "Terjadi kesalahan saat registrasi.";
@@ -404,11 +441,24 @@ export function RegisterDialog({
                             type="email"
                             placeholder="nama@email.com"
                             value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="pl-10"
+                            onChange={(e) => {
+                                setFormData({ ...formData, email: e.target.value });
+                                // Reset error saat user mengetik
+                                if (emailError) {
+                                    setEmailError(null);
+                                }
+                            }}
+                            onBlur={handleEmailBlur}
+                            className={`pl-10 ${emailError ? 'border-red-500 focus:border-red-500' : ''}`}
                             required
                         />
                         </div>
+                        {emailError && (
+                            <p className="text-sm text-red-600 flex items-center gap-1">
+                                <AlertCircle className="h-4 w-4" />
+                                {emailError}
+                            </p>
+                        )}
                     </div>
 
                     {/* Role Field */}
@@ -418,11 +468,6 @@ export function RegisterDialog({
                         value={formData.role}
                         onValueChange={(value) => {
                             setFormData({ ...formData, role: value as UserRole });
-                            // Reset license file jika ganti role
-                            if (value !== "recruiter") {
-                                setLicenseFile(null);
-                                setLicensePreviewUrl(null);
-                            }
                         }}
                         >
                         <SelectTrigger id="register-role">
@@ -434,49 +479,6 @@ export function RegisterDialog({
                         </SelectContent>
                         </Select>
                     </div>
-
-                    {/* License Upload Field - Hanya muncul jika role = recruiter */}
-                    {formData.role === "recruiter" && (
-                        <div className="space-y-2">
-                            <Label htmlFor="register-license">
-                                Surat Izin Perusahaan <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        id="register-license"
-                                        type="file"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={handleLicenseFileChange}
-                                        disabled={isLoading || isUploadingLicense}
-                                        className="flex-1"
-                                        required={formData.role === "recruiter"}
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500">
-                                    Format: PDF, JPG, atau PNG (maksimal 10MB)
-                                </p>
-                                {licensePreviewUrl && (
-                                    <div className="mt-2 border rounded-lg p-2 bg-gray-50">
-                                        <img
-                                            src={licensePreviewUrl}
-                                            alt="Preview surat izin"
-                                            className="max-w-full h-auto max-h-48 mx-auto"
-                                        />
-                                    </div>
-                                )}
-                                {licenseFile && !licensePreviewUrl && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
-                                        <FileText className="h-4 w-4" />
-                                        <span>{licenseFile.name}</span>
-                                        <span className="text-gray-400">
-                                            ({(licenseFile.size / 1024 / 1024).toFixed(2)} MB)
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div className="space-y-4">
@@ -565,11 +567,11 @@ export function RegisterDialog({
                 </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" disabled={isLoading || isUploadingLicense}>
-                {isLoading || isUploadingLicense ? (
+            <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" disabled={isLoading}>
+                {isLoading ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isUploadingLicense ? "Mengunggah surat izin..." : "Memproses..."}
+                    Memproses...
                 </>
                 ) : (
                 "Daftar"

@@ -15,6 +15,7 @@ import { Plus, Pencil, Eye, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 import type { JobListing } from "@/lib/types";
 import { DeleteJobButton } from "@/components/recruiter/DeleteJobButton";
+import { CloseJobButton } from "@/components/recruiter/CloseJobButton";
 
 function formatCurrency(amount: number | null): string {
     if (!amount) return "Tidak disebutkan";
@@ -158,9 +159,17 @@ export default async function RecruiterJobsPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={job.featured ? "default" : "secondary"}>
-                                                {job.featured ? "Featured" : "Aktif"}
-                                            </Badge>
+                                            <div className="flex flex-col gap-1">
+                                                {job.is_closed ? (
+                                                    <Badge variant="destructive" className="w-fit">
+                                                        Ditutup
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant={job.featured ? "default" : "secondary"} className="w-fit">
+                                                        {job.featured ? "Featured" : "Aktif"}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                             <TableCell>
                                             <div className="flex justify-end gap-2">
@@ -179,6 +188,11 @@ export default async function RecruiterJobsPage() {
                                                         <Users className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
+                                                    <CloseJobButton 
+                                                        jobId={job.id} 
+                                                        jobTitle={job.title} 
+                                                        isClosed={job.is_closed || false}
+                                                    />
                                                     <DeleteJobButton jobId={job.id} jobTitle={job.title} />
                                             </div>
                                         </TableCell>

@@ -101,6 +101,11 @@ export default async function JobDetailPage({
         notFound();
     }
 
+    // Cek apakah lowongan sudah ditutup
+    if (job.is_closed) {
+        notFound();
+    }
+
     const livingCost = job.living_cost_id
         ? await getLivingCost(job.living_cost_id)
         : null;

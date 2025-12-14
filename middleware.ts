@@ -83,7 +83,7 @@ export async function middleware(req: NextRequest) {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role, is_approved, company_license_url')
+      .select('role')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -105,21 +105,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
-    // Cek approval status untuk recruiter
-    const isApproved = profile.is_approved === true
-    const hasLicense = !!profile.company_license_url
-
-    // Jika belum approved, redirect ke home dengan pesan
-    if (!isApproved) {
-      if (!hasLicense) {
-        // Belum upload license (seharusnya tidak terjadi karena wajib saat registrasi)
-        // Tapi untuk safety, redirect ke home dengan pesan
-        return NextResponse.redirect(new URL('/?message=Akun Anda belum lengkap. Silakan hubungi admin.', req.url))
-      } else {
-        // Sudah upload tapi belum approved, redirect ke home dengan pesan
-        return NextResponse.redirect(new URL('/?message=Akun Anda sedang menunggu persetujuan admin', req.url))
-      }
-    }
+    // Recruiter bisa langsung akses setelah verifikasi email
+    // Validasi surat izin dilakukan setelah login di halaman profile perusahaan
   }
 
   // Jika pengguna sedang mencoba mengakses rute job-seeker

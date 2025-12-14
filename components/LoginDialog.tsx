@@ -71,14 +71,12 @@ export function LoginDialog({
       // Ambil role dari user_metadata terlebih dahulu sebagai fallback
       const userMetadata = data.user.user_metadata;
       let role: UserRole = (userMetadata?.role as UserRole) || "jobseeker";
-      let isApproved: boolean | null = null;
-      let companyLicenseUrl: string | null = null;
 
       // Coba fetch profil, tapi jangan biarkan error memblokir login
       try {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("role, is_approved, company_license_url")
+          .select("role")
           .eq("id", userId)
           .maybeSingle();
 
@@ -86,12 +84,8 @@ export function LoginDialog({
         if (!profileError && profileData) {
           const profile = profileData as { 
             role?: UserRole; 
-            is_approved?: boolean | null;
-            company_license_url?: string | null;
           };
           role = profile.role ?? role;
-          isApproved = profile.is_approved ?? null;
-          companyLicenseUrl = profile.company_license_url ?? null;
         } else if (profileError && profileError.code !== "PGRST116") {
           // Jika error selain "not found", log dan tetap lanjutkan
           console.warn("Profile fetch error during login:", {
@@ -109,21 +103,8 @@ export function LoginDialog({
         });
       }
 
-      // Cek approval untuk recruiter
-      if (role === "recruiter") {
-        // Jika belum approved, cek apakah sudah upload surat izin
-        if (isApproved !== true) {
-          if (!companyLicenseUrl) {
-            // Belum upload surat izin (seharusnya tidak terjadi karena wajib saat registrasi)
-            toast.error("Akun Anda belum lengkap. Silakan hubungi admin untuk bantuan.");
-            return;
-          } else {
-            // Sudah upload tapi belum approved, tampilkan pesan
-            toast.error("Akun Anda sedang menunggu persetujuan admin. Silakan tunggu hingga admin menyetujui akun Anda.");
-            return;
-          }
-        }
-      }
+      // Recruiter bisa langsung login setelah verifikasi email
+      // Validasi surat izin dilakukan setelah login di halaman profile perusahaan
 
       // Pastikan role valid
       if (!role || !roleRedirectMap[role]) {

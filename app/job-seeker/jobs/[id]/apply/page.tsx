@@ -51,6 +51,11 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
         notFound();
     }
 
+    // Cek apakah lowongan sudah ditutup
+    if (job.is_closed) {
+        notFound();
+    }
+
     if (existingApplication) {
         redirect(`/job-seeker/jobs/${params.id}`);
     }

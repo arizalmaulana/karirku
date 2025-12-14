@@ -105,6 +105,38 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 throw new Error("User not authenticated");
             }
 
+            // Validasi: Cek apakah company profile sudah lengkap dan approved
+            if (!companyProfile) {
+                toast.error("Anda harus melengkapi profile perusahaan terlebih dahulu sebelum menambah lowongan.");
+                setIsLoading(false);
+                router.push("/recruiter/company/profile");
+                return;
+            }
+
+            // Cek apakah profile lengkap (minimal ada name dan license_url)
+            const hasName = !!companyProfile.name && companyProfile.name.trim().length > 0;
+            const hasLicense = !!companyProfile.license_url && companyProfile.license_url.trim().length > 0;
+
+            if (!hasName || !hasLicense) {
+                toast.error("Profile perusahaan belum lengkap. Pastikan nama perusahaan dan surat izin sudah diisi.");
+                setIsLoading(false);
+                router.push("/recruiter/company/profile");
+                return;
+            }
+
+            // Cek apakah sudah disetujui admin
+            if (companyProfile.is_approved !== true || companyProfile.status !== 'approved') {
+                const status = companyProfile.status || 'pending';
+                if (status === 'rejected') {
+                    toast.error("Profile perusahaan Anda ditolak oleh admin. Silakan perbaiki dan kirim ulang untuk persetujuan.");
+                } else {
+                    toast.error("Profile perusahaan Anda sedang menunggu persetujuan admin. Anda belum dapat menambah lowongan sampai profile disetujui.");
+                }
+                setIsLoading(false);
+                router.push("/recruiter/company/profile");
+                return;
+            }
+
             // Use company profile data if creating new job and company profile exists
             // Otherwise use form data (for editing or if no company profile)
             let companyName = formData.company_name;
@@ -187,7 +219,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                                     Profile Perusahaan Belum Dilengkapi
                                 </p>
                                 <p className="text-sm text-amber-700 mb-3">
-                                    Untuk memudahkan pengisian lowongan, lengkapi terlebih dahulu profile perusahaan Anda.
+                                    Anda harus melengkapi profile perusahaan terlebih dahulu sebelum dapat menambah lowongan baru.
                                 </p>
                                 <Button variant="outline" size="sm" asChild className="border-amber-300 text-amber-700 hover:bg-amber-100">
                                     <Link href="/recruiter/company/profile">
@@ -201,23 +233,91 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 </Card>
             )}
 
-            {/* Info company profile jika ada */}
-            {companyProfile && (
-                <Card className="border-green-200 bg-green-50">
-                    <CardContent className="pt-6">
-                        <div className="flex items-start gap-3">
-                            <Building2 className="h-5 w-5 text-green-600 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-sm font-medium text-green-900 mb-1">
-                                    Menggunakan Data dari Profile Perusahaan
-                                </p>
-                                <p className="text-sm text-green-700">
-                                    Nama perusahaan dan lokasi akan diambil dari profile perusahaan Anda: <strong>{companyProfile.name}</strong>
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+            {/* Warning jika company profile belum lengkap atau belum approved */}
+            {!isLoadingCompany && companyProfile && !jobId && (
+                <>
+                    {/* Cek apakah profile lengkap */}
+                    {(!companyProfile.name || !companyProfile.license_url) && (
+                        <Card className="border-red-200 bg-red-50">
+                            <CardContent className="pt-6">
+                                <div className="flex items-start gap-3">
+                                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-red-900 mb-1">
+                                            Profile Perusahaan Belum Lengkap
+                                        </p>
+                                        <p className="text-sm text-red-700 mb-3">
+                                            Profile perusahaan Anda belum lengkap. Pastikan nama perusahaan dan surat izin sudah diisi sebelum menambah lowongan.
+                                        </p>
+                                        <Button variant="outline" size="sm" asChild className="border-red-300 text-red-700 hover:bg-red-100">
+                                            <Link href="/recruiter/company/profile">
+                                                <Building2 className="h-4 w-4 mr-2" />
+                                                Lengkapi Profile Perusahaan
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Cek apakah sudah approved */}
+                    {companyProfile.name && companyProfile.license_url && 
+                     (companyProfile.is_approved !== true || companyProfile.status !== 'approved') && (
+                        <Card className={`border-2 ${companyProfile.status === 'rejected' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                            <CardContent className="pt-6">
+                                <div className="flex items-start gap-3">
+                                    <AlertCircle className={`h-5 w-5 mt-0.5 ${companyProfile.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`} />
+                                    <div className="flex-1">
+                                        <p className={`text-sm font-medium mb-1 ${companyProfile.status === 'rejected' ? 'text-red-900' : 'text-yellow-900'}`}>
+                                            {companyProfile.status === 'rejected' 
+                                                ? 'Profile Perusahaan Ditolak' 
+                                                : 'Menunggu Persetujuan Admin'}
+                                        </p>
+                                        <p className={`text-sm mb-3 ${companyProfile.status === 'rejected' ? 'text-red-700' : 'text-yellow-700'}`}>
+                                            {companyProfile.status === 'rejected'
+                                                ? 'Profile perusahaan Anda ditolak oleh admin. Silakan perbaiki dan kirim ulang untuk persetujuan sebelum dapat menambah lowongan.'
+                                                : 'Profile perusahaan Anda sedang menunggu persetujuan admin. Anda belum dapat menambah lowongan sampai profile disetujui.'}
+                                        </p>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            asChild 
+                                            className={companyProfile.status === 'rejected' 
+                                                ? 'border-red-300 text-red-700 hover:bg-red-100' 
+                                                : 'border-yellow-300 text-yellow-700 hover:bg-yellow-100'}
+                                        >
+                                            <Link href="/recruiter/company/profile">
+                                                <Building2 className="h-4 w-4 mr-2" />
+                                                {companyProfile.status === 'rejected' ? 'Perbaiki Profile Perusahaan' : 'Lihat Profile Perusahaan'}
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Info jika sudah approved */}
+                    {companyProfile.name && companyProfile.license_url && 
+                     companyProfile.is_approved === true && companyProfile.status === 'approved' && (
+                        <Card className="border-green-200 bg-green-50">
+                            <CardContent className="pt-6">
+                                <div className="flex items-start gap-3">
+                                    <Building2 className="h-5 w-5 text-green-600 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-green-900 mb-1">
+                                            Menggunakan Data dari Profile Perusahaan
+                                        </p>
+                                        <p className="text-sm text-green-700">
+                                            Nama perusahaan dan lokasi akan diambil dari profile perusahaan Anda: <strong>{companyProfile.name}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </>
             )}
 
                 <div className="space-y-2">

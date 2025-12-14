@@ -60,6 +60,7 @@ export interface JobListing {
     job_level: JobLevel | null; // Level pekerjaan (untuk filter)
     living_cost_id: string | null;
     featured: boolean | null;
+    is_closed: boolean | null; // Menandai apakah lowongan sudah ditutup (terpenuhi)
     created_at: string;
 }
 
