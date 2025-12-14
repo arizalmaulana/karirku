@@ -321,26 +321,20 @@ export default async function AdminDashboardPage() {
                     {/* Quick Actions */}
                     <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
                         <p className="font-semibold text-gray-900 mb-3">Aksi Cepat</p>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" size="sm" asChild>
+                        <div className="grid grid-cols-3 gap-5">
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/companies">
                                     <Building2 className="h-4 w-4 mr-2" />
                                     Semua Perusahaan
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/jobs/new">
-                                    <BriefcaseBusiness className="h-4 w-4 mr-2" />
-                                    Tambah Lowongan
-                                </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/living-costs/new">
                                     <Wallet className="h-2 w-2 mr-2" />
                                     Tambah Biaya Hidup
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/users">
                                     <Users className="h-4 w-4 mr-2" />
                                     Kelola Pengguna

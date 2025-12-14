@@ -37,7 +37,7 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
                 </p>
             </div>
 
-            <Card>
+            <Card className="bg-gradient-to-br from-blue-50 to-pink-200/50">
                 <CardHeader>
                     <CardTitle>Informasi Lowongan</CardTitle>
                     <CardDescription>

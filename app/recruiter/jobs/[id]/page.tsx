@@ -76,7 +76,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     <p className="text-gray-500 mt-1">{job.company_name}</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" asChild>
                         <Link href={`/recruiter/jobs/${job.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
@@ -92,8 +92,8 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-6">
-                    <Card>
+                <div className="lg:col-span-2 space-y-6 bg-gradient-to-br from-purple-50 to-purple-50/50 rounded-3xl p-4 border-2 border-grey-200/50 shadow-lg">
+                    <Card className="border-2 border-blue-200/50 shadow-lg">
                         <CardHeader>
                             <CardTitle>Deskripsi Pekerjaan</CardTitle>
                         </CardHeader>
@@ -105,7 +105,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     </Card>
 
                     {job.requirements && job.requirements.length > 0 && (
-                        <Card>
+                        <Card className="border-3 border-grey-200/50 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Persyaratan</CardTitle>
                             </CardHeader>
@@ -120,7 +120,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     )}
 
                     {job.skills_required && job.skills_required.length > 0 && (
-                        <Card>
+                        <Card className="border-3 border-grey-200/50 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Skills yang Diperlukan</CardTitle>
                             </CardHeader>
@@ -137,7 +137,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     )}
 
                     {job.major_required && (
-                        <Card>
+                        <Card className="border-3 border-grey-200/50 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Jurusan yang Diperlukan</CardTitle>
                             </CardHeader>
