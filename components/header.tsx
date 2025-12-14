@@ -16,8 +16,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, Menu, X, User, LogOut, LayoutDashboard, Settings, LogIn, UserPlus } from "lucide-react";
+import { Briefcase, Menu, X, User, LogOut, LayoutDashboard, Settings, LogIn, UserPlus, Building2 } from "lucide-react";
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
+import { useCompany } from "@/lib/hooks/useCompany";
+import Image from "next/image";
 
 
 export function Header() {
@@ -26,6 +28,7 @@ export function Header() {
     const [showRegister, setShowRegister] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { user, profile, loading, signOut } = useAuth();
+    const { company } = useCompany(profile?.role === 'recruiter' ? user?.id || null : null);
 
     const isActive = (path: string) => pathname === path;
 
@@ -88,32 +91,105 @@ export function Header() {
                             <>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild className="cursor-pointer">
-                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                                            <Avatar className="h-10 w-10 border-2 border-purple-200">
-                                                {profile.avatar_url ? (
-                                                    <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
-                                                ) : null}
-                                                <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white">
-                                                    {getInitials()}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+                                            {profile.role === 'recruiter' && company ? (
+                                                <Avatar className="h-10 w-10 border-2 border-purple-200">
+                                                    {company.logo_url ? (
+                                                        <AvatarImage 
+                                                            src={company.logo_url} 
+                                                            alt={company.name || "Company Logo"}
+                                                        />
+                                                    ) : null}
+                                                    <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white">
+                                                        <Building2 className="w-5 h-5" />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            ) : (
+                                                <Avatar className="h-10 w-10 border-2 border-purple-200">
+                                                    {profile.avatar_url ? (
+                                                        <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
+                                                    ) : null}
+                                                    <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white">
+                                                        {getInitials()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            )}
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
+                                    <DropdownMenuContent className="w-64 bg-white" align="end" forceMount>
                                         <DropdownMenuLabel className="font-normal">
-                                            <div className="flex flex-col space-y-1">
-                                                <p className="text-sm font-medium leading-none">
-                                                    {profile.full_name || "Pengguna"}
-                                                </p>
-                                                <p className="text-xs leading-none text-muted-foreground">
-                                                    {user.email}
-                                                </p>
-                                                <p className="text-xs leading-none text-blue-600 mt-1">
-                                                    {getRoleLabel()}
-                                                </p>
+                                            <div className="flex flex-col space-y-3">
+                                                {/* User Information - Top */}
+                                                <div className="flex items-center gap-2">
+                                                    {/* Use Company Logo for Recruiter, User Avatar for others */}
+                                                    {profile.role === 'recruiter' && company ? (
+                                                        company.logo_url ? (
+                                                            <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-purple-200 shrink-0">
+                                                                <Image
+                                                                    src={company.logo_url}
+                                                                    alt={company.name || "Company Logo"}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                    sizes="32px"
+                                                                    unoptimized={company.logo_url.includes('/sign/')}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shrink-0">
+                                                                <Building2 className="w-4 h-4 text-white" />
+                                                            </div>
+                                                        )
+                                                    ) : (
+                                                        <Avatar className="h-8 w-8 border border-purple-200 shrink-0">
+                                                            {profile.avatar_url ? (
+                                                                <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
+                                                            ) : null}
+                                                            <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white text-xs">
+                                                                {getInitials()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium leading-none truncate">
+                                                            {profile.full_name || "Pengguna"}
+                                                        </p>
+                                                        <p className="text-xs leading-none text-muted-foreground truncate mt-1">
+                                                            {user.email}
+                                                        </p>
+                                                        <p className="text-xs leading-none text-blue-600 mt-1">
+                                                            {getRoleLabel()}
+                                                        </p>
+                                                        {/* Company Name for Recruiter */}
+                                                        {profile.role === 'recruiter' && company && (
+                                                            <>
+                                                                <p className="text-xs font-semibold text-gray-900 truncate mt-1">
+                                                                    {company.name || "Perusahaan"}
+                                                                </p>
+                                                                {company.is_approved && company.status === 'approved' ? (
+                                                                    <p className="text-xs text-green-600 mt-0.5">✓ Disetujui</p>
+                                                                ) : company.status === 'rejected' ? (
+                                                                    <p className="text-xs text-red-600 mt-0.5">✗ Ditolak</p>
+                                                                ) : (
+                                                                    <p className="text-xs text-yellow-600 mt-0.5">⏳ Menunggu</p>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
+                                        {profile.role === 'recruiter' && (
+                                            <>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/recruiter/company/profile" className="cursor-pointer">
+                                                        <Building2 className="mr-2 h-4 w-4" />
+                                                        Profile Perusahaan
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                            </>
+                                        )}
                                         <DropdownMenuItem
                                             className="cursor-pointer text-red-600 focus:text-red-600"
                                             onClick={signOut}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardDescription } from "@/components/ui/card";
+import { AlertCircle, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { EmploymentType, JobCategory, JobLevel, JobListing } from "@/lib/types";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface RecruiterJobFormProps {
     initialData?: any;
@@ -28,6 +31,9 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
     const router = useRouter();
     const supabase = createBrowserClient();
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingCompany, setIsLoadingCompany] = useState(true);
+    const [companyProfile, setCompanyProfile] = useState<any>(null);
+    
     const [formData, setFormData] = useState({
         title: initialData?.title || "",
         company_name: initialData?.company_name || "",
@@ -46,6 +52,46 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
         featured: initialData?.featured || false,
     });
 
+    // Load company profile on mount
+    useEffect(() => {
+        async function loadCompanyProfile() {
+            try {
+                const {
+                    data: { user },
+                } = await supabase.auth.getUser();
+
+                if (!user) return;
+
+                const { data: company, error } = await supabase
+                    .from("companies")
+                    .select("*")
+                    .eq("recruiter_id", user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Error fetching company:", error);
+                } else if (company) {
+                    setCompanyProfile(company);
+                    // Auto-fill from company profile if not editing existing job
+                    if (!jobId && !initialData) {
+                        setFormData(prev => ({
+                            ...prev,
+                            company_name: company.name || prev.company_name,
+                            location_city: company.location_city || prev.location_city,
+                            location_province: company.location_province || prev.location_province,
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading company profile:", error);
+            } finally {
+                setIsLoadingCompany(false);
+            }
+        }
+
+        loadCompanyProfile();
+    }, [supabase, jobId, initialData]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -59,11 +105,30 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 throw new Error("User not authenticated");
             }
 
+            // Use company profile data if creating new job and company profile exists
+            // Otherwise use form data (for editing or if no company profile)
+            let companyName = formData.company_name;
+            let locationCity = formData.location_city;
+            let locationProvince = formData.location_province;
+
+            // Only use company profile data when creating new job (not editing)
+            if (!jobId && companyProfile) {
+                companyName = companyProfile.name || formData.company_name;
+                locationCity = companyProfile.location_city || formData.location_city;
+                locationProvince = companyProfile.location_province || formData.location_province;
+            }
+
+            if (!companyName || !locationCity) {
+                toast.error("Nama perusahaan dan kota wajib diisi. Lengkapi profile perusahaan terlebih dahulu.");
+                setIsLoading(false);
+                return;
+            }
+
             const jobData = {
                 title: formData.title,
-                company_name: formData.company_name,
-                location_city: formData.location_city,
-                location_province: formData.location_province || null,
+                company_name: companyName,
+                location_city: locationCity,
+                location_province: locationProvince || null,
                 employment_type: formData.employment_type,
                 min_salary: formData.min_salary ? parseInt(formData.min_salary) : null,
                 max_salary: formData.max_salary ? parseInt(formData.max_salary) : null,
@@ -111,47 +176,120 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            {/* Warning jika belum ada company profile */}
+            {!isLoadingCompany && !companyProfile && !jobId && (
+                <Card className="border-amber-200 bg-amber-50">
+                    <CardContent className="pt-6">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-amber-900 mb-1">
+                                    Profile Perusahaan Belum Dilengkapi
+                                </p>
+                                <p className="text-sm text-amber-700 mb-3">
+                                    Untuk memudahkan pengisian lowongan, lengkapi terlebih dahulu profile perusahaan Anda.
+                                </p>
+                                <Button variant="outline" size="sm" asChild className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                                    <Link href="/recruiter/company/profile">
+                                        <Building2 className="h-4 w-4 mr-2" />
+                                        Lengkapi Profile Perusahaan
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Info company profile jika ada */}
+            {companyProfile && (
+                <Card className="border-green-200 bg-green-50">
+                    <CardContent className="pt-6">
+                        <div className="flex items-start gap-3">
+                            <Building2 className="h-5 w-5 text-green-600 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-green-900 mb-1">
+                                    Menggunakan Data dari Profile Perusahaan
+                                </p>
+                                <p className="text-sm text-green-700">
+                                    Nama perusahaan dan lokasi akan diambil dari profile perusahaan Anda: <strong>{companyProfile.name}</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
                 <div className="space-y-2">
                     <Label htmlFor="title">Judul Lowongan *</Label>
                     <Input
                         id="title"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Contoh: Frontend Developer, Product Manager, dll"
                         required
                     />
                 </div>
 
+            {/* Company name - auto-filled dari company profile */}
+            <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="company_name">Nama Perusahaan *</Label>
+                    <Label htmlFor="company_name">
+                        Nama Perusahaan *
+                        {companyProfile && (
+                            <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
+                        )}
+                    </Label>
                     <Input
                         id="company_name"
                         value={formData.company_name}
                         onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                        disabled={!!companyProfile && !jobId}
+                        className={companyProfile && !jobId ? "bg-gray-100" : ""}
                         required
                     />
-                </div>
+                    {companyProfile && !jobId && (
+                        <p className="text-xs text-gray-500">
+                            Data diambil dari profile perusahaan. Untuk mengubah, edit di{" "}
+                            <Link href="/recruiter/company/profile" className="text-blue-600 hover:underline">
+                                Profile Perusahaan
+                            </Link>
+                        </p>
+                    )}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="location_city">Kota *</Label>
+                    <Label htmlFor="location_city">
+                        Kota *
+                        {companyProfile && (
+                            <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
+                        )}
+                    </Label>
                     <Input
                         id="location_city"
                         value={formData.location_city}
                         onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                        disabled={!!companyProfile && !jobId}
+                        className={companyProfile && !jobId ? "bg-gray-100" : ""}
                         required
                     />
                 </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="location_province">Provinsi</Label>
+                <Label htmlFor="location_province">
+                    Provinsi
+                    {companyProfile && (
+                        <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
+                    )}
+                </Label>
                     <Input
                         id="location_province"
                         value={formData.location_province}
                         onChange={(e) => setFormData({ ...formData, location_province: e.target.value })}
+                    disabled={!!companyProfile && !jobId}
+                    className={companyProfile && !jobId ? "bg-gray-100" : ""}
                     />
-                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

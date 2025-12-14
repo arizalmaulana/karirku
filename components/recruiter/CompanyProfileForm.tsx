@@ -272,13 +272,27 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
             }
 
             // Cek apakah recruiter sudah punya company
-            const { data: existingCompany } = await supabase
-                .from("companies")
-                .select("id")
+            const { data: existingCompanyData, error: checkError } = await (supabase
+                .from("companies") as any)
+                .select("id, is_approved, status, name")
                 .eq("recruiter_id", user.id)
                 .single();
 
-            const companyData = {
+            if (checkError && checkError.code !== 'PGRST116') {
+                console.error("Error checking existing company:", checkError);
+                throw new Error(`Gagal memeriksa data perusahaan: ${checkError.message || 'Unknown error'}`);
+            }
+
+            const existingCompany = existingCompanyData as { id: string; is_approved: boolean | null; status: string | null; name: string } | null;
+
+            // Jika company sudah approved, recruiter tidak bisa update
+            if (existingCompany && existingCompany.is_approved && existingCompany.status === 'approved') {
+                toast.error("Profile perusahaan sudah disetujui. Untuk mengubah data, silakan hubungi admin.");
+                setIsLoading(false);
+                return;
+            }
+
+            const companyData: any = {
                 recruiter_id: user.id,
                 name: formData.name || null,
                 industry: formData.industry || null,
@@ -289,38 +303,88 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 size: formData.size || null,
                 logo_url: formData.logo_url || null,
                 license_url: formData.license_url || null,
-                is_approved: false, // Default: belum approved
-                status: 'pending' as const, // Default: pending
             };
 
-            let error;
+            // Hanya set is_approved dan status jika insert baru
+            if (!existingCompany) {
+                companyData.is_approved = false;
+                companyData.status = 'pending';
+            }
+            // Untuk update, jangan set is_approved dan status (biarkan trigger handle)
+
+            let result;
             if (existingCompany) {
                 // Update existing company
-                const { error: updateError } = await (supabase
+                console.log("Updating existing company:", { 
+                    companyId: existingCompany.id, 
+                    currentStatus: existingCompany.status,
+                    isApproved: existingCompany.is_approved,
+                    companyData 
+                });
+                result = await (supabase
                     .from("companies") as any)
                     .update(companyData)
-                    .eq("recruiter_id", user.id);
-                error = updateError;
+                    .eq("recruiter_id", user.id)
+                    .eq("id", existingCompany.id)
+                    .select();
             } else {
                 // Insert new company
-                const { error: insertError } = await (supabase
+                console.log("Inserting new company:", companyData);
+                result = await (supabase
                     .from("companies") as any)
-                    .insert(companyData);
-                error = insertError;
+                    .insert(companyData)
+                    .select();
             }
 
-            if (error) {
-                if (error.code === '23505') { // Unique constraint violation
+            if (result.error) {
+                console.error("Supabase error details:", {
+                    message: result.error.message,
+                    code: result.error.code,
+                    details: result.error.details,
+                    hint: result.error.hint,
+                    error: result.error
+                });
+
+                // Handle specific error codes
+                if (result.error.code === '23505') { // Unique constraint violation
                     throw new Error("Anda sudah memiliki perusahaan. Satu recruiter hanya boleh memiliki satu perusahaan.");
+                } else if (result.error.code === '42501') { // Insufficient privilege (RLS policy violation)
+                    throw new Error("Anda tidak memiliki izin untuk melakukan operasi ini. Pastikan profile perusahaan belum disetujui atau hubungi admin.");
+                } else if (result.error.code === 'PGRST301') { // Row not found
+                    throw new Error("Data perusahaan tidak ditemukan. Silakan refresh halaman dan coba lagi.");
+                } else if (result.error.message && result.error.message.includes('infinite recursion')) {
+                    throw new Error("Terjadi error pada policy database. Silakan hubungi admin untuk memperbaiki RLS policy. Error: infinite recursion detected in policy.");
+                } else if (result.error.message) {
+                    throw new Error(result.error.message);
+                } else {
+                    throw new Error(`Error: ${result.error.code || 'Unknown error'}. ${result.error.details || ''}`);
                 }
-                throw error;
             }
 
+            console.log("Company saved successfully:", result.data);
             toast.success("Profile perusahaan berhasil disimpan. Menunggu persetujuan admin.");
             router.refresh();
         } catch (error: any) {
-            console.error("Error saving company:", error);
-            toast.error(error.message || "Terjadi kesalahan saat menyimpan profile perusahaan");
+            console.error("Error saving company:", {
+                error,
+                message: error?.message,
+                code: error?.code,
+                details: error?.details,
+                stack: error?.stack,
+                fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+            });
+            
+            // Extract error message
+            let errorMessage = "Terjadi kesalahan saat menyimpan profile perusahaan";
+            if (error?.message) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else if (error?.code) {
+                errorMessage = `Error ${error.code}: ${error.details || 'Terjadi kesalahan'}`;
+            }
+            
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }

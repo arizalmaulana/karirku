@@ -45,6 +45,42 @@ async function getApplications(userId: string, jobId?: string, status?: string) 
             console.error("Error fetching applications:", error);
             return [];
         }
+        
+        // Debug: Log data structure
+        if (data && data.length > 0) {
+            console.log("Applications data sample:", {
+                total: data.length,
+                firstApp: {
+                    id: data[0].id,
+                    cv_url: data[0].cv_url,
+                    job_seeker_id: data[0].job_seeker_id,
+                    hasProfiles: !!data[0].profiles
+                }
+            });
+        }
+        
+        // Fallback: Query profiles separately for applications where profiles is null
+        if (data && data.length > 0) {
+            const applicationsWithMissingProfiles = data.filter((app: any) => !app.profiles && app.job_seeker_id);
+            
+            if (applicationsWithMissingProfiles.length > 0) {
+                const jobSeekerIds = applicationsWithMissingProfiles.map((app: any) => app.job_seeker_id);
+                const { data: profilesData } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, skills, major, phone, email")
+                    .in("id", jobSeekerIds);
+                
+                if (profilesData) {
+                    const profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
+                    data.forEach((app: any) => {
+                        if (!app.profiles && app.job_seeker_id && profilesMap.has(app.job_seeker_id)) {
+                            app.profiles = profilesMap.get(app.job_seeker_id);
+                        }
+                    });
+                }
+            }
+        }
+        
         return data || [];
     } catch (error) {
         console.error("Unexpected error in getApplications:", error);

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Briefcase, Users, Wallet, FileText } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, Wallet, FileText, Building2 } from "lucide-react";
 
 const navItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/jobs", label: "Manajemen Lowongan", icon: Briefcase },
     { href: "/admin/applications", label: "Manajemen Lamaran", icon: FileText },
+    { href: "/admin/companies", label: "Manajemen Perusahaan", icon: Building2 },
     { href: "/admin/users", label: "Manajemen Pengguna", icon: Users },
     { href: "/admin/living-costs", label: "Biaya Hidup", icon: Wallet },
 ];

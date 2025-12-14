@@ -18,7 +18,9 @@ async function getJob(id: string, userId: string) {
     return data;
 }
 
-export default async function EditRecruiterJobPage({ params }: { params: { id: string } }) {
+export default async function EditRecruiterJobPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -28,7 +30,7 @@ export default async function EditRecruiterJobPage({ params }: { params: { id: s
         redirect("/");
     }
 
-    const job = await getJob(params.id, user.id);
+    const job = await getJob(resolvedParams.id, user.id);
 
     if (!job) {
         notFound();
@@ -51,7 +53,7 @@ export default async function EditRecruiterJobPage({ params }: { params: { id: s
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <RecruiterJobForm initialData={job} jobId={params.id} />
+                    <RecruiterJobForm initialData={job} jobId={resolvedParams.id} />
                 </CardContent>
             </Card>
         </div>

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/pagination";
 import Link from "next/link";
 import { Search, Eye, FileText } from "lucide-react";
+import { CVDownloadButton } from "@/components/recruiter/CVDownloadButton";
 
 interface ApplicantsTableProps {
     applications: any[];
@@ -66,10 +67,11 @@ function getStatusLabel(status: string) {
     return labels[status] || status;
 }
 
-// Extract phone and email from cover_letter JSON or profiles
+// Extract phone, email, and name from cover_letter JSON or profiles
 function extractApplicationData(application: any) {
     let phone = "-";
     let email = "-";
+    let name = null;
 
     // First, try to get from profiles
     if (application.profiles?.phone) {
@@ -78,9 +80,12 @@ function extractApplicationData(application: any) {
     if (application.profiles?.email) {
         email = application.profiles.email;
     }
+    if (application.profiles?.full_name) {
+        name = application.profiles.full_name;
+    }
 
     // If not in profiles, try to extract from cover_letter JSON
-    if (application.cover_letter && (phone === "-" || email === "-")) {
+    if (application.cover_letter && (phone === "-" || email === "-" || !name)) {
         try {
             const coverLetterData = JSON.parse(application.cover_letter);
             if (phone === "-" && coverLetterData.nomorTelepon) {
@@ -88,6 +93,9 @@ function extractApplicationData(application: any) {
             }
             if (email === "-" && coverLetterData.email) {
                 email = coverLetterData.email;
+            }
+            if (!name && coverLetterData.namaLengkap) {
+                name = coverLetterData.namaLengkap;
             }
         } catch (e) {
             // If not JSON, might be plain text
@@ -101,7 +109,7 @@ function extractApplicationData(application: any) {
         }
     }
 
-    return { phone, email };
+    return { phone, email, name };
 }
 
 export function ApplicantsTable({
@@ -136,14 +144,14 @@ export function ApplicantsTable({
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             result = result.filter((app) => {
-                const name = app.profiles?.full_name?.toLowerCase() || "";
+                const { name, email } = extractApplicationData(app);
+                const nameLower = (name || app.profiles?.full_name || "").toLowerCase();
                 const jobTitle = app.job_listings?.title?.toLowerCase() || "";
                 const company = app.job_listings?.company_name?.toLowerCase() || "";
-                const { email } = extractApplicationData(app);
                 const emailLower = email.toLowerCase();
 
                 return (
-                    name.includes(query) ||
+                    nameLower.includes(query) ||
                     jobTitle.includes(query) ||
                     company.includes(query) ||
                     emailLower.includes(query)
@@ -335,11 +343,12 @@ export function ApplicantsTable({
                     <TableBody>
                         {paginatedApplications.length > 0 ? (
                             paginatedApplications.map((app: any) => {
-                                const { phone, email } = extractApplicationData(app);
+                                const { phone, email, name } = extractApplicationData(app);
+                                const applicantName = name || app.profiles?.full_name || "Unknown";
                                 return (
                                     <TableRow key={app.id} className="hover:bg-gray-50">
                                         <TableCell className="font-medium">
-                                            {app.profiles?.full_name || "Unknown"}
+                                            {applicantName}
                                         </TableCell>
                                         <TableCell>
                                             {app.job_listings?.title || "Unknown"}
@@ -348,22 +357,10 @@ export function ApplicantsTable({
                                         <TableCell>{email}</TableCell>
                                         <TableCell>
                                             <div className="flex gap-2">
-                                                {app.cv_url && (
-                                                    <Button
-                                                        size="sm"
-                                                        asChild
-                                                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
-                                                    >
-                                                        <a
-                                                            href={app.cv_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            <FileText className="h-3 w-3 mr-1" />
-                                                            Lihat
-                                                        </a>
-                                                    </Button>
-                                                )}
+                                                <CVDownloadButton
+                                                    cvUrl={app.cv_url}
+                                                    jobSeekerId={app.job_seeker_id}
+                                                />
                                                 <Button
                                                     size="sm"
                                                     asChild

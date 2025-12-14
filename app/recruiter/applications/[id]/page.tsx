@@ -370,7 +370,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                     </Card>
 
                     <ApplicationEditForm
-                        applicationId={application.id}
+                                applicationId={application.id}
                         initialData={{
                             status: application.status,
                             notes: application.notes,
@@ -378,7 +378,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                             interview_date: application.interview_date,
                             interview_location: application.interview_location,
                         }}
-                    />
+                            />
                 </div>
             </div>
         </div>

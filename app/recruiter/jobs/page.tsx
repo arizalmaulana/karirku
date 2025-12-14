@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Plus, Pencil, Eye, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 import type { JobListing } from "@/lib/types";
+import { DeleteJobButton } from "@/components/recruiter/DeleteJobButton";
 
 function formatCurrency(amount: number | null): string {
     if (!amount) return "Tidak disebutkan";
@@ -108,7 +109,7 @@ export default async function RecruiterJobsPage() {
                 </Button>
             </div>
 
-            <Card className="lg:col-span-2 border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
+            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
@@ -117,22 +118,23 @@ export default async function RecruiterJobsPage() {
                 </CardHeader>
                 <CardContent>
                     {jobs.length > 0 ? (
+                        <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Judul</TableHead>
-                                    <TableHead>Perusahaan</TableHead>
-                                    <TableHead>Lokasi</TableHead>
-                                    <TableHead>Gaji</TableHead>
-                                    <TableHead>Tipe</TableHead>
-                                    <TableHead>Pelamar</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableRow className="bg-gray-50">
+                                        <TableHead className="font-semibold">Judul</TableHead>
+                                        <TableHead className="font-semibold">Perusahaan</TableHead>
+                                        <TableHead className="font-semibold">Lokasi</TableHead>
+                                        <TableHead className="font-semibold">Gaji</TableHead>
+                                        <TableHead className="font-semibold">Tipe</TableHead>
+                                        <TableHead className="font-semibold">Pelamar</TableHead>
+                                        <TableHead className="font-semibold">Status</TableHead>
+                                        <TableHead className="font-semibold text-right">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {jobsWithCounts.map((job: any) => (
-                                    <TableRow key={job.id}>
+                                        <TableRow key={job.id} className="hover:bg-gray-50">
                                         <TableCell className="font-medium">{job.title}</TableCell>
                                         <TableCell>{job.company_name}</TableCell>
                                         <TableCell>
@@ -152,7 +154,7 @@ export default async function RecruiterJobsPage() {
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <Users className="h-4 w-4 text-gray-400" />
-                                                {job.applicationCount || 0}
+                                                    <span className="font-medium">{job.applicationCount || 0}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -160,33 +162,35 @@ export default async function RecruiterJobsPage() {
                                                 {job.featured ? "Featured" : "Aktif"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                            <TableCell>
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Button variant="ghost" size="sm" asChild title="Lihat Detail">
                                                     <Link href={`/recruiter/jobs/${job.id}`}>
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Button variant="ghost" size="sm" asChild title="Edit Lowongan">
                                                     <Link href={`/recruiter/jobs/${job.id}/edit`}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Button variant="ghost" size="sm" asChild title="Lihat Pelamar">
                                                     <Link href={`/recruiter/applications?job=${job.id}`}>
                                                         <Users className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
+                                                    <DeleteJobButton jobId={job.id} jobTitle={job.title} />
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
+                        </div>
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-gray-500">Belum ada lowongan pekerjaan</p>
-                            <Button className="mt-4" asChild >
+                            <p className="text-gray-500 mb-4">Belum ada lowongan pekerjaan</p>
+                            <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-blue-600 hover:to-purple-700 text-white" asChild>
                                 <Link href="/recruiter/jobs/new">Tambah Lowongan Pertama</Link>
                             </Button>
                         </div>

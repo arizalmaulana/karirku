@@ -41,7 +41,9 @@ async function getApplicationCount(jobId: string) {
     return count || 0;
 }
 
-export default async function RecruiterJobDetailPage({ params }: { params: { id: string } }) {
+export default async function RecruiterJobDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -52,8 +54,8 @@ export default async function RecruiterJobDetailPage({ params }: { params: { id:
     }
 
     const [job, applicationCount] = await Promise.all([
-        getJob(params.id, user.id),
-        getApplicationCount(params.id),
+        getJob(resolvedParams.id, user.id),
+        getApplicationCount(resolvedParams.id),
     ]);
 
     if (!job) {
