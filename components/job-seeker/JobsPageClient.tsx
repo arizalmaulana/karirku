@@ -156,7 +156,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
             <div className="container mx-auto px-2 py-4">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {/* Filters Sidebar */}
-                    <aside className="lg:col-span-1">
+                    <aside className="lg:col-span-1 border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
                         <JobFilters
                             filters={filters}
                             onFilterChange={setFilters}
@@ -168,7 +168,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                         {/* Header */}
                         <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
                             <div>
-                                <h2 className="text-gray-900 mb-1 text-2xl font-semibold">Lowongan Tersedia</h2>
+                                <h2 className="text-3xl font-bold text-purple-900">Lowongan Tersedia</h2>
                                 <p className="text-gray-600" style={{ fontSize: '14px' }}>
                                     Menampilkan{" "}
                                     <span className="font-semibold gradient-text-cyan">

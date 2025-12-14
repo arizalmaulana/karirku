@@ -283,7 +283,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                             type="button"
                                             variant="outline"
                                             onClick={handleRemoveImage}
-                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-8 py-4 rounded-xl transition-all"
+                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-8 py-4 rounded-xl transition-all ml-2"
                                         >
                                             <X className="w-4 h-4 mr-2" />
                                             Hapus Foto
@@ -291,7 +291,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                     )}
                                 </div>
                                 
-                                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <div className="bg-purple-50 rounded-lg p-4 border border-gray-200">
                                     <p className="text-sm text-gray-600 flex items-center gap-2">
                                         <span className="font-semibold text-gray-700">Format yang didukung:</span>
                                         <span>JPEG, PNG, JPG</span>
@@ -307,7 +307,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Personal Information */}
-            <Card className="border-2 border-gray-200 shadow-md">
+            <Card className="border-2 border-purle-200 shadow-md border-purple-300 text-black-700 hover:bg-purple-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-sm">
@@ -402,7 +402,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Education & Experience */}
-            <Card className="border-2 border-gray-200 shadow-md">
+            <Card className="border-2 border-blue-200 shadow-md border-blue-300 text-black-700 hover:bg-blue-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-sm">
@@ -459,7 +459,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Skills */}
-            <Card className="border-2 border-gray-200 shadow-md">
+            <Card className="border-2 border-gray-200 shadow-md border-pink-300 text-black-700 hover:bg-pink-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl shadow-sm">
