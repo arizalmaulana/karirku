@@ -272,8 +272,8 @@ export function ApplicantsTable({
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="newest">Newest</SelectItem>
+                            <SelectContent> 
+                                <SelectItem value="newest bg-blue-50">Newest</SelectItem>
                                 <SelectItem value="oldest">Oldest</SelectItem>
                                 <SelectItem value="name-asc">Name (A-Z)</SelectItem>
                                 <SelectItem value="name-desc">Name (Z-A)</SelectItem>
@@ -321,7 +321,7 @@ export function ApplicantsTable({
             </div>
 
             {/* Table */}
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-hidden shadow-sm bg-blue-50">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50">
