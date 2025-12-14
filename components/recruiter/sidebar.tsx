@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Briefcase, Users, FileText } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, FileText, Building2 } from "lucide-react";
 
 const navItems = [
     { href: "/recruiter/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/recruiter/jobs", label: "Lowongan Saya", icon: Briefcase },
     { href: "/recruiter/applications", label: "Pelamar", icon: Users },
+    { href: "/recruiter/company/profile", label: "Profile Perusahaan", icon: Building2 },
 ];
 
 export function RecruiterSidebar() {

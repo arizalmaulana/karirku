@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Users, Building2, ExternalLink, Sparkles, TrendingUp, Star } from "lucide-react";
 import { fetchCompaniesFromDatabase } from "@/lib/utils/companyData";
-import type { Company } from "@/data/companies";
+import type { Company } from "@/lib/types";
 import {ImageWithFallback} from "@/components/figma/ImageWithFallback";
 import type { Profile } from "@/lib/types";
+import Link from "next/link";
 
 interface CompaniesPageClientProps {
     companies: Company[];
@@ -65,14 +66,17 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
     // Filter companies based on search and filters
     const filteredCompanies = useMemo(() => {
         return companies.filter((company) => {
+            const companyLocation = company.location || company.location_city || '';
+            const companyIndustry = company.industry || '';
+            
             const matchesSearch =
                 !searchQuery.trim() ||
                 company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                company.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                company.location.toLowerCase().includes(searchQuery.toLowerCase());
+                companyIndustry.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                companyLocation.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesIndustry = filters.industry === "all" || company.industry === filters.industry;
-            const matchesLocation = filters.location === "all" || company.location === filters.location;
+            const matchesIndustry = filters.industry === "all" || companyIndustry === filters.industry;
+            const matchesLocation = filters.location === "all" || companyLocation === filters.location;
 
             return matchesSearch && matchesIndustry && matchesLocation;
         });
@@ -80,7 +84,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
 
     // Get unique industries and locations for filters
     const industries = useMemo(() => {
-        const unique = Array.from(new Set(companies.map((c) => c.industry)));
+        const unique = Array.from(new Set(companies.map((c) => c.industry).filter((i): i is string => i !== null && i !== undefined)));
         return unique.sort();
     }, [companies]);
 
@@ -118,7 +122,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
 
                 <div className="flex gap-4 flex-wrap">
                     <select
-                        value={filters.industry}
+                        value={filters.industry || "all"}
                         onChange={(e) => handleFilterChange("industry", e.target.value)}
                         className="px-4 py-2 border rounded-lg"
                     >
@@ -131,7 +135,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                     </select>
 
                     <select
-                        value={filters.location}
+                        value={filters.location || "all"}
                         onChange={(e) => handleFilterChange("location", e.target.value)}
                         className="px-4 py-2 border rounded-lg"
                     >
@@ -156,14 +160,10 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                         <div className="flex items-start justify-between mb-4">
                             <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 group-hover:scale-110 transition-transform">
                                 <ImageWithFallback
-                                    src={company.logo}
+                                    src={company.logo || company.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&size=100&background=random`}
                                     alt={company.name}
                                     className="w-full h-full object-cover"
                                 />
-                            </div>
-                            <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-lg">
-                                <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
-                                <span className="text-sm text-orange-700">4.5</span>
                             </div>
                         </div>
 
@@ -173,39 +173,46 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                         </h3>
 
                         {/* Industry Badge */}
-                        <div className="mb-4">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${getIndustryColor(company.industry)}`}>
-                                <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                {company.industry}
-                            </span>
-                        </div>
+                        {company.industry && (
+                            <div className="mb-4">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${getIndustryColor(company.industry)}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                    {company.industry}
+                                </span>
+                            </div>
+                        )}
 
                         {/* Info Items */}
                         <div className="space-y-2.5 mb-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <span>{company.location}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Users className="w-4 h-4 text-gray-400" />
-                                <span>{company.size} karyawan</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <TrendingUp className="w-4 h-4 text-green-500" />
-                                <span>{company.openPositions} posisi terbuka</span>
-                            </div>
+                            {(company.location || company.location_city) && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                    <span>{company.location || company.location_city}</span>
+                                </div>
+                            )}
+                            {company.openPositions !== undefined && company.openPositions > 0 && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <TrendingUp className="w-4 h-4 text-green-500" />
+                                    <span>{company.openPositions} posisi terbuka</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Description */}
-                        <p className="text-sm text-gray-600 mb-5 line-clamp-3 leading-relaxed">
-                            {company.description}
-                        </p>
+                        {company.description && (
+                            <p className="text-sm text-gray-600 mb-5 line-clamp-3 leading-relaxed">
+                                {company.description}
+                            </p>
+                        )}
 
                         {/* Action Button */}
-                        <button className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 group/btn">
-                            <span>Lihat Lowongan ({company.openPositions})</span>
+                        <Link 
+                            href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}
+                            className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 group/btn"
+                        >
+                            <span>Lihat Lowongan ({company.openPositions || 0})</span>
                             <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </button>
+                        </Link>
                     </div>
                 ))}
             </div>

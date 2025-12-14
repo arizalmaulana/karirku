@@ -79,6 +79,28 @@ export interface Application {
     updated_at: string;
 }
 
+export interface Company {
+    id: string;
+    name: string;
+    logo_url: string | null;
+    industry: string | null;
+    location_city: string | null;
+    location_province: string | null;
+    description: string | null;
+    website_url: string | null;
+    size: string | null;
+    recruiter_id: string | null; // ID recruiter yang memiliki perusahaan ini
+    license_url: string | null; // URL surat izin perusahaan dari bucket company_licenses
+    is_approved: boolean | null; // Status approval dari admin
+    status: 'pending' | 'approved' | 'rejected' | null; // Status approval
+    created_at: string;
+    updated_at: string;
+    // Computed fields (tidak ada di database)
+    logo?: string; // Generated logo URL
+    location?: string; // Combined location
+    openPositions?: number; // Count dari job_listings
+}
+
 // Tipe Database Supabase
 export type Database = {
     public: {

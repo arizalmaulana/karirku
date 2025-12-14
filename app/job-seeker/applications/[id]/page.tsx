@@ -3,10 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { ApplicationTimeline } from "@/components/ApplicationTimeline";
 import { WithdrawApplicationButton } from "@/components/job-seeker/WithdrawApplicationButton";
+import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
+import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -40,8 +42,16 @@ async function getApplication(id: string, userId: string) {
     const { data, error } = await supabase
         .from("applications")
         .select(`
-            *,
-            job_listings(title, company_name, location_city, location_province, employment_type)
+            id,
+            job_id,
+            job_seeker_id,
+            status,
+            cv_url,
+            portfolio_url,
+            cover_letter,
+            submitted_at,
+            updated_at,
+            job_listings(id, title, company_name, location_city, location_province, employment_type)
         `)
         .eq("id", id)
         .eq("job_seeker_id", userId)
@@ -53,7 +63,11 @@ async function getApplication(id: string, userId: string) {
     return data as any;
 }
 
-export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
+export default async function ApplicationDetailPage({ 
+    params 
+}: { 
+    params: Promise<{ id: string }> | { id: string } 
+}) {
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -63,7 +77,9 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
         redirect("/");
     }
 
-    const application = await getApplication(params.id, user.id);
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const application = await getApplication(resolvedParams.id, user.id);
 
     if (!application) {
         notFound();
@@ -116,12 +132,16 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                             <p className="text-sm text-gray-500">Tipe Pekerjaan</p>
                             <Badge variant="outline">{job?.employment_type || "-"}</Badge>
                         </div>
-                        <Button variant="outline" asChild>
-                            <Link href={`/job-seeker/jobs/${application.job_id}`}>
-                                Lihat Detail Lowongan
-                                <ExternalLink className="ml-2 h-4 w-4" />
-                            </Link>
-                        </Button>
+                        {application.job_id ? (
+                            <Button variant="outline" asChild>
+                                <Link href={`/job-seeker/jobs/${application.job_id}`}>
+                                    Lihat Detail Lowongan
+                                    <ExternalLink className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        ) : (
+                            <p className="text-sm text-gray-500">Detail lowongan tidak tersedia</p>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -213,48 +233,95 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
             {application.cover_letter && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Cover Letter</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            Cover Letter
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="whitespace-pre-wrap text-sm">{application.cover_letter}</p>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            {(() => {
+                                // Coba parse sebagai JSON jika mungkin
+                                try {
+                                    const parsed = JSON.parse(application.cover_letter);
+                                    // Jika berhasil parse dan merupakan object, tampilkan dalam format yang rapi
+                                    if (typeof parsed === 'object' && parsed !== null) {
+                                        return (
+                                            <div className="space-y-3">
+                                                {parsed.namaLengkap && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Nama Lengkap</p>
+                                                        <p className="text-sm font-medium text-gray-900">{parsed.namaLengkap}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.email && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Email</p>
+                                                        <p className="text-sm text-gray-900">{parsed.email}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.nomorTelepon && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Nomor Telepon</p>
+                                                        <p className="text-sm text-gray-900">{parsed.nomorTelepon}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.domisili && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Domisili</p>
+                                                        <p className="text-sm text-gray-900">{parsed.domisili}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.pendidikanTerakhir && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Pendidikan Terakhir</p>
+                                                        <p className="text-sm text-gray-900">{parsed.pendidikanTerakhir}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.pengalamanKerja && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Pengalaman Kerja</p>
+                                                        <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{parsed.pengalamanKerja}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.skill && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Skill</p>
+                                                        <p className="text-sm text-gray-900">{parsed.skill}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.portfolio && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase">Portfolio</p>
+                                                        <p className="text-sm text-gray-900">{parsed.portfolio}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                } catch (e) {
+                                    // Bukan JSON, tampilkan sebagai teks biasa
+                                }
+                                // Tampilkan sebagai teks biasa
+                                return (
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{application.cover_letter}</p>
+                                );
+                            })()}
+                        </div>
                     </CardContent>
                 </Card>
             )}
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Dokumen</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {application.cv_url ? (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-2">CV / Resume</p>
-                            <Button variant="outline" asChild>
-                                <a href={application.cv_url} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    Lihat CV
-                                </a>
-                            </Button>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-gray-500">CV tidak diunggah</p>
-                    )}
-
-                    {application.portfolio_url ? (
-                        <div>
-                            <p className="text-sm text-gray-500 mb-2">Portfolio</p>
-                            <Button variant="outline" asChild>
-                                <a href={application.portfolio_url} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    Lihat Portfolio
-                                </a>
-                            </Button>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-gray-500">Portfolio tidak diunggah</p>
-                    )}
-                </CardContent>
-            </Card>
+            <div className="grid gap-6 md:grid-cols-2">
+                <ApplicationDocumentViewer
+                    documentUrl={application.cv_url}
+                    title="CV / Resume"
+                    jobSeekerId={application.job_seeker_id}
+                />
+                <PortfolioViewer
+                    portfolioUrl={application.portfolio_url}
+                />
+            </div>
 
             {/* Withdraw Button */}
             {application.status !== "draft" && (

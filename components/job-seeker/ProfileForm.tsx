@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { createBrowserClient } from "@/lib/supabase/client";
-import { Loader2, Upload, User, Camera, X } from "lucide-react";
+import { Loader2, Upload, User, Camera, X, GraduationCap, Briefcase, Award } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 
@@ -55,7 +55,12 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                 avatar_url: initialData.avatar_url || "",
             });
             setSkillsInput(initialData.skills?.join(", ") || "");
-            setPreviewImage(initialData.avatar_url || null);
+            // Set preview image dari avatar_url
+            if (initialData.avatar_url) {
+                setPreviewImage(initialData.avatar_url);
+            } else {
+                setPreviewImage(null);
+            }
         }
     }, [initialData]);
 
@@ -87,46 +92,22 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             const fileExt = file.name.split('.').pop();
             const fileName = `${user.id}-${Date.now()}.${fileExt}`;
             
-            // Try avatars bucket first, fallback to documents if not found
-            let bucketName = 'avatars';
-            let filePath = `avatars/${fileName}`;
-            let uploadError: any = null;
+            // Upload langsung ke bucket avatars
+            const bucketName = 'avatars';
+            const filePath = fileName;
 
-            // Try to upload to avatars bucket
-            const { error: avatarsError } = await supabase.storage
-                .from('avatars')
+            const { error: uploadError } = await supabase.storage
+                .from(bucketName)
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: true
                 });
 
-            if (avatarsError) {
-                // If bucket not found, try documents bucket
-                if (avatarsError.message?.includes('not found') || avatarsError.message?.includes('Bucket')) {
-                    console.warn("avatars bucket not found, trying documents bucket...");
-                    bucketName = 'documents';
-                    filePath = `avatars/${fileName}`;
-                    
-                    const { error: documentsError } = await supabase.storage
-                        .from('documents')
-                        .upload(filePath, file, {
-                            cacheControl: '3600',
-                            upsert: true
-                        });
-                    
-                    if (documentsError) {
-                        uploadError = documentsError;
-                    }
-                } else {
-                    uploadError = avatarsError;
-                }
-            }
-
             if (uploadError) {
                 const errorMessage = uploadError.message || "Unknown error";
                 if (errorMessage.includes('not found') || errorMessage.includes('Bucket')) {
                     throw new Error(
-                        "Bucket storage belum dibuat. Silakan buat bucket 'avatars' atau 'documents' di Supabase Storage terlebih dahulu."
+                        "Bucket 'avatars' belum dibuat. Silakan buat bucket 'avatars' di Supabase Storage terlebih dahulu."
                     );
                 }
                 throw new Error(`Gagal mengunggah foto: ${errorMessage}`);
@@ -217,157 +198,203 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
             {/* Photo Upload Section */}
-            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50/50">
-                <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                        <div className="relative">
-                            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center">
-                                {previewImage ? (
-                                    <ImageWithFallback
-                                        src={previewImage}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <User className="w-16 h-16 text-white" />
-                                )}
-                            </div>
-                            {previewImage && (
-                                <button
-                                    type="button"
-                                    onClick={handleRemoveImage}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition shadow-lg"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex-1 text-center sm:text-left">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Foto Profil</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Unggah foto profil Anda untuk meningkatkan kredibilitas
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                    id="avatar-upload"
-                                />
-                                <label
-                                    htmlFor="avatar-upload"
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all cursor-pointer"
-                                >
-                                    {isUploading ? (
+            <Card className="border-2 border-purple-200 bg-white shadow-lg overflow-hidden">
+                <CardContent className="p-0">
+                    <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 p-6">
+                        <h3 className="text-2xl font-bold text-white mb-1">Foto Profil</h3>
+                        <p className="text-purple-100 text-sm">
+                            Unggah foto profil profesional Anda untuk meningkatkan kredibilitas
+                        </p>
+                    </div>
+                    <div className="p-8">
+                        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                            {/* Photo Preview */}
+                            <div className="relative flex-shrink-0">
+                                <div className="w-48 h-48 rounded-2xl overflow-hidden border-4 border-white shadow-2xl bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center relative group">
+                                    {previewImage ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Mengunggah...
+                                            <img
+                                                src={previewImage}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                    const parent = e.currentTarget.parentElement;
+                                                    if (parent) {
+                                                        const fallback = document.createElement('div');
+                                                        fallback.className = 'w-full h-full flex items-center justify-center';
+                                                        fallback.innerHTML = '<svg class="w-24 h-24 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                                                        parent.appendChild(fallback);
+                                                    }
+                                                }}
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center pointer-events-none">
+                                                <Camera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </div>
                                         </>
                                     ) : (
-                                        <>
-                                            <Camera className="w-4 h-4" />
-                                            {previewImage ? "Ganti Foto" : "Unggah Foto"}
-                                        </>
+                                        <User className="w-24 h-24 text-white/80" />
                                     )}
-                                </label>
+                                </div>
                                 {previewImage && (
-                                    <Button
+                                    <button
                                         type="button"
-                                        variant="outline"
                                         onClick={handleRemoveImage}
-                                        className="border-red-200 text-red-600 hover:bg-red-50"
+                                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110 z-10 border-2 border-white"
+                                        aria-label="Hapus foto"
                                     >
-                                        Hapus Foto
-                                    </Button>
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 )}
+                                {/* Decorative rings */}
+                                <div className="absolute -inset-2 rounded-2xl border-2 border-purple-200/50 pointer-events-none"></div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">
-                                Format: JPEG, PNG, JPG (maks. 5MB)
-                            </p>
+
+                            {/* Upload Controls */}
+                            <div className="flex-1 w-full lg:w-auto space-y-4">
+                                <div className="space-y-3">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        id="avatar-upload"
+                                    />
+                                    <label
+                                        htmlFor="avatar-upload"
+                                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-2xl transition-all cursor-pointer font-semibold text-base hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
+                                    >
+                                        {isUploading ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                <span>Mengunggah...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Camera className="w-5 h-5" />
+                                                <span>{previewImage ? "Ganti Foto" : "Unggah Foto"}</span>
+                                            </>
+                                        )}
+                                    </label>
+                                    
+                                    {previewImage && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleRemoveImage}
+                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-8 py-4 rounded-xl transition-all"
+                                        >
+                                            <X className="w-4 h-4 mr-2" />
+                                            Hapus Foto
+                                        </Button>
+                                    )}
+                                </div>
+                                
+                                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                                        <span className="font-semibold text-gray-700">Format yang didukung:</span>
+                                        <span>JPEG, PNG, JPG</span>
+                                    </p>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        <span className="font-semibold text-gray-700">Ukuran maksimal:</span> 5MB
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Personal Information */}
-            <Card className="border-2 border-gray-200 shadow-sm">
-                <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                            <User className="w-5 h-5 text-purple-600" />
+            <Card className="border-2 border-gray-200 shadow-md">
+                <CardContent className="p-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-sm">
+                            <User className="w-6 h-6 text-purple-600" />
                         </div>
-                        Informasi Pribadi
+                        <span>Informasi Pribadi</span>
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-                <Label htmlFor="full_name">Nama Lengkap *</Label>
-                <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    required
-                    placeholder="Contoh: John Doe"
-                                className="border-2 focus:border-purple-400"
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="headline">Headline / Tagline</Label>
-                <Input
-                    id="headline"
-                    value={formData.headline}
-                    onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
-                    placeholder="Contoh: Frontend Developer dengan 3 tahun pengalaman"
-                                className="border-2 focus:border-purple-400"
+                        <div className="space-y-2">
+                            <Label htmlFor="full_name" className="text-sm font-semibold text-gray-700">
+                                Nama Lengkap *
+                            </Label>
+                            <Input
+                                id="full_name"
+                                value={formData.full_name}
+                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                required
+                                placeholder="Contoh: John Doe"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="headline" className="text-sm font-semibold text-gray-700">
+                                Headline / Tagline
+                            </Label>
+                            <Input
+                                id="headline"
+                                value={formData.headline}
+                                onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+                                placeholder="Contoh: Frontend Developer dengan 3 tahun pengalaman"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                                Email
+                            </Label>
                             <Input
                                 id="email"
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 placeholder="Contoh: john.doe@email.com"
-                                className="border-2 focus:border-purple-400"
-                />
-            </div>
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                            />
+                        </div>
 
-            <div className="space-y-2">
-                            <Label htmlFor="phone">Nomor Telepon</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">
+                                Nomor Telepon
+                            </Label>
                             <Input
                                 id="phone"
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 placeholder="Contoh: +62 812-3456-7890"
-                                className="border-2 focus:border-purple-400"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
                             />
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="location_city">Kota</Label>
-                <Input
-                    id="location_city"
-                    value={formData.location_city}
-                    onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                            <Label htmlFor="location_city" className="text-sm font-semibold text-gray-700">
+                                Kota
+                            </Label>
+                            <Input
+                                id="location_city"
+                                value={formData.location_city}
+                                onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
                                 placeholder="Contoh: Jakarta, Bandung, Surabaya"
-                                className="border-2 focus:border-purple-400"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
                             />
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="bio">Bio / Deskripsi Diri</Label>
+                            <Label htmlFor="bio" className="text-sm font-semibold text-gray-700">
+                                Bio / Deskripsi Diri
+                            </Label>
                             <Textarea
                                 id="bio"
                                 value={formData.bio}
                                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                 rows={4}
                                 placeholder="Ceritakan tentang diri Anda, minat, dan tujuan karir..."
-                                className="border-2 focus:border-purple-400"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
                             />
                         </div>
                     </div>
@@ -375,50 +402,56 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Education & Experience */}
-            <Card className="border-2 border-gray-200 shadow-sm">
-                <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                            <Upload className="w-5 h-5 text-blue-600" />
+            <Card className="border-2 border-gray-200 shadow-md">
+                <CardContent className="p-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-sm">
+                            <GraduationCap className="w-6 h-6 text-blue-600" />
                         </div>
-                        Pendidikan & Pengalaman
+                        <span>Pendidikan & Pengalaman</span>
                     </h3>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="education">Pendidikan</Label>
+                            <Label htmlFor="education" className="text-sm font-semibold text-gray-700">
+                                Pendidikan
+                            </Label>
                             <Textarea
                                 id="education"
                                 value={formData.education}
                                 onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                                 rows={3}
                                 placeholder="Contoh: S1 Teknik Informatika - Universitas Indonesia (2018-2022)"
-                                className="border-2 focus:border-purple-400"
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="major">Jurusan / Major</Label>
-                <Input
-                    id="major"
-                    value={formData.major}
-                    onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                    placeholder="Contoh: Teknik Informatika, Sistem Informasi, dll"
-                                className="border-2 focus:border-purple-400"
-                />
-                <p className="text-sm text-gray-500">
-                    Jurusan akan digunakan untuk mencocokkan dengan lowongan yang memerlukan jurusan tertentu
-                </p>
-            </div>
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
+                            />
+                        </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="experience">Pengalaman Kerja</Label>
+                            <Label htmlFor="major" className="text-sm font-semibold text-gray-700">
+                                Jurusan / Major
+                            </Label>
+                            <Input
+                                id="major"
+                                value={formData.major}
+                                onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                                placeholder="Contoh: Teknik Informatika, Sistem Informasi, dll"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                                Jurusan akan digunakan untuk mencocokkan dengan lowongan yang memerlukan jurusan tertentu
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="experience" className="text-sm font-semibold text-gray-700">
+                                Pengalaman Kerja
+                            </Label>
                             <Textarea
                                 id="experience"
                                 value={formData.experience}
                                 onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                                 rows={4}
                                 placeholder="Jelaskan pengalaman kerja Anda, proyek yang pernah dikerjakan, atau pencapaian penting..."
-                                className="border-2 focus:border-purple-400"
+                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
                             />
                         </div>
                     </div>
@@ -426,41 +459,43 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Skills */}
-            <Card className="border-2 border-gray-200 shadow-sm">
-                <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <div className="p-2 bg-pink-100 rounded-lg">
-                            <Upload className="w-5 h-5 text-pink-600" />
+            <Card className="border-2 border-gray-200 shadow-md">
+                <CardContent className="p-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <div className="p-3 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl shadow-sm">
+                            <Award className="w-6 h-6 text-pink-600" />
                         </div>
-                        Skills & Keahlian
+                        <span>Skills & Keahlian</span>
                     </h3>
-            <div className="space-y-2">
-                <Label htmlFor="skills">Skills (pisahkan dengan koma) *</Label>
-                <Input
-                    id="skills"
-                    value={skillsInput}
-                    onChange={(e) => setSkillsInput(e.target.value)}
-                    required
+                    <div className="space-y-2">
+                        <Label htmlFor="skills" className="text-sm font-semibold text-gray-700">
+                            Skills (pisahkan dengan koma) *
+                        </Label>
+                        <Input
+                            id="skills"
+                            value={skillsInput}
+                            onChange={(e) => setSkillsInput(e.target.value)}
+                            required
                             placeholder="Contoh: React, TypeScript, Node.js, UI/UX, Python, Java"
-                            className="border-2 focus:border-purple-400"
-                />
-                <p className="text-sm text-gray-500">
+                            className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
                             Skills ini akan digunakan untuk mencocokkan dengan lowongan pekerjaan. Pisahkan setiap skill dengan koma.
-                </p>
-            </div>
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
 
             {/* Submit Button */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button 
                     type="submit" 
                     disabled={isLoading || isUploading}
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all px-8"
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-xl transition-all px-8 py-6 text-base font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             Menyimpan...
                         </>
                     ) : (
@@ -471,7 +506,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                     type="button" 
                     variant="outline"
                     onClick={() => router.back()}
-                    className="border-2"
+                    className="border-2 px-8 py-6 text-base font-semibold hover:bg-gray-50"
                 >
                     Batal
                 </Button>

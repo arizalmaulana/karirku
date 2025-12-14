@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CompaniesPageClient } from "@/components/job-seeker/companiesPageClient";
-import { companies } from "@/data/companies";
+import { fetchCompaniesFromDatabase } from "@/lib/utils/companyData";
 
 async function getUserProfile(userId: string) {
     const supabase = await createSupabaseServerClient();
@@ -27,7 +27,10 @@ export default async function PerusahaanPage() {
         redirect("/");
     }
 
-    const profile = await getUserProfile(user.id);
+    const [profile, companies] = await Promise.all([
+        getUserProfile(user.id),
+        fetchCompaniesFromDatabase(),
+    ]);
 
     return (
         <CompaniesPageClient

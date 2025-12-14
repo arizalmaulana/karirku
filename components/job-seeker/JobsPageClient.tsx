@@ -19,16 +19,18 @@ import {
 } from "lucide-react";
 import type { Job } from "@/types/job";
 import type { Profile } from "@/lib/types";
+import { calculateMatchScore as calculateMatchScoreUtil } from "@/lib/utils/jobMatching";
 
 interface JobsPageClientProps {
     jobs: Job[];
     profile: Profile | null;
     userId: string;
     initialJobId?: string;
+    initialCompany?: string;
 }
 
-export function JobsPageClient({ jobs, profile, userId, initialJobId }: JobsPageClientProps) {
-    const [searchQuery, setSearchQuery] = useState("");
+export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCompany }: JobsPageClientProps) {
+    const [searchQuery, setSearchQuery] = useState(initialCompany || "");
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [showMap, setShowMap] = useState(false);
     const [filters, setFilters] = useState({
@@ -62,6 +64,33 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId }: JobsPage
             }
         }
     }, [initialJobId, jobs]);
+
+    // Helper function to convert display type to database type
+    const getDatabaseTypeFromDisplay = (displayType: string): string => {
+        const typeMap: Record<string, string> = {
+            "Full-time": "fulltime",
+            "Part-time": "parttime",
+            "Contract": "contract",
+            "Internship": "internship",
+            "Remote": "remote",
+            "Hybrid": "hybrid",
+        };
+        return typeMap[displayType] || displayType.toLowerCase();
+    };
+
+    // Helper function to calculate match score (using same logic as dashboard)
+    const calculateMatchScore = (job: Job, userProfile: Profile | null): number => {
+        if (!userProfile) {
+            return 0;
+        }
+        
+        return calculateMatchScoreUtil(
+            userProfile.skills || [],
+            job.skills_required || null,
+            userProfile.major || null,
+            job.major_required || null
+        );
+    };
 
     // Filter jobs based on active tab and filters
     const filteredJobs = useMemo(() => {
@@ -98,13 +127,15 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId }: JobsPage
                 job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 job.location.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesType = filters.type === "all" || job.type === filters.type;
+            // Fix type filter: convert display type to database type for comparison
+            const jobDbType = getDatabaseTypeFromDisplay(job.type);
+            const matchesType = filters.type === "all" || jobDbType === filters.type;
             const matchesCategory = filters.category === "all" || job.category === filters.category;
             const matchesLevel = filters.level === "all" || job.level === filters.level;
 
             return matchesSearch && matchesType && matchesCategory && matchesLevel;
         });
-    }, [jobs, searchQuery, filters, activeTab, savedJobs]);
+    }, [jobs, searchQuery, filters, activeTab, savedJobs, profile]);
 
     // Toggle save job
     const toggleSaveJob = (jobId: string, e: React.MouseEvent) => {
@@ -237,9 +268,10 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId }: JobsPage
                                         <p className="text-gray-500">Tidak ada lowongan yang cocok dengan profil Anda</p>
                                     </div>
                                 ) : (
-                                    <JobListContent
+                                    <JobListContentWithMatch
                                         jobs={filteredJobs}
                                         savedJobs={savedJobs}
+                                        profile={profile}
                                         onToggleSave={toggleSaveJob}
                                         onJobClick={setSelectedJob}
                                     />
@@ -312,6 +344,78 @@ function JobListContent({ jobs, savedJobs, onToggleSave, onJobClick }: JobListCo
                                 <Bookmark className="w-5 h-5 text-gray-400 hover:text-purple-600 transition" />
                             )}
                         </button>
+                    </div>
+                    <JobCard
+                        job={job}
+                        onClick={() => onJobClick(job)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// Job List Content with Match Score Component
+interface JobListContentWithMatchProps {
+    jobs: Job[];
+    savedJobs: string[];
+    profile: Profile;
+    onToggleSave: (jobId: string, e: React.MouseEvent) => void;
+    onJobClick: (job: Job) => void;
+}
+
+function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJobClick }: JobListContentWithMatchProps) {
+    // Calculate match scores for all jobs
+    const jobsWithScores = useMemo(() => {
+        return jobs.map(job => {
+            const matchScore = calculateMatchScoreUtil(
+                profile.skills || [],
+                job.skills_required || null,
+                profile.major || null,
+                job.major_required || null
+            );
+            
+            return { job, matchScore };
+        }).sort((a, b) => b.matchScore - a.matchScore);
+    }, [jobs, profile]);
+
+    if (jobsWithScores.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-10 h-10 text-indigo-400" />
+                </div>
+                <h3 className="text-gray-900 mb-2">Tidak ada lowongan ditemukan</h3>
+                <p className="text-gray-600">
+                    Coba ubah filter atau kata kunci pencarian Anda
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            {jobsWithScores.map(({ job, matchScore }, index) => (
+                <div 
+                    key={job.id}
+                    className="animate-slide-in-up relative"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                    <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                        
+                        <button
+                            onClick={(e) => onToggleSave(job.id, e)}
+                            className="p-2 bg-white rounded-lg shadow-md hover:bg-purple-50 transition-colors"
+                        >
+                            {savedJobs.includes(job.id) ? (
+                                <BookmarkCheck className="w-5 h-5 text-purple-600 fill-purple-600" />
+                            ) : (
+                                <Bookmark className="w-5 h-5 text-gray-400 hover:text-purple-600 transition" />
+                            )}
+                        </button>
+                        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-lg shadow-md text-sm font-semibold">
+                            {matchScore}%
+                        </div>
                     </div>
                     <JobCard
                         job={job}

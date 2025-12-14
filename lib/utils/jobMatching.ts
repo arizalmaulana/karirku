@@ -100,17 +100,32 @@ export function findMatchingJobs(
 
 /**
  * Menghitung progress kelengkapan profil
+ * Field yang dihitung:
+ * 1. full_name
+ * 2. headline
+ * 3. location_city
+ * 4. major
+ * 5. skills (minimal 1 skill)
+ * 6. avatar_url
+ * 7. phone
+ * 8. bio
+ * 9. experience
+ * 10. education
  */
 export function calculateProfileProgress(profile: Profile): number {
     let completed = 0;
-    const total = 6;
+    const total = 10;
 
-    if (profile.full_name) completed++;
-    if (profile.headline) completed++;
-    if (profile.location_city) completed++;
-    if (profile.major) completed++;
+    if (profile.full_name && profile.full_name.trim() !== '') completed++;
+    if (profile.headline && profile.headline.trim() !== '') completed++;
+    if (profile.location_city && profile.location_city.trim() !== '') completed++;
+    if (profile.major && profile.major.trim() !== '') completed++;
     if (profile.skills && profile.skills.length > 0) completed++;
-    // Tambahkan field lain jika diperlukan
+    if (profile.avatar_url && profile.avatar_url.trim() !== '') completed++;
+    if (profile.phone && profile.phone.trim() !== '') completed++;
+    if (profile.bio && profile.bio.trim() !== '') completed++;
+    if (profile.experience && profile.experience.trim() !== '') completed++;
+    if (profile.education && profile.education.trim() !== '') completed++;
 
     return Math.round((completed / total) * 100);
 }

@@ -212,6 +212,9 @@ export function convertJobListingToJob(jobListing: JobListing): Job {
     logo: getCompanyLogo(jobListing.company_name),
     category: determineCategory(jobListing),
     level: determineLevel(jobListing),
+    // Preserve fields untuk match score calculation
+    skills_required: jobListing.skills_required || null,
+    major_required: jobListing.major_required || null,
   };
 }
 

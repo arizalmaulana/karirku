@@ -21,8 +21,16 @@ async function getApplications(userId: string) {
     const { data, error } = await supabase
         .from("applications")
         .select(`
-            *,
-            job_listings(title, company_name, location_city, location_province, employment_type, min_salary, max_salary, currency)
+            id,
+            job_id,
+            job_seeker_id,
+            status,
+            cv_url,
+            portfolio_url,
+            cover_letter,
+            submitted_at,
+            updated_at,
+            job_listings(id, title, company_name, location_city, location_province, employment_type, min_salary, max_salary, currency)
         `)
         .eq("job_seeker_id", userId)
         .order("submitted_at", { ascending: false });

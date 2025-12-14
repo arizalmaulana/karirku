@@ -10,6 +10,12 @@ Jalankan script `RESET_AND_CREATE_FRESH_DATABASE.sql` di Supabase SQL Editor.
 ### 2. Setup Storage Buckets
 Buka Supabase Dashboard > Storage dan buat bucket berikut:
 
+#### Bucket: `avatars` (untuk foto profil jobseeker)
+- Name: `avatars`
+- Public: ON (public, agar foto profil bisa diakses)
+- File size limit: 5242880 (5MB)
+- Allowed MIME types: `image/jpeg,image/png,image/jpg,image/webp`
+
 #### Bucket: `company_licenses`
 - Name: `company_licenses`
 - Public: OFF (private)
@@ -21,13 +27,18 @@ Buka Supabase Dashboard > Storage dan buat bucket berikut:
 - Public: OFF (private)
 - File size limit: sesuai kebutuhan
 
-#### Bucket: `applications` (jika belum ada)
+#### Bucket: `applications` (untuk CV dan dokumen lamaran)
 - Name: `applications`
-- Public: OFF (private)
-- File size limit: sesuai kebutuhan
+- Public: OFF (private, untuk keamanan data pelamar)
+- File size limit: 5242880 (5MB)
+- Allowed MIME types: `application/pdf,image/jpeg,image/jpg`
 
 ### 3. Setup Storage RLS Policies
-Jalankan script `fix_storage_rls_policy.sql` di Supabase SQL Editor untuk membuat RLS policies untuk storage buckets.
+Jalankan script berikut di Supabase SQL Editor untuk membuat RLS policies untuk storage buckets:
+
+1. **`create_avatars_bucket_rls_policy.sql`** - RLS policy untuk bucket avatars (foto profil)
+2. **`create_applications_bucket_rls_policy.sql`** - RLS policy untuk bucket applications (CV dan dokumen lamaran)
+3. **`fix_storage_rls_policy.sql`** - RLS policy untuk bucket company_licenses dan lainnya
 
 ### 4. Buat User Admin Pertama
 
@@ -122,17 +133,27 @@ SELECT 'Applications', COUNT(*) FROM public.applications;
 
 ### Upload file error
 - Pastikan bucket sudah dibuat
-- Pastikan RLS policies untuk storage sudah dibuat (jalankan `fix_storage_rls_policy.sql`)
+- Pastikan RLS policies untuk storage sudah dibuat:
+  - Untuk foto profil: jalankan `create_avatars_bucket_rls_policy.sql`
+  - Untuk CV dan dokumen lamaran: jalankan `create_applications_bucket_rls_policy.sql`
+  - Untuk surat izin: jalankan `fix_storage_rls_policy.sql`
 - Cek console browser untuk detail error
+- Jika error "new row violates row-level security policy", pastikan:
+  - Bucket sudah dibuat di Dashboard
+  - RLS policy sudah dijalankan di SQL Editor
+  - User sudah terautentikasi (sudah login)
+  - Format filename sesuai dengan policy (mengandung user ID)
 
 ## Urutan Eksekusi Script
 
 1. ✅ `RESET_AND_CREATE_FRESH_DATABASE.sql` - Reset dan buat schema baru
-2. ✅ Buat storage buckets di Dashboard
-3. ✅ `fix_storage_rls_policy.sql` - Setup storage RLS policies
-4. ✅ Buat user admin pertama
-5. ✅ `INSERT_DUMMY_DATA.sql` - Insert data dummy (opsional, untuk testing)
-6. ✅ Test login dan registrasi
+2. ✅ Buat storage buckets di Dashboard (avatars, company_licenses, documents, applications)
+3. ✅ `create_avatars_bucket_rls_policy.sql` - Setup RLS policy untuk bucket avatars
+4. ✅ `create_applications_bucket_rls_policy.sql` - Setup RLS policy untuk bucket applications
+5. ✅ `fix_storage_rls_policy.sql` - Setup RLS policy untuk bucket lainnya
+6. ✅ Buat user admin pertama
+7. ✅ `INSERT_DUMMY_DATA.sql` - Insert data dummy (opsional, untuk testing)
+8. ✅ Test login dan registrasi
 
 ## Catatan
 

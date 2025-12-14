@@ -76,11 +76,6 @@ export function JobCard({ job, onClick }: JobCardProps) {
               </div>
               <p className="text-gray-600">{job.company}</p>
             </div>
-            <Badge 
-              className={`${typeColor} shadow-md px-3 py-1 badge-gradient`}
-            >
-              {job.type}
-            </Badge>
           </div>
 
           <div className="flex flex-wrap gap-4 text-gray-600 mb-4" style={{ fontSize: '14px' }}>
@@ -108,25 +103,33 @@ export function JobCard({ job, onClick }: JobCardProps) {
             {job.description}
           </p>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge 
-              className={`${categoryColor} shadow-sm px-3 py-1.5 font-medium transition-all hover:scale-105`}
-            >
-              <Sparkles className="w-3 h-3 mr-1.5" />
-              {job.category}
-            </Badge>
-            <Badge 
-              className={`${levelColor} shadow-sm px-3 py-1.5 font-medium transition-all hover:scale-105`}
-            >
-              {job.level}
-            </Badge>
-            
-            {/* NEW indicator for recent jobs */}
-            {job.posted === "1 hari yang lalu" && (
-              <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-sm px-3 py-1.5 animate-pulse">
-                🔥 Baru
+          <div className="flex items-center gap-2 flex-wrap justify-between">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge 
+                className={`${categoryColor} shadow-sm px-3 py-1.5 font-medium transition-all hover:scale-105`}
+              >
+                <Sparkles className="w-3 h-3 mr-1.5" />
+                {job.category}
               </Badge>
-            )}
+              <Badge 
+                className={`${levelColor} shadow-sm px-3 py-1.5 font-medium transition-all hover:scale-105`}
+              >
+                {job.level}
+              </Badge>
+              
+              {/* NEW indicator for recent jobs */}
+              {job.posted === "1 hari yang lalu" && (
+                <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-sm px-3 py-1.5 animate-pulse">
+                  🔥 Baru
+                </Badge>
+              )}
+            </div>
+            {/* Tipe pekerjaan di kanan bawah */}
+            <Badge 
+              className={`${typeColor} shadow-md px-3 py-1 badge-gradient`}
+            >
+              {job.type}
+            </Badge>
           </div>
         </div>
       </div>

@@ -96,56 +96,45 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
         return;
       }
 
-      // Upload CV file
+      // Upload CV file to applications bucket
       let cvUrl: string | null = null;
-      try {
-        const cvFileName = `cv_${user.id}_${Date.now()}.pdf`;
-        const { data: cvData, error: cvError } = await supabase.storage
-          .from("applications")
-          .upload(cvFileName, formData.cvFile, {
-            cacheControl: "3600",
-            upsert: false,
-          });
+      const cvFileName = `cv_${user.id}_${Date.now()}.pdf`;
+      const { data: cvData, error: cvError } = await supabase.storage
+        .from("applications")
+        .upload(cvFileName, formData.cvFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
-        if (cvError) {
-          console.warn("Storage error, saving to localStorage:", cvError);
-          // If storage fails, we'll store file info in localStorage as fallback
-          const fileData = await formData.cvFile.text();
-          localStorage.setItem(`cv_${user.id}_${Date.now()}`, fileData);
-          cvUrl = `local:cv_${user.id}_${Date.now()}.pdf`;
+      if (cvError) {
+        console.error("Error uploading CV:", cvError);
+        toast.error(`Gagal mengunggah CV: ${cvError.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("applications")
+        .getPublicUrl(cvFileName);
+      cvUrl = publicUrl;
+
+      // Upload additional document if exists to applications bucket
+      let docUrl: string | null = null;
+      if (formData.dokumenTambahan) {
+        const docExt = formData.dokumenTambahan.type === "application/pdf" ? "pdf" : "jpg";
+        const docFileName = `doc_${user.id}_${Date.now()}.${docExt}`;
+        const { data: docData, error: docError } = await supabase.storage
+          .from("applications")
+          .upload(docFileName, formData.dokumenTambahan);
+
+        if (docError) {
+          console.warn("Additional doc upload error:", docError);
+          // Continue without additional doc if upload fails
         } else {
           const { data: { publicUrl } } = supabase.storage
             .from("applications")
-            .getPublicUrl(cvFileName);
-          cvUrl = publicUrl;
-        }
-      } catch (storageError) {
-        console.warn("Storage not available, using localStorage:", storageError);
-        cvUrl = `local:cv_${user.id}_${Date.now()}.pdf`;
-      }
-
-      // Upload additional document if exists
-      let docUrl: string | null = null;
-      if (formData.dokumenTambahan) {
-        try {
-          const docExt = formData.dokumenTambahan.type === "application/pdf" ? "pdf" : "jpg";
-          const docFileName = `doc_${user.id}_${Date.now()}.${docExt}`;
-          const { data: docData, error: docError } = await supabase.storage
-            .from("applications")
-            .upload(docFileName, formData.dokumenTambahan);
-
-          if (!docError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from("applications")
-              .getPublicUrl(docFileName);
-            docUrl = publicUrl;
-          } else {
-            console.warn("Additional doc upload error:", docError);
-            docUrl = `local:doc_${user.id}_${Date.now()}.${docExt}`;
-          }
-        } catch (storageError) {
-          console.warn("Storage not available for additional doc:", storageError);
-          docUrl = `local:doc_${user.id}_${Date.now()}`;
+            .getPublicUrl(docFileName);
+          docUrl = publicUrl;
         }
       }
 
@@ -193,20 +182,11 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
         .from("applications")
         .insert([applicationData] as any);
 
-      // Always save to localStorage as backup
-      const applications = JSON.parse(localStorage.getItem("applications") || "[]");
-      applications.push({
-        id: `local-${Date.now()}-${Math.random()}`,
-        ...applicationData,
-        jobTitle: job.title,
-        company: job.company,
-        tanggalLamaran: new Date().toISOString(),
-      });
-      localStorage.setItem("applications", JSON.stringify(applications));
-
       if (insertError) {
-        // If database insert fails, we've already saved to localStorage
-        console.warn("Database insert error, using localStorage:", insertError);
+        console.error("Database insert error:", insertError);
+        toast.error(`Gagal menyimpan lamaran: ${insertError.message}`);
+        setIsSubmitting(false);
+        return;
       }
 
       toast.success("Lamaran berhasil dikirim!");

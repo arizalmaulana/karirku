@@ -73,7 +73,11 @@ async function checkExistingApplication(userId: string, jobId: string) {
     return data as { id: string; status: string } | null;
 }
 
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
+export default async function JobDetailPage({ 
+    params 
+}: { 
+    params: Promise<{ id: string }> | { id: string } 
+}) {
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -83,10 +87,14 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         redirect("/");
     }
 
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const jobId = resolvedParams.id;
+
     const [job, profile, existingApplication] = await Promise.all([
-        getJob(params.id),
+        getJob(jobId),
         getUserProfile(user.id),
-        checkExistingApplication(user.id, params.id),
+        checkExistingApplication(user.id, jobId),
     ]);
 
     if (!job) {

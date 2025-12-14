@@ -129,46 +129,48 @@ export default async function AdminDashboardPage() {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-10 space-y-8">
+        <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-blue-600">Dashboard Admin</p>
-                    <h1 className="text-3xl font-semibold text-blue-900 mt-1">Kontrol Sistem Terpadu</h1>
-                    <p className="text-gray-500">
+                    <p className="text-sm font-semibold text-blue-600 mb-1">Dashboard Admin</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mt-1">Kontrol Sistem Terpadu</h1>
+                    <p className="text-gray-600 mt-2">
                         Pantau metrik utama, verifikasi lowongan baru, dan pastikan data biaya hidup selalu
                         terkini.
                     </p>
                 </div>
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all" variant="outline" size="lg" asChild>
                         <Link href="/admin/jobs/new">
                             Tambah Lowongan Baru
                         </Link>
                     </Button>
             </div>
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 border border-blue-200 bg-gradient-to-br from-blue-50 to-pink-100/50 shadow-sm rounded-2xl p-6">
+            <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {summaryStats.map((stat) => (
-                    <Card key={stat.title}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">{stat.title}</CardTitle>
-                            <stat.icon className="h-5 w-5 text-blue-600" />
+                    <Card key={stat.title} className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-50 via-blue-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                            <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
+                            <div className="p-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-md">
+                                <stat.icon className="h-5 w-5 text-white" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-semibold">{stat.value}</div>
-                            {stat.delta && <p className="text-sm text-emerald-600">{stat.delta}</p>}
+                            <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                            {stat.delta && <p className="text-sm text-emerald-600 font-medium">{stat.delta}</p>}
                         </CardContent>
                     </Card>
                 ))}
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-3 border border-blue-200 bg-gradient-to-br from-purple-100 to-blue-100/80 shadow-sm rounded-2xl p-6">
-                <Card className="lg:col-span-2">
-                    <CardHeader className="flex flex-row items-center justify-between">
+            <section className="grid gap-6 lg:grid-cols-3">
+                <Card className="lg:col-span-2 border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle>Lowongan Terbaru</CardTitle>
+                            <CardTitle className="text-xl font-bold">Lowongan Terbaru</CardTitle>
                             <CardDescription>Lowongan yang baru diajukan oleh recruiter</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/jobs">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -176,68 +178,76 @@ export default async function AdminDashboardPage() {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {recentJobs.length > 0 ? (
                                 recentJobs.map((job: any) => (
                                     <Link key={job.id} href={`/admin/jobs/${job.id}`}>
-                                        <div className="flex items-center justify-between rounded-xl border p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <div className="flex items-center justify-between rounded-2xl border-2 border-gray-200 p-5 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
                                             <div className="flex-1">
-                                                <p className="font-semibold text-gray-900">{job.title}</p>
-                                                <p className="text-sm text-gray-500">{job.company}</p>
-                                                <p className="text-xs text-gray-400 mt-1">Diajukan pada {job.submitted}</p>
+                                                <p className="font-bold text-gray-900 mb-1">{job.title}</p>
+                                                <p className="text-sm text-gray-600 font-medium mb-2">{job.company}</p>
+                                                <p className="text-xs text-gray-500">Diajukan pada {job.submitted}</p>
                                             </div>
-                                            <ArrowUpRight className="h-4 w-4 text-gray-400" />
+                                            <ArrowUpRight className="h-5 w-5 text-blue-600" />
                                         </div>
                                     </Link>
                                 ))
                             ) : (
-                                <p className="text-sm text-gray-500">Tidak ada lowongan terbaru</p>
+                                <div className="text-center py-8">
+                                    <BriefcaseBusiness className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-sm text-gray-500">Tidak ada lowongan terbaru</p>
+                                </div>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle>Aktivitas Lamaran</CardTitle>
+                            <CardTitle className="text-xl font-bold">Aktivitas Lamaran</CardTitle>
                             <CardDescription>Lamaran terbaru yang masuk</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/applications">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="space-y-4">
                         {recentApplications.length > 0 ? (
                             recentApplications.map((application: any) => (
                                 <Link key={application.id} href={`/admin/applications/${application.id}`}>
-                                    <div className="rounded-xl border p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                                        <p className="font-semibold text-gray-900">{application.candidate}</p>
-                                        <p className="text-sm text-gray-600">
+                                    <div className="rounded-2xl border-2 border-gray-200 p-4 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
+                                        <p className="font-bold text-gray-900 mb-1">{application.candidate}</p>
+                                        <p className="text-sm text-gray-600 font-medium mb-2">
                                             {application.job}
                                         </p>
-                                        <p className="text-xs text-gray-400 mt-1">{application.submitted}</p>
-                                        <Badge className="mt-2 w-fit" variant={getStatusBadgeVariant(application.status)}>
+                                        <p className="text-xs text-gray-500 mb-3">{application.submitted}</p>
+                                        <Badge className="w-fit" variant={getStatusBadgeVariant(application.status)}>
                                             {getStatusLabel(application.status)}
                                         </Badge>
                                     </div>
                                 </Link>
                             ))
                         ) : (
-                            <p className="text-sm text-gray-500">Tidak ada lamaran terbaru</p>
+                            <div className="text-center py-8">
+                                <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm text-gray-500">Tidak ada lamaran terbaru</p>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
             </section>
 
             {/* Tugas Prioritas Admin */}
-            <Card className="border border-blue-200 bg-gradient-to-br from-pink-50 to-blue-100/50 shadow-sm rounded-2xl p-6">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <AlertCircle className="h-5 w-5 text-amber-600" />
+            <Card className="border-2 border-amber-200/50 bg-gradient-to-br from-amber-50/50 to-blue-50/50 shadow-lg">
+                <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                        <div className="p-2 bg-amber-100 rounded-xl">
+                            <AlertCircle className="h-5 w-5 text-amber-600" />
+                        </div>
                         Tugas Prioritas
                     </CardTitle>
                     <CardDescription>Tugas yang memerlukan perhatian segera</CardDescription>

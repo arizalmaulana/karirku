@@ -119,7 +119,6 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
 
             toast.success("Lamaran berhasil diperbarui");
             router.refresh();
-            router.push(`/admin/applications/${applicationId}`);
         } catch (error: any) {
             toast.error(error.message || "Terjadi kesalahan saat memperbarui lamaran");
         } finally {

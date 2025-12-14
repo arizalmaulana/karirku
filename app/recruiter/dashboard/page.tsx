@@ -148,18 +148,18 @@ export default async function RecruiterDashboardPage() {
     const recentApplications = recentApplicationsData || [];
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto">
+        <div className="space-y-8 max-w-7xl mx-auto px-4 py-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-purple-600">Dashboard Recruiter</p>
-                    <h1 className="text-3xl font-semibold text-purple-900 mt-1">
+                    <p className="text-sm font-semibold text-purple-600 mb-1">Dashboard Recruiter</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mt-1">
                         Kelola Pipeline Kandidat
                     </h1>
-                    <p className="text-gray-500">
+                    <p className="text-gray-600 mt-2">
                         Pantau performa lowongan, tindak lanjuti kandidat, dan update status lamaran langsung.
                     </p>
                 </div>
-                <Button  size="lg" className="w-full lg:w-fit bg-gradient-to-r from- bg-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" asChild>
+                <Button size="lg" className="w-full lg:w-fit bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all" asChild>
                     <Link href="/recruiter/jobs/new">
                         <Briefcase className="mr-2 h-4 w-4" />
                         Buat Lowongan Baru
@@ -167,70 +167,81 @@ export default async function RecruiterDashboardPage() {
                 </Button>
             </div>
 
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {pipelineStats.map((stat) => (
-                    <Card key={stat.label} className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">
-                                {stat.label}
-                            </CardTitle>
-                            <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-semibold">{stat.value}</div>
-                            <p className="text-sm text-gray-500">{stat.subtext}</p>
-                        </CardContent>
-                    </Card>
-                ))}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {pipelineStats.map((stat) => {
+                    const iconBgClass = {
+                        'text-blue-600': 'from-blue-400 to-blue-600',
+                        'text-yellow-600': 'from-yellow-400 to-yellow-600',
+                        'text-purple-600': 'from-purple-400 to-purple-600',
+                        'text-green-600': 'from-green-400 to-green-600',
+                    }[stat.color] || 'from-gray-400 to-gray-600';
+                    
+                    return (
+                        <Card key={stat.label} className="border-2 border-purple-200/50 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <CardHeader className="flex flex-row items-center justify-between pb-3">
+                                <CardTitle className="text-sm font-semibold text-gray-600">
+                                    {stat.label}
+                                </CardTitle>
+                                <div className={`p-3 rounded-xl shadow-md bg-gradient-to-br ${iconBgClass}`}>
+                                    <stat.icon className="h-5 w-5 text-white" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                                <p className="text-sm text-gray-600 font-medium">{stat.subtext}</p>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="lg:col-span-2 border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle>Lowongan Aktif</CardTitle>
+                            <CardTitle className="text-xl font-bold">Lowongan Aktif</CardTitle>
                             <CardDescription>
                                 Update status tiap lowongan untuk menjaga pipeline rapih
                             </CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/recruiter/jobs">
                                 Kelola Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-5">
                         {jobs.length > 0 ? (
                             jobs.slice(0, 5).map((job) => {
                                 const jobApplications = applications.filter(
                                     (app: any) => app.job_id === job.id
                                 );
                                 return (
-                                    <div key={job.id} className="rounded-2xl border p-4">
-                                        <div className="flex items-center justify-between">
+                                    <div key={job.id} className="rounded-2xl border-2 border-gray-200 p-6 hover:border-purple-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30">
+                                        <div className="flex items-center justify-between mb-4">
                                             <div>
-                                                <p className="font-semibold text-gray-900">{job.title}</p>
-                                                <p className="text-sm text-gray-500">{job.company_name}</p>
+                                                <p className="font-bold text-lg text-gray-900 mb-1">{job.title}</p>
+                                                <p className="text-sm text-gray-600 font-medium">{job.company_name}</p>
                                             </div>
-                                            <Badge variant={job.featured ? "default" : "secondary"}>
+                                            <Badge variant={job.featured ? "default" : "secondary"} className="shadow-sm">
                                                 {job.featured ? "Featured" : "Aktif"}
                                             </Badge>
                                         </div>
-                                        <div className="mt-4 grid gap-4 md:grid-cols-2">
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                        <div className="mt-5 grid gap-4 md:grid-cols-2">
+                                            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                                                <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">
                                                     Pelamar
                                                 </p>
-                                                <p className="text-lg font-semibold">
+                                                <p className="text-2xl font-bold text-purple-900">
                                                     {jobApplications.length} Kandidat
                                                 </p>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">
                                                     Estimasi Gaji
                                                 </p>
-                                                <p className="text-sm font-medium">
+                                                <p className="text-sm font-bold text-blue-900">
                                                     {job.min_salary && job.max_salary
                                                         ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
                                                         : job.min_salary
@@ -239,13 +250,13 @@ export default async function RecruiterDashboardPage() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="mt-4 flex gap-2">
-                                            <Button variant="outline" size="sm" asChild>
+                                        <div className="mt-5 flex gap-3">
+                                            <Button variant="outline" size="sm" className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
                                                 <Link href={`/recruiter/jobs/${job.id}`}>
                                                     Lihat Detail
                                                 </Link>
                                             </Button>
-                                            <Button variant="outline" size="sm" asChild>
+                                            <Button variant="outline" size="sm" className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
                                                 <Link href={`/recruiter/applications?job=${job.id}`}>
                                                     Lihat Pelamar
                                                 </Link>
@@ -256,8 +267,9 @@ export default async function RecruiterDashboardPage() {
                             })
                         ) : (
                             <div className="text-center py-12">
-                                <p className="text-gray-500 mb-4">Belum ada lowongan</p>
-                                <Button asChild>
+                                <Briefcase className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                                <p className="text-gray-500 mb-4 font-medium">Belum ada lowongan</p>
+                                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white" asChild>
                                     <Link href="/recruiter/jobs/new">Buat Lowongan Pertama</Link>
                                 </Button>
                             </div>
@@ -265,31 +277,31 @@ export default async function RecruiterDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm">
-                    <CardHeader>
-                        <CardTitle>Pelamar Terbaru</CardTitle>
+                <Card className="border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-xl font-bold">Pelamar Terbaru</CardTitle>
                         <CardDescription>Kandidat yang baru mendaftar</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {recentApplications.length > 0 ? (
                             recentApplications.map((app: any) => (
-                                <div key={app.id} className="rounded-xl border p-4">
-                                    <p className="font-semibold text-gray-900">
+                                <div key={app.id} className="rounded-2xl border-2 border-gray-200 p-5 hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                                    <p className="font-bold text-gray-900 mb-1">
                                         {app.profiles?.full_name || "Unknown"}
                                     </p>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-600 font-medium mb-3">
                                         {app.job_listings?.title || "Unknown"}
                                     </p>
-                                    <Badge className="mt-3" variant="outline">
+                                    <Badge className="mb-3" variant="outline">
                                         {app.status}
                                     </Badge>
-                                    <p className="text-xs text-gray-400 mt-2">
+                                    <p className="text-xs text-gray-500 mb-4">
                                         {new Date(app.submitted_at).toLocaleDateString("id-ID")}
                                     </p>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="mt-3 w-full"
+                                        className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
                                         asChild
                                     >
                                         <Link href={`/recruiter/applications/${app.id}`}>
@@ -299,9 +311,12 @@ export default async function RecruiterDashboardPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-sm text-gray-500 text-center py-4">
-                                Belum ada pelamar
-                            </p>
+                            <div className="text-center py-8">
+                                <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm text-gray-500">
+                                    Belum ada pelamar
+                                </p>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

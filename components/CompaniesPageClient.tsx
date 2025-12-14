@@ -15,7 +15,7 @@ import {
   TrendingUp,
   Star,
 } from "lucide-react";
-import type { Company } from "@/data/companies";
+import type { Company } from "@/lib/types";
 import type { Job } from "@/types/job";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import {
@@ -37,10 +37,13 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
 
   const filteredCompanies = useMemo(() => {
     return initialCompanies.filter((company) => {
+      const companyIndustry = company.industry || '';
+      const companyLocation = company.location || company.location_city || '';
+      
       return (
         company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        company.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        company.location.toLowerCase().includes(searchQuery.toLowerCase())
+        companyIndustry.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        companyLocation.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
   }, [initialCompanies, searchQuery]);
@@ -152,8 +155,8 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                   {/* Company Logo */}
                   <div className="mb-4">
                     <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center overflow-hidden ring-2 ring-gray-100 group-hover:ring-indigo-300 transition-all duration-300 group-hover:scale-110">
-                      <img
-                        src={company.logo}
+                      <ImageWithFallback
+                        src={company.logo || company.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&size=100&background=random`}
                         alt={company.name}
                         className="w-full h-full object-cover"
                       />
@@ -163,37 +166,47 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                   {/* Company Info */}
                   <div className="flex-1">
                     <h3 className="mb-2 group-hover:text-indigo-600 transition-colors">{company.name}</h3>
-                    <Badge
-                      className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-2 border-indigo-200 shadow-sm px-3 py-1.5 font-medium"
-                    >
-                      <Sparkles className="w-3 h-3 mr-1.5" />
-                      {company.industry}
-                    </Badge>
+                    {company.industry && (
+                      <Badge
+                        className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-2 border-indigo-200 shadow-sm px-3 py-1.5 font-medium"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1.5" />
+                        {company.industry}
+                      </Badge>
+                    )}
 
                     <div className="space-y-2 mb-4 text-gray-600" style={{ fontSize: "14px" }}>
-                      <div className="flex items-center gap-2 group/item hover:text-indigo-600 transition-colors">
-                        <div className="p-1.5 bg-indigo-50 rounded-lg group-hover/item:bg-indigo-100 transition-colors">
-                          <MapPin className="w-4 h-4 text-indigo-500" />
+                      {(company.location || company.location_city) && (
+                        <div className="flex items-center gap-2 group/item hover:text-indigo-600 transition-colors">
+                          <div className="p-1.5 bg-indigo-50 rounded-lg group-hover/item:bg-indigo-100 transition-colors">
+                            <MapPin className="w-4 h-4 text-indigo-500" />
+                          </div>
+                          <span className="font-medium">{company.location || company.location_city}</span>
                         </div>
-                        <span className="font-medium">{company.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 group/item hover:text-purple-600 transition-colors">
-                        <div className="p-1.5 bg-purple-50 rounded-lg group-hover/item:bg-purple-100 transition-colors">
-                          <Users className="w-4 h-4 text-purple-500" />
+                      )}
+                      {company.size && (
+                        <div className="flex items-center gap-2 group/item hover:text-purple-600 transition-colors">
+                          <div className="p-1.5 bg-purple-50 rounded-lg group-hover/item:bg-purple-100 transition-colors">
+                            <Users className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <span className="font-medium">{company.size} karyawan</span>
                         </div>
-                        <span className="font-medium">{company.size} karyawan</span>
-                      </div>
-                      <div className="flex items-center gap-2 group/item hover:text-cyan-600 transition-colors">
-                        <div className="p-1.5 bg-cyan-50 rounded-lg group-hover/item:bg-cyan-100 transition-colors">
-                          <TrendingUp className="w-4 h-4 text-cyan-500" />
+                      )}
+                      {company.openPositions !== undefined && company.openPositions > 0 && (
+                        <div className="flex items-center gap-2 group/item hover:text-cyan-600 transition-colors">
+                          <div className="p-1.5 bg-cyan-50 rounded-lg group-hover/item:bg-cyan-100 transition-colors">
+                            <TrendingUp className="w-4 h-4 text-cyan-500" />
+                          </div>
+                          <span className="font-medium">{company.openPositions} posisi terbuka</span>
                         </div>
-                        <span className="font-medium">{company.openPositions} posisi terbuka</span>
-                      </div>
+                      )}
                     </div>
 
-                    <p className="text-gray-600 line-clamp-3 mb-4" style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                      {company.description}
-                    </p>
+                    {company.description && (
+                      <p className="text-gray-600 line-clamp-3 mb-4" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                        {company.description}
+                      </p>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -202,7 +215,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                       className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-indigo-500/50"
                       onClick={() => setSelectedCompany(company)}
                     >
-                      Lihat Lowongan ({company.openPositions})
+                      Lihat Lowongan ({company.openPositions || 0})
                     </Button>
                     <Button
                       variant="outline"
@@ -242,7 +255,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
               {selectedCompany && (
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
                   <ImageWithFallback
-                    src={selectedCompany.logo}
+                    src={selectedCompany.logo || selectedCompany.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedCompany.name)}&size=100&background=random`}
                     alt={selectedCompany.name}
                     className="w-full h-full object-cover"
                   />

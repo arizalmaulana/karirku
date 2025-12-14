@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { ApplicationStatusFormEnhanced } from "@/components/recruiter/ApplicationStatusFormEnhanced";
+import { ApplicationEditForm } from "@/components/admin/ApplicationEditForm";
+import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
+import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -41,19 +43,36 @@ async function getApplication(id: string, userId: string) {
         .select(`
             *,
             job_listings!inner(title, company_name, location_city, location_province, employment_type, recruiter_id),
-            profiles(full_name, headline, location_city, skills, major, email)
+            profiles(full_name, headline, location_city, skills, major, email, phone, bio, experience, education)
         `)
         .eq("id", id)
         .eq("job_listings.recruiter_id", userId)
         .single();
 
-    if (error || !data) {
+    if (error) {
+        console.error("Error fetching application:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         return null;
     }
+    
+    if (!data) {
+        console.log("No data returned for application:", id);
+        return null;
+    }
+    
+    // Debug: log the data structure
+    console.log("Application data:", {
+        id: data.id,
+        job_seeker_id: data.job_seeker_id,
+        profiles: data.profiles,
+        hasProfiles: !!data.profiles,
+        profilesFullName: data.profiles?.full_name
+    });
+    
     return data as any;
 }
 
-export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
+export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -63,14 +82,42 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
         redirect("/");
     }
 
-    const application = await getApplication(params.id, user.id);
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const application = await getApplication(resolvedParams.id, user.id);
 
     if (!application) {
         notFound();
     }
 
     const job = application.job_listings as any;
-    const profile = application.profiles as any;
+    let profile = application.profiles as any;
+    
+    // Fallback: Query profiles separately if not included in join
+    if (!profile && application.job_seeker_id) {
+        const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name, headline, location_city, skills, major, email, phone, bio, experience, education")
+            .eq("id", application.job_seeker_id)
+            .single();
+        
+        if (profileData) {
+            profile = profileData;
+        }
+    }
+    
+    // Fallback: Extract name from cover_letter if profiles is still null
+    let applicantName = profile?.full_name;
+    if (!applicantName && application.cover_letter) {
+        try {
+            const parsed = JSON.parse(application.cover_letter);
+            if (parsed && typeof parsed === 'object' && parsed.namaLengkap) {
+                applicantName = parsed.namaLengkap;
+            }
+        } catch (e) {
+            // Not JSON, skip
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -84,7 +131,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                 <div className="flex-1">
                     <h1 className="text-3xl font-semibold text-gray-900">Detail Pelamar</h1>
                     <p className="text-gray-500 mt-1">
-                        {profile?.full_name || "Unknown"} - {job?.title || "Unknown"}
+                        {applicantName || "Unknown"} - {job?.title || "Unknown"}
                     </p>
                 </div>
                 <Badge variant={getStatusBadgeVariant(application.status)}>
@@ -101,8 +148,20 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                         <CardContent className="space-y-4">
                             <div>
                                 <p className="text-sm text-gray-500">Nama Lengkap</p>
-                                <p className="font-medium">{profile?.full_name || "Tidak ada nama"}</p>
+                                <p className="font-medium">{applicantName || "Tidak ada nama"}</p>
                             </div>
+                            {profile?.email && (
+                                <div>
+                                    <p className="text-sm text-gray-500">Email</p>
+                                    <p className="font-medium">{profile.email}</p>
+                                </div>
+                            )}
+                            {profile?.phone && (
+                                <div>
+                                    <p className="text-sm text-gray-500">Telepon</p>
+                                    <p className="font-medium">{profile.phone}</p>
+                                </div>
+                            )}
                             {profile?.headline && (
                                 <div>
                                     <p className="text-sm text-gray-500">Headline</p>
@@ -119,6 +178,24 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                                 <div>
                                     <p className="text-sm text-gray-500">Jurusan</p>
                                     <p className="font-medium">{profile.major}</p>
+                                </div>
+                            )}
+                            {profile?.bio && (
+                                <div>
+                                    <p className="text-sm text-gray-500">Bio</p>
+                                    <p className="font-medium whitespace-pre-wrap">{profile.bio}</p>
+                                </div>
+                            )}
+                            {profile?.experience && (
+                                <div>
+                                    <p className="text-sm text-gray-500">Pengalaman</p>
+                                    <p className="font-medium whitespace-pre-wrap">{profile.experience}</p>
+                                </div>
+                            )}
+                            {profile?.education && (
+                                <div>
+                                    <p className="text-sm text-gray-500">Pendidikan</p>
+                                    <p className="font-medium whitespace-pre-wrap">{profile.education}</p>
                                 </div>
                             )}
                             {profile?.skills && profile.skills.length > 0 && (
@@ -142,43 +219,88 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                                 <CardTitle>Cover Letter</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="whitespace-pre-wrap text-sm">{application.cover_letter}</p>
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    {(() => {
+                                        // Coba parse sebagai JSON jika mungkin
+                                        try {
+                                            const parsed = JSON.parse(application.cover_letter);
+                                            // Jika berhasil parse dan merupakan object, tampilkan dalam format yang rapi
+                                            if (typeof parsed === 'object' && parsed !== null) {
+                                                return (
+                                                    <div className="space-y-3">
+                                                        {parsed.namaLengkap && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Nama Lengkap</p>
+                                                                <p className="text-sm font-medium">{parsed.namaLengkap}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.email && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Email</p>
+                                                                <p className="text-sm">{parsed.email}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.nomorTelepon && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Nomor Telepon</p>
+                                                                <p className="text-sm">{parsed.nomorTelepon}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.domisili && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Domisili</p>
+                                                                <p className="text-sm">{parsed.domisili}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.pendidikanTerakhir && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Pendidikan Terakhir</p>
+                                                                <p className="text-sm">{parsed.pendidikanTerakhir}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.pengalamanKerja && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Pengalaman Kerja</p>
+                                                                <p className="text-sm whitespace-pre-wrap">{parsed.pengalamanKerja}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.skill && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Skill</p>
+                                                                <p className="text-sm">{parsed.skill}</p>
+                                                            </div>
+                                                        )}
+                                                        {parsed.portfolio && (
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase">Portfolio</p>
+                                                                <p className="text-sm">{parsed.portfolio}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            }
+                                        } catch (e) {
+                                            // Bukan JSON, tampilkan sebagai teks biasa
+                                        }
+                                        // Tampilkan sebagai teks biasa
+                                        return (
+                                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{application.cover_letter}</p>
+                                        );
+                                    })()}
+                                </div>
                             </CardContent>
                         </Card>
                     )}
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Dokumen</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {application.cv_url ? (
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-2">CV / Resume</p>
-                                    <Button variant="outline" asChild>
-                                        <a href={application.cv_url} target="_blank" rel="noopener noreferrer">
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Download CV
-                                        </a>
-                                    </Button>
-                                </div>
-                            ) : (
-                                <p className="text-sm text-gray-500">CV tidak diunggah</p>
-                            )}
+                    <ApplicationDocumentViewer
+                        documentUrl={application.cv_url}
+                        title="CV / Resume"
+                        jobSeekerId={application.job_seeker_id}
+                    />
 
-                            {application.portfolio_url && (
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-2">Portfolio</p>
-                                    <Button variant="outline" asChild>
-                                        <a href={application.portfolio_url} target="_blank" rel="noopener noreferrer">
-                                            <ExternalLink className="mr-2 h-4 w-4" />
-                                            Lihat Portfolio
-                                        </a>
-                                    </Button>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <PortfolioViewer
+                        portfolioUrl={application.portfolio_url}
+                    />
                 </div>
 
                 <div className="space-y-6">
@@ -247,21 +369,16 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Update Status</CardTitle>
-                            <CardDescription>
-                                Perbarui status lamaran kandidat
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ApplicationStatusFormEnhanced
-                                applicationId={application.id}
-                                currentStatus={application.status}
-                                jobSeekerEmail={profile?.email}
-                            />
-                        </CardContent>
-                    </Card>
+                    <ApplicationEditForm
+                        applicationId={application.id}
+                        initialData={{
+                            status: application.status,
+                            notes: application.notes,
+                            rejection_reason: application.rejection_reason,
+                            interview_date: application.interview_date,
+                            interview_location: application.interview_location,
+                        }}
+                    />
                 </div>
             </div>
         </div>

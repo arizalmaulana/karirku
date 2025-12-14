@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Company } from "@/data/companies";
+import type { Company } from "@/lib/types";
 
 /**
  * Generate logo URL berdasarkan company name
@@ -126,28 +126,83 @@ function generateDescription(companyName: string, jobs: any[]): string {
 }
 
 /**
- * Fetch companies dari database (aggregate dari job_listings)
+ * Fetch companies dari database
+ * Mengambil dari tabel companies jika ada, jika tidak aggregate dari job_listings
  */
 export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  
+  // Coba ambil dari tabel companies dulu
+  const { data: companiesData, error: companiesError } = await supabase
+    .from("companies")
+    .select("*")
+    .order("name", { ascending: true });
+
+  // Jika tabel companies ada dan berisi data, gunakan data tersebut
+  if (!companiesError && companiesData && companiesData.length > 0) {
+    // Ambil jumlah job listings per company
+    const { data: jobsData } = await supabase
+      .from("job_listings")
+      .select("company_name")
+      .order("created_at", { ascending: false });
+
+    // Hitung jumlah job per company
+    const jobCounts = new Map<string, number>();
+    if (jobsData) {
+      jobsData.forEach((job: any) => {
+        const count = jobCounts.get(job.company_name) || 0;
+        jobCounts.set(job.company_name, count + 1);
+      });
+    }
+
+    // Convert ke format Company dengan computed fields
+    const companies: Company[] = companiesData.map((company: any) => {
+      const openPositions = jobCounts.get(company.name) || 0;
+      const location = company.location_province
+        ? `${company.location_city || ''}, ${company.location_province}`
+        : company.location_city || '';
+
+      return {
+        id: company.id,
+        name: company.name,
+        logo_url: company.logo_url,
+        industry: company.industry || determineIndustry(company.name, []),
+        location_city: company.location_city,
+        location_province: company.location_province,
+        description: company.description || generateDescription(company.name, []),
+        website_url: company.website_url,
+        size: company.size || determineSize(openPositions),
+        created_at: company.created_at,
+        updated_at: company.updated_at,
+        // Computed fields
+        logo: company.logo_url || getCompanyLogo(company.name),
+        location: location,
+        openPositions: openPositions,
+      };
+    });
+
+    return companies.sort((a, b) => (b.openPositions || 0) - (a.openPositions || 0));
+  }
+
+  // Fallback: Aggregate dari job_listings jika tabel companies belum ada atau kosong
+  const { data: jobsData, error: jobsError } = await supabase
     .from("job_listings")
-    .select("company_name, location_city, location_province, employment_type")
+    .select("id, company_name, location_city, location_province, employment_type, title, description")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching companies:", error);
+  if (jobsError) {
+    console.error("Error fetching companies from job_listings:", jobsError);
     return [];
   }
 
-  if (!data) {
+  if (!jobsData || jobsData.length === 0) {
     return [];
   }
 
   // Group by company_name
   const companyMap = new Map<string, any>();
 
-  data.forEach((job: any) => {
+  jobsData.forEach((job: any) => {
     const companyName = job.company_name;
     if (!companyMap.has(companyName)) {
       companyMap.set(companyName, {
@@ -164,19 +219,28 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
   // Convert to Company format
   const companies: Company[] = Array.from(companyMap.entries()).map(([companyName, data], index) => {
     const openPositions = data.jobs.length;
+    const location = data.location;
 
     return {
-      id: (index + 1).toString(),
+      id: `company-${index + 1}-${companyName.toLowerCase().replace(/\s+/g, '-')}`,
       name: companyName,
-      logo: getCompanyLogo(companyName),
+      logo_url: null,
       industry: determineIndustry(companyName, data.jobs),
-      location: data.location,
-      size: determineSize(openPositions),
+      location_city: data.location.split(',')[0]?.trim() || '',
+      location_province: data.location.includes(',') ? data.location.split(',')[1]?.trim() || null : null,
       description: generateDescription(companyName, data.jobs),
+      website_url: null,
+      size: determineSize(openPositions),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      // Computed fields
+      logo: getCompanyLogo(companyName),
+      location: location,
       openPositions: openPositions,
     };
   });
 
-  return companies;
+  // Sort by openPositions (descending)
+  return companies.sort((a, b) => (b.openPositions || 0) - (a.openPositions || 0));
 }
 

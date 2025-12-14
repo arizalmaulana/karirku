@@ -131,8 +131,16 @@ export function ApplicationsPageClient({
             const { data, error } = await supabase
                 .from("applications")
                 .select(`
-                    *,
-                    job_listings(title, company_name, location_city, location_province, employment_type, min_salary, max_salary, currency)
+                    id,
+                    job_id,
+                    job_seeker_id,
+                    status,
+                    cv_url,
+                    portfolio_url,
+                    cover_letter,
+                    submitted_at,
+                    updated_at,
+                    job_listings(id, title, company_name, location_city, location_province, employment_type, min_salary, max_salary, currency)
                 `)
                 .eq("job_seeker_id", userId)
                 .order("submitted_at", { ascending: false });
@@ -448,8 +456,11 @@ export function ApplicationsPageClient({
                                             asChild
                                             className="border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
                                         >
-                                            <Link href={`/job-seeker/applications/${app.id}`}>
-                                                <Eye className="h-4 w-4 mr-2" />
+                                            <Link 
+                                                href={`/job-seeker/applications/${app.id}`}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Eye className="h-4 w-4" />
                                                 Lihat Detail
                                             </Link>
                                         </Button>

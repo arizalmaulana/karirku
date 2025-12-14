@@ -20,7 +20,7 @@ import {
     XCircle,
     Clock
 } from "lucide-react";
-import { findMatchingJobs, calculateProfileProgress } from "@/lib/utils/jobMatching";
+import { findMatchingJobs, calculateProfileProgress, calculateMatchScore } from "@/lib/utils/jobMatching";
 import { redirect } from "next/navigation";
 import type { JobListing, Profile } from "@/lib/types";
 
@@ -69,6 +69,17 @@ async function getTotalApplicationsCount(userId: string) {
     return count || 0;
 }
 
+async function getSavedJobsCount(userId: string) {
+    // Get saved jobs from localStorage equivalent - we'll use a simple count
+    // In a real app, this would come from a database table
+    // For now, we'll return 0 or fetch from a saved_jobs table if it exists
+    const supabase = await createSupabaseServerClient();
+    
+    // Check if there's a saved_jobs table or similar
+    // For now, return 0 as placeholder - this should be implemented based on your saved jobs mechanism
+    return 0;
+}
+
 async function getRecentApplications(userId: string) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
@@ -101,43 +112,81 @@ async function getRecommendedJobs(profile: Profile) {
     }
 
     const jobs = data as JobListing[];
-    const matchingJobs = findMatchingJobs(profile, jobs);
     
-    return matchingJobs.slice(0, 6);
+    // Hitung match score langsung untuk setiap job (sama seperti di halaman jobs)
+    const jobsWithMatchScore = jobs.map(job => ({
+        ...job,
+        matchScore: calculateMatchScore(
+            profile.skills || [],
+            job.skills_required || null,
+            profile.major || null,
+            job.major_required || null
+        )
+    }))
+    .sort((a, b) => b.matchScore - a.matchScore); // Sort by match score descending
+    
+    return jobsWithMatchScore.slice(0, 6);
 }
 
 async function getTopCompanies() {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
+    
+    // Get all job listings with company names
+    const { data: jobsData, error: jobsError } = await supabase
         .from("job_listings")
-        .select("company_name")
-        .limit(100);
+        .select("id, company_name")
+        .limit(1000);
 
-    if (error) {
+    if (jobsError || !jobsData) {
         return [];
     }
 
-    // Count occurrences of each company
+    // Count job listings per company (this represents open positions/views)
     const companyCounts: Record<string, number> = {};
-    (data || []).forEach((job: any) => {
+    jobsData.forEach((job: any) => {
         companyCounts[job.company_name] = (companyCounts[job.company_name] || 0) + 1;
     });
 
-    // Sort by count and get top 6
+    // Get real application counts per company from applications table
+    const { data: applicationsData } = await supabase
+        .from("applications")
+        .select(`
+            id,
+            job_listings!inner(company_name)
+        `);
+
+    // Count applications per company
+    const companyApplicationCounts: Record<string, number> = {};
+    if (applicationsData) {
+        applicationsData.forEach((app: any) => {
+            const companyName = app.job_listings?.company_name;
+            if (companyName) {
+                companyApplicationCounts[companyName] = (companyApplicationCounts[companyName] || 0) + 1;
+            }
+        });
+    }
+
+    // Sort by job count and get top 6
     return Object.entries(companyCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 6)
-        .map(([name, count]) => ({ name, views: count * 12 })); // Mock views count
+        .map(([name, jobCount]) => ({ 
+            name, 
+            views: jobCount, // Real job count = views/open positions
+            applications: companyApplicationCounts[name] || 0 // Real application count
+        }));
 }
 
 async function getTrendingJobRoles() {
     const supabase = await createSupabaseServerClient();
-    const { data: jobs } = await supabase
+    
+    // Get all job listings with titles
+    const { data: jobs, error: jobsError } = await supabase
         .from("job_listings")
-        .select("title")
-        .limit(100);
+        .select("id, title")
+        .limit(1000);
 
-    if (!jobs) return [];
+    if (jobsError || !jobs) return [];
 
     // Count occurrences of each job title
     const roleCounts: Record<string, number> = {};
@@ -145,13 +194,32 @@ async function getTrendingJobRoles() {
         roleCounts[job.title] = (roleCounts[job.title] || 0) + 1;
     });
 
-    // Get application counts (mock based on job count)
+    // Get real application counts per job title from applications table
+    const { data: applicationsData } = await supabase
+        .from("applications")
+        .select(`
+            id,
+            job_listings!inner(title)
+        `);
+
+    // Count applications per job title
+    const titleApplicationCounts: Record<string, number> = {};
+    if (applicationsData) {
+        applicationsData.forEach((app: any) => {
+            const jobTitle = app.job_listings?.title;
+            if (jobTitle) {
+                titleApplicationCounts[jobTitle] = (titleApplicationCounts[jobTitle] || 0) + 1;
+            }
+        });
+    }
+
+    // Get top 5 trending roles
     return Object.entries(roleCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
-        .map(([title, count]) => ({ 
+        .map(([title, jobCount]) => ({ 
             title, 
-            applicants: count * 25 + Math.floor(Math.random() * 100) 
+            applicants: titleApplicationCounts[title] || 0 // Real application count
         }));
 }
 
@@ -197,20 +265,17 @@ export default async function JobSeekerDashboardPage() {
         redirect("/");
     }
 
-    const [totalApplications, applications, recommendedJobs, topCompanies, trendingRoles] = await Promise.all([
+    const [totalApplications, applications, recommendedJobs, topCompanies, trendingRoles, savedJobsCount] = await Promise.all([
         getTotalApplicationsCount(user.id),
         getRecentApplications(user.id),
         getRecommendedJobs(profile),
         getTopCompanies(),
         getTrendingJobRoles(),
+        getSavedJobsCount(user.id),
     ]);
 
     const profileProgress = calculateProfileProgress(profile);
     const jobAlertsCount = recommendedJobs.filter((job: any) => job.matchScore >= 70).length;
-    
-    // Mock data for profile views and unread messages
-    const profileViews = Math.floor(totalApplications * 2.5) + 12;
-    const unreadMessages = Math.floor(Math.random() * 5);
 
     // Prepare recent activities
     const recentActivities = applications.map((app: any) => {
@@ -235,86 +300,80 @@ export default async function JobSeekerDashboardPage() {
         }
     });
 
-    // Add mock profile view activity
-    if (profileViews > 0) {
-        recentActivities.unshift({
-            type: "viewed",
-            message: "Profil Anda dilihat oleh recruiter",
-            date: new Date().toISOString(),
-        });
-    }
 
     return (
-        <div className="space-y-6">
-            {/* Bagian 1 - Status Ringkas (4 kartu) */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm">
+        <div className="space-y-8 px-4 py-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-purple-600 mb-1">Dashboard Job Seeker</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Selamat Datang Kembali!</h1>
+                    <p className="text-gray-600 mt-2">
+                        Pantau lamaran Anda, temukan pekerjaan yang sesuai, dan tingkatkan profil Anda
+                    </p>
+                </div>
+                <Button className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/30" asChild>
+                    <Link href="/job-seeker/jobs">
+                        <Search className="mr-2 h-4 w-4" />
+                        Cari Lowongan
+                    </Link>
+                </Button>
+            </div>
+
+            {/* Bagian 1 - Status Ringkas (3 kartu) */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="border-2 border-purple-200/50 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                    <div>
-                                <p className="text-sm text-purple-700 font-medium mb-1">Monitoring Lamaran</p>
-                                <p className="text-3xl font-bold text-purple-900">{totalApplications}</p>
-                                <p className="text-xs text-purple-600 mt-1">Aplikasi terkirim</p>
-                    </div>
-                            <div className="p-3 bg-purple-200 rounded-xl">
-                                <Send className="h-6 w-6 text-purple-700" />
+                            <div className="flex-1">
+                                <p className="text-sm text-purple-700 font-semibold mb-2">Monitoring Lamaran</p>
+                                <p className="text-4xl font-bold text-purple-900 mb-1">{totalApplications}</p>
+                                <p className="text-xs text-purple-600">Aplikasi terkirim</p>
                             </div>
+                            <Link href="/job-seeker/applications" className="p-4 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl shadow-lg hover:from-purple-500 hover:to-purple-700 transition-all cursor-pointer">
+                                <Send className="h-7 w-7 text-white" />
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
+                <Card className="border-2 border-indigo-200/50 bg-gradient-to-br from-indigo-50 via-indigo-50/50 to-white shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-pink-700 font-medium mb-1">Profile Viewed</p>
-                                <p className="text-3xl font-bold text-pink-900">{profileViews}</p>
-                                <p className="text-xs text-pink-600 mt-1">Kali dilihat</p>
+                            <div className="flex-1">
+                                <p className="text-sm text-indigo-700 font-semibold mb-2">Job Alert</p>
+                                <p className="text-4xl font-bold text-indigo-900 mb-1">{jobAlertsCount}</p>
+                                <p className="text-xs text-indigo-600">Sesuai skill Anda</p>
                             </div>
-                            <div className="p-3 bg-pink-200 rounded-xl">
-                                <Eye className="h-6 w-6 text-pink-700" />
-                            </div>
+                            <Link href="/job-seeker/jobs?tab=matched" className="p-4 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl shadow-lg hover:from-indigo-500 hover:to-indigo-700 transition-all cursor-pointer">
+                                <Bell className="h-7 w-7 text-white" />
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm">
+                <Card className="border-2 border-green-200/50 bg-gradient-to-br from-green-50 via-green-50/50 to-white shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                        <div>
-                                <p className="text-sm text-blue-700 font-medium mb-1">Unread Messages</p>
-                                <p className="text-3xl font-bold text-blue-900">{unreadMessages}</p>
-                                <p className="text-xs text-blue-600 mt-1">Pesan belum dibaca</p>
+                            <div className="flex-1">
+                                <p className="text-sm text-green-700 font-semibold mb-2">Kelengkapan Profil</p>
+                                <p className="text-4xl font-bold text-green-900 mb-1">{profileProgress}%</p>
+                                <p className="text-xs text-green-600">Profil Anda</p>
                             </div>
-                            <div className="p-3 bg-blue-200 rounded-xl">
-                                <MessageSquare className="h-6 w-6 text-blue-700" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100/50 shadow-sm">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-indigo-700 font-medium mb-1">Job Alert</p>
-                                <p className="text-3xl font-bold text-indigo-900">{jobAlertsCount}</p>
-                                <p className="text-xs text-indigo-600 mt-1">Sesuai skill Anda</p>
-                            </div>
-                            <div className="p-3 bg-indigo-200 rounded-xl">
-                                <Bell className="h-6 w-6 text-indigo-700" />
-                            </div>
+                            <Link href="/job-seeker/profile" className="p-4 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl shadow-lg hover:from-green-500 hover:to-green-700 transition-all cursor-pointer">
+                                <User className="h-7 w-7 text-white" />
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>
             </section>
 
             {/* Bagian 2 - Profile Singkat User */}
-            <Card className="border shadow-sm">
-                <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+            <Card className="border-2 border-gray-200/50 shadow-lg bg-gradient-to-br from-white to-purple-50/30">
+                <CardContent className="p-8">
+                    <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
                         <div className="relative">
-                            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                            <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-white shadow-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold">
                                 {profile.avatar_url ? (
                                     <ImageWithFallback
                                         src={profile.avatar_url}
@@ -325,23 +384,23 @@ export default async function JobSeekerDashboardPage() {
                                     profile.full_name?.charAt(0).toUpperCase() || "U"
                                 )}
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+                            <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-green-500 rounded-full border-4 border-white shadow-lg"></div>
                         </div>
-                        <div className="flex-1">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                        <div className="flex-1 w-full">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
                                 {profile.full_name || "User"}
                             </h3>
-                            <p className="text-sm text-gray-600 mb-4">
+                            <p className="text-base text-gray-600 mb-6">
                                 {profile.headline || "Job Seeker"}
                             </p>
-                            <div className="mb-4">
-                                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                            <div className="mb-6">
+                                <div className="flex justify-between text-sm font-medium text-gray-700 mb-3">
                                     <span>Kelengkapan Profil</span>
-                                    <span className="font-semibold">{profileProgress}%</span>
+                                    <span className="font-bold text-purple-600">{profileProgress}%</span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                                     <div 
-                                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-300"
+                                        className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-3 rounded-full transition-all duration-500 shadow-md"
                                         style={{ width: `${profileProgress}%` }}
                                     />
                                 </div>
@@ -349,13 +408,21 @@ export default async function JobSeekerDashboardPage() {
                             <div className="flex flex-wrap gap-2">
                                 {profile.skills && profile.skills.length > 0 ? (
                                     profile.skills.slice(0, 4).map((skill, index) => (
-                                        <Badge key={index} variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200">
+                                        <Badge key={index} variant="secondary" className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-300 shadow-sm px-3 py-1">
                                             {skill}
                                         </Badge>
                                     ))
                                 ) : (
                                     <span className="text-sm text-gray-500">Belum ada skill</span>
                                 )}
+                            </div>
+                            <div className="mt-6">
+                                <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
+                                    <Link href="/job-seeker/profile">
+                                        <User className="mr-2 h-4 w-4" />
+                                        Lengkapi Profil
+                                    </Link>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -364,9 +431,9 @@ export default async function JobSeekerDashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Bagian 3 - Recent Activities */}
-                <Card className="lg:col-span-1 border shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Recent Activities</CardTitle>
+                <Card className="lg:col-span-1 border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-xl font-bold">Recent Activities</CardTitle>
                         <CardDescription>Aktivitas terbaru Anda</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -374,36 +441,39 @@ export default async function JobSeekerDashboardPage() {
                             recentActivities.slice(0, 5).map((activity, index) => {
                                 const Icon = getActivityIcon(activity.type);
                                 return (
-                                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                                        <div className="p-2 bg-purple-100 rounded-lg">
-                                            <Icon className="h-4 w-4 text-purple-600" />
+                                    <div key={index} className="flex items-start gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                                        <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl shadow-sm">
+                                            <Icon className="h-5 w-5 text-purple-600" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-gray-900">{activity.message}</p>
-                                            <p className="text-xs text-gray-500 mt-1">
+                                            <p className="text-sm font-medium text-gray-900">{activity.message}</p>
+                                            <p className="text-xs text-gray-500 mt-2">
                                                 {new Date(activity.date).toLocaleDateString("id-ID", {
                                                     day: "numeric",
                                                     month: "short",
                                                 })}
-                                    </p>
-                                </div>
+                                            </p>
+                                        </div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <p className="text-sm text-gray-500 text-center py-4">Belum ada aktivitas</p>
+                            <div className="text-center py-8">
+                                <Clock className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm text-gray-500">Belum ada aktivitas</p>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
 
                 {/* Bagian 4 - Job Recommendations */}
-                <Card className="lg:col-span-2 border shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="lg:col-span-2 border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle className="text-lg">Job Recommendations</CardTitle>
+                            <CardTitle className="text-xl font-bold">Job Recommendations</CardTitle>
                             <CardDescription>Rekomendasi pekerjaan untuk Anda</CardDescription>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
+                        <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
                             <Link href="/job-seeker/jobs">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -411,44 +481,44 @@ export default async function JobSeekerDashboardPage() {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-4">
+                        <div className="grid gap-5">
                         {recommendedJobs.length > 0 ? (
                                 recommendedJobs.slice(0, 3).map((job) => (
                                 <div
                                     key={job.id}
-                                        className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition"
+                                        className="p-6 border-2 border-gray-200 rounded-2xl hover:border-purple-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30"
                                 >
-                                        <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-start justify-between mb-4">
                                             <div className="flex-1">
-                                                <h4 className="font-semibold text-gray-900 mb-1">{job.title}</h4>
-                                                <p className="text-sm text-gray-600 mb-2">{job.company_name}</p>
+                                                <h4 className="font-bold text-lg text-gray-900 mb-2">{job.title}</h4>
+                                                <p className="text-base text-gray-600 font-medium mb-3">{job.company_name}</p>
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-3">
-                                            <div className="flex items-center gap-1">
-                                                <MapPin className="h-4 w-4" />
-                                                <span>{job.location_city}</span>
-                                    </div>
-                                            <span>•</span>
-                                        <span>
-                                            {job.min_salary && job.max_salary
-                                                ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
-                                                : job.min_salary
-                                                ? `Mulai dari ${formatCurrency(job.min_salary)}`
-                                                    : "Gaji tidak disebutkan"}
-                                        </span>
+                                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="h-4 w-4 text-purple-600" />
+                                                <span className="font-medium">{job.location_city}</span>
+                                            </div>
+                                            <span className="text-gray-400">•</span>
+                                            <span className="font-medium">
+                                                {job.min_salary && job.max_salary
+                                                    ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
+                                                    : job.min_salary
+                                                    ? `Mulai dari ${formatCurrency(job.min_salary)}`
+                                                        : "Gaji tidak disebutkan"}
+                                            </span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline" className="text-xs">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Badge variant="outline" className="text-xs border-gray-300">
                                                 {formatEmploymentType(job.employment_type)}
                                             </Badge>
                                             {job.matchScore >= 70 && (
-                                                <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
+                                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-xs shadow-md">
                                                     {job.matchScore}% Match
                                                 </Badge>
                                             )}
-                                    </div>
-                                        <Button className="mt-4 w-full" variant="outline" size="sm" asChild>
+                                        </div>
+                                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md" variant="outline" size="sm" asChild>
                                         <Link href={`/job-seeker/jobs/${job.id}`}>
                                                 Lihat Detail
                                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -457,9 +527,10 @@ export default async function JobSeekerDashboardPage() {
                                 </div>
                             ))
                         ) : (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500 mb-4">Belum ada rekomendasi pekerjaan</p>
-                                <Button asChild>
+                                <div className="text-center py-12">
+                                    <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                                    <p className="text-gray-500 mb-4 font-medium">Belum ada rekomendasi pekerjaan</p>
+                                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" asChild>
                                     <Link href="/job-seeker/profile">Lengkapi Profil</Link>
                                 </Button>
                             </div>
@@ -471,9 +542,9 @@ export default async function JobSeekerDashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Bagian 5 - Top Companies */}
-                <Card className="border shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Top Companies</CardTitle>
+                <Card className="border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-xl font-bold">Top Companies</CardTitle>
                         <CardDescription>Perusahaan yang paling banyak dilihat</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -482,30 +553,33 @@ export default async function JobSeekerDashboardPage() {
                                 topCompanies.map((company, index) => (
                                     <div
                                         key={index}
-                                        className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition text-center"
+                                        className="p-5 border-2 border-gray-200 rounded-2xl hover:border-purple-300 hover:shadow-xl transition-all duration-300 text-center bg-gradient-to-br from-white to-purple-50/30"
                                     >
-                                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
                                             {company.name.charAt(0).toUpperCase()}
                                         </div>
-                                        <p className="font-semibold text-sm text-gray-900 mb-1 line-clamp-1">
+                                        <p className="font-bold text-sm text-gray-900 mb-2 line-clamp-1">
                                             {company.name}
                                         </p>
-                                        <p className="text-xs text-gray-600">{company.views} views</p>
+                                        <p className="text-xs text-gray-600 font-medium">{company.views} posisi terbuka</p>
+                                        {company.applications !== undefined && company.applications > 0 && (
+                                            <p className="text-xs text-purple-600 font-medium mt-1">{company.applications} pelamar</p>
+                                        )}
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-gray-500 col-span-full text-center py-4">
-                                    Belum ada data perusahaan
-                                </p>
+                                <div className="col-span-full text-center py-8">
+                                    <p className="text-sm text-gray-500">Belum ada data perusahaan</p>
+                                </div>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Bagian 6 - Trending Job Roles */}
-                <Card className="border shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Trending Job Roles</CardTitle>
+                <Card className="border-2 border-gray-200/50 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-xl font-bold">Trending Job Roles</CardTitle>
                         <CardDescription>Posisi yang sedang populer</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -514,23 +588,24 @@ export default async function JobSeekerDashboardPage() {
                                 trendingRoles.map((role, index) => (
                                     <div
                                         key={index}
-                                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                                        className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-300 shadow-sm hover:shadow-md"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-100 rounded-lg">
-                                                <TrendingUp className="h-4 w-4 text-purple-600" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl shadow-sm">
+                                                <TrendingUp className="h-5 w-5 text-purple-600" />
                                             </div>
                                             <div>
-                                                <p className="font-medium text-sm text-gray-900">{role.title}</p>
-                                                <p className="text-xs text-gray-600">{role.applicants} pelamar</p>
+                                                <p className="font-bold text-sm text-gray-900">{role.title}</p>
+                                                <p className="text-xs text-gray-600 font-medium mt-1">{role.applicants} pelamar</p>
                                             </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-gray-500 text-center py-4">
-                                    Belum ada data trending
-                                </p>
+                                <div className="text-center py-8">
+                                    <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-sm text-gray-500">Belum ada data trending</p>
+                                </div>
                             )}
                         </div>
                     </CardContent>
@@ -538,29 +613,35 @@ export default async function JobSeekerDashboardPage() {
             </div>
 
             {/* Bagian 7 - Quick Actions */}
-            <Card className="border shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
+            <Card className="border-2 border-gray-200/50 shadow-lg bg-gradient-to-br from-white to-purple-50/30">
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>
                     <CardDescription>Aksi cepat untuk meningkatkan profil Anda</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-purple-50 hover:border-purple-300" asChild>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <Button variant="outline" className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 hover:border-purple-400 transition-all duration-300 shadow-md hover:shadow-xl border-2" asChild>
                             <Link href="/job-seeker/profile">
-                                <Upload className="h-5 w-5 text-purple-600" />
-                                <span className="font-medium">Upload CV</span>
+                                <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+                                    <Upload className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <span className="font-bold text-base">Upload CV</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-purple-50 hover:border-purple-300" asChild>
+                        <Button variant="outline" className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 hover:border-purple-400 transition-all duration-300 shadow-md hover:shadow-xl border-2" asChild>
                             <Link href="/job-seeker/profile">
-                                <User className="h-5 w-5 text-purple-600" />
-                                <span className="font-medium">Update Profile</span>
+                                <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+                                    <User className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <span className="font-bold text-base">Update Profile</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-purple-50 hover:border-purple-300" asChild>
+                        <Button variant="outline" className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 hover:border-purple-400 transition-all duration-300 shadow-md hover:shadow-xl border-2" asChild>
                             <Link href="/job-seeker/jobs">
-                                <Search className="h-5 w-5 text-purple-600" />
-                                <span className="font-medium">Temukan Lowongan Baru</span>
+                                <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+                                    <Search className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <span className="font-bold text-base">Temukan Lowongan Baru</span>
                             </Link>
                         </Button>
                     </div>

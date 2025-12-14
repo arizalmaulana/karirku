@@ -22,7 +22,7 @@ async function getUserProfile(userId: string) {
 export default async function JobsPage({
     searchParams,
 }: {
-    searchParams: { jobId?: string };
+    searchParams: Promise<{ jobId?: string; company?: string }> | { jobId?: string; company?: string };
 }) {
     const supabase = await createSupabaseServerClient();
     const {
@@ -32,6 +32,9 @@ export default async function JobsPage({
     if (!user) {
         redirect("/");
     }
+
+    // Handle searchParams as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = searchParams instanceof Promise ? await searchParams : searchParams;
 
     const profile = await getUserProfile(user.id);
     
@@ -43,7 +46,8 @@ export default async function JobsPage({
             jobs={jobs}
             profile={profile}
             userId={user.id}
-            initialJobId={searchParams.jobId}
+            initialJobId={resolvedParams.jobId}
+            initialCompany={resolvedParams.company}
         />
     );
 }
