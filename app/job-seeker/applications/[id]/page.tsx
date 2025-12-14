@@ -3,12 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText, CheckCircle2, XCircle, Calendar, MapPin, MessageSquare } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { ApplicationTimeline } from "@/components/ApplicationTimeline";
 import { WithdrawApplicationButton } from "@/components/job-seeker/WithdrawApplicationButton";
 import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
 import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
+import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -49,6 +50,10 @@ async function getApplication(id: string, userId: string) {
             cv_url,
             portfolio_url,
             cover_letter,
+            notes,
+            rejection_reason,
+            interview_date,
+            interview_location,
             submitted_at,
             updated_at,
             job_listings(id, title, company_name, location_city, location_province, employment_type)
@@ -61,6 +66,22 @@ async function getApplication(id: string, userId: string) {
         return null;
     }
     return data as any;
+}
+
+async function getCompanyLogo(companyName: string) {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
+        .from("companies")
+        .select("logo_url")
+        .eq("name", companyName)
+        .maybeSingle();
+    
+    if (data && (data as any).logo_url) {
+        return (data as any).logo_url;
+    }
+    
+    // Fallback to generated logo
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`;
 }
 
 export default async function ApplicationDetailPage({ 
@@ -86,6 +107,7 @@ export default async function ApplicationDetailPage({
     }
 
     const job = application.job_listings as any;
+    const companyLogo = job?.company_name ? await getCompanyLogo(job.company_name) : null;
 
     return (
         <div className="space-y-6">
@@ -113,6 +135,17 @@ export default async function ApplicationDetailPage({
                         <CardTitle>Informasi Lowongan</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        {companyLogo && (
+                            <div className="mb-4">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
+                                    <ImageWithFallback
+                                        src={companyLogo}
+                                        alt={job?.company_name || "Company"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </div>
+                        )}
                         <div>
                             <p className="text-sm text-gray-500">Judul Pekerjaan</p>
                             <p className="font-medium">{job?.title || "Unknown"}</p>
@@ -180,33 +213,77 @@ export default async function ApplicationDetailPage({
                                 </p>
                             </div>
                         )}
+                        {/* Notes jika diterima */}
+                        {application.status === "accepted" && application.notes && (
+                            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                    <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-green-900 mb-1">Catatan Penerimaan</p>
+                                        <p className="text-sm text-green-800 whitespace-pre-wrap leading-relaxed">
+                                            {application.notes}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {/* Interview info jika status interview */}
-                        {application.status === "interview" && (application as any).interview_date && (
-                            <div>
-                                <p className="text-sm text-gray-500">Jadwal Interview</p>
-                                <p className="font-medium">
-                                    {new Date((application as any).interview_date).toLocaleDateString("id-ID", {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    })}
-                                </p>
-                                {(application as any).interview_location && (
-                                    <p className="text-sm text-gray-600 mt-1">
-                                        Lokasi: {(application as any).interview_location}
-                                    </p>
-                                )}
+                        {application.status === "interview" && (
+                            <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                <div className="flex items-start gap-3 mb-3">
+                                    <Calendar className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-purple-900 mb-2">Informasi Interview</p>
+                                        {application.interview_date && (
+                                            <div className="mb-2">
+                                                <p className="text-xs text-purple-700 mb-1">Jadwal Interview</p>
+                                                <p className="text-sm font-medium text-purple-900">
+                                                    {new Date(application.interview_date).toLocaleDateString("id-ID", {
+                                                        weekday: "long",
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {application.interview_location && (
+                                            <div className="flex items-start gap-2">
+                                                <MapPin className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs text-purple-700 mb-1">Lokasi</p>
+                                                    <p className="text-sm font-medium text-purple-900">
+                                                        {application.interview_location}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {application.notes && (
+                                            <div className="mt-3 pt-3 border-t border-purple-200">
+                                                <p className="text-xs text-purple-700 mb-1">Catatan Tambahan</p>
+                                                <p className="text-sm text-purple-800 whitespace-pre-wrap leading-relaxed">
+                                                    {application.notes}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                         {/* Rejection reason jika ditolak */}
-                        {application.status === "rejected" && (application as any).rejection_reason && (
-                            <div>
-                                <p className="text-sm text-gray-500">Alasan Penolakan</p>
-                                <p className="font-medium text-red-600">
-                                    {(application as any).rejection_reason}
-                                </p>
+                        {application.status === "rejected" && application.rejection_reason && (
+                            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                    <XCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-red-900 mb-1">Alasan Penolakan</p>
+                                        <p className="text-sm text-red-800 whitespace-pre-wrap leading-relaxed">
+                                            {application.rejection_reason}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </CardContent>

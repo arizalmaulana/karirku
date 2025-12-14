@@ -2,9 +2,11 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { MapPin, Clock, Wallet, Sparkles, Bookmark, ArrowRight } from "lucide-react";
 import type { Job } from "../types/job";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface JobCardProps {
   job: Job;
+  matchScore?: number | null;
   onClick: () => void;
 }
 
@@ -31,7 +33,7 @@ const levelColors = {
   "Senior Level": "bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border-2 border-red-200",
 };
 
-export function JobCard({ job, onClick }: JobCardProps) {
+export function JobCard({ job, matchScore, onClick }: JobCardProps) {
   const typeColor = typeColors[job.type as keyof typeof typeColors] || "bg-gray-500 text-white";
   const categoryColor = categoryColors[job.category as keyof typeof categoryColors] || "border-gray-200 text-gray-700 bg-gray-50";
   const levelColor = levelColors[job.level as keyof typeof levelColors] || "border-gray-200 text-gray-700 bg-gray-50";
@@ -57,8 +59,8 @@ export function JobCard({ job, onClick }: JobCardProps) {
       <div className="relative flex gap-4">
         <div className="flex-shrink-0">
           <div className="relative w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center overflow-hidden ring-2 ring-gray-100 group-hover:ring-indigo-300 transition-all duration-300 group-hover:scale-110">
-            <img
-              src={job.logo}
+            <ImageWithFallback
+              src={job.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&size=128&background=6366f1&color=ffffff&bold=true`}
               alt={job.company}
               className="w-full h-full object-cover"
             />
@@ -124,12 +126,23 @@ export function JobCard({ job, onClick }: JobCardProps) {
                 </Badge>
               )}
             </div>
-            {/* Tipe pekerjaan di kanan bawah */}
-            <Badge 
-              className={`${typeColor} shadow-md px-3 py-1 badge-gradient`}
-            >
-              {job.type}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {/* Tipe pekerjaan */}
+              <Badge 
+                className={`${typeColor} shadow-md px-3 py-1 badge-gradient`}
+              >
+                {job.type}
+              </Badge>
+              {/* Persentase kecocokan di samping tipe pekerjaan */}
+              {matchScore !== null && matchScore !== undefined && (
+                <Badge 
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-md px-3 py-1.5 font-semibold"
+                >
+                  <Sparkles className="w-3 h-3 mr-1.5" />
+                  {matchScore}%
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>

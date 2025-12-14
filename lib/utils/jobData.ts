@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { JobListing } from "@/lib/types";
 import type { Job } from "@/types/job";
+import { extractEducationFromJob, extractExperienceFromJob } from "@/lib/utils/jobMatching";
 
 /**
  * Format employment type dari database ke format yang digunakan di UI
@@ -77,30 +78,29 @@ function formatRelativeTime(dateString: string): string {
 }
 
 /**
- * Generate logo URL berdasarkan company name (placeholder)
- * Bisa diganti dengan logo dari database jika ada
+ * Generate logo URL berdasarkan company name (fallback)
+ * Menggunakan ui-avatars untuk generate logo otomatis
  */
 function getCompanyLogo(companyName: string): string {
-  // Untuk sekarang menggunakan placeholder, bisa diganti dengan logo dari database
-  const logoMap: Record<string, string> = {
-    "TechCorp Indonesia": "https://images.unsplash.com/photo-1549924231-f129b911e442?w=100&h=100&fit=crop",
-    "Creative Studio": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=100&fit=crop",
-    "Growth Marketing Co": "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&h=100&fit=crop",
-    "Startup Innovate": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop",
-    "E-Commerce Giant": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=100&h=100&fit=crop",
-    "AppDev Solutions": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=100&h=100&fit=crop",
-    "Brand Creative Agency": "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&h=100&fit=crop",
-    "SaaS Company": "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=100&h=100&fit=crop",
-    "Cloud Solutions Ltd": "https://images.unsplash.com/photo-1549924231-f129b911e442?w=100&h=100&fit=crop",
-    "Influencer Marketing Hub": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=100&fit=crop",
-    "Analytics Pro": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop",
-    "FinTech Innovators": "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=100&h=100&fit=crop",
-  };
+  // Generate consistent logo menggunakan ui-avatars dengan warna yang lebih menarik
+  const colors = [
+    '6366f1', // indigo
+    '8b5cf6', // purple
+    'ec4899', // pink
+    'f59e0b', // amber
+    '10b981', // emerald
+    '3b82f6', // blue
+  ];
+  
+  // Generate color index berdasarkan nama perusahaan (konsisten)
+  let hash = 0;
+  for (let i = 0; i < companyName.length; i++) {
+    hash = companyName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colorIndex = Math.abs(hash) % colors.length;
+  const color = colors[colorIndex];
 
-  return (
-    logoMap[companyName] ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&size=100&background=random`
-  );
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&size=128&background=${color}&color=ffffff&bold=true&format=png`;
 }
 
 /**
@@ -194,10 +194,13 @@ function determineLevel(job: JobListing): string {
 /**
  * Convert JobListing dari database ke format Job untuk UI
  */
-export function convertJobListingToJob(jobListing: JobListing): Job {
+export function convertJobListingToJob(jobListing: JobListing, logoUrl?: string): Job {
   const location = jobListing.location_province
     ? `${jobListing.location_city}, ${jobListing.location_province}`
     : jobListing.location_city;
+
+  // Use provided logoUrl, or fallback to getCompanyLogo
+  const logo = logoUrl || getCompanyLogo(jobListing.company_name);
 
   return {
     id: jobListing.id,
@@ -209,17 +212,19 @@ export function convertJobListingToJob(jobListing: JobListing): Job {
     description: jobListing.description || "",
     requirements: jobListing.requirements || [],
     posted: formatRelativeTime(jobListing.created_at),
-    logo: getCompanyLogo(jobListing.company_name),
+    logo: logo,
     category: determineCategory(jobListing),
     level: determineLevel(jobListing),
     // Preserve fields untuk match score calculation
     skills_required: jobListing.skills_required || null,
     major_required: jobListing.major_required || null,
+    education_required: extractEducationFromJob(jobListing),
+    experience_required: extractExperienceFromJob(jobListing),
   };
 }
 
 /**
- * Fetch semua jobs dari database
+ * Fetch semua jobs dari database dengan logo perusahaan
  */
 export async function fetchJobsFromDatabase(): Promise<Job[]> {
   const supabase = await createSupabaseServerClient();
@@ -238,7 +243,72 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
     return [];
   }
 
-  return data.map(convertJobListingToJob);
+  // Fetch company data from companies table (integrate companies and job_listings)
+  const companyNames = [...new Set(data.map((job: any) => job.company_name))];
+  const { data: companiesData } = await supabase
+    .from("companies")
+    .select("name, logo_url, industry, location_city, location_province, website_url, description")
+    .in("name", companyNames);
+
+  // Create maps for company data
+  const companyDataMap = new Map<string, any>();
+  if (companiesData) {
+    companiesData.forEach((company: any) => {
+      companyDataMap.set(company.name, {
+        logo_url: company.logo_url,
+        industry: company.industry,
+        location_city: company.location_city,
+        location_province: company.location_province,
+        website_url: company.website_url,
+        description: company.description,
+      });
+    });
+  }
+
+  return data.map((jobListing: any) => {
+    const companyData = companyDataMap.get(jobListing.company_name);
+    
+    // Use company data from companies table if available, otherwise use job_listings data
+    const logoUrl = companyData?.logo_url || null;
+    const locationCity = companyData?.location_city || jobListing.location_city;
+    const locationProvince = companyData?.location_province || jobListing.location_province;
+    
+    // Create job listing with integrated company data
+    const integratedJobListing: JobListing = {
+      ...jobListing,
+      location_city: locationCity,
+      location_province: locationProvince,
+    };
+    
+    return convertJobListingToJob(integratedJobListing, logoUrl || undefined);
+  });
+}
+
+/**
+ * Integrate company data from companies table with job listing
+ */
+export async function integrateCompanyData(jobListing: JobListing): Promise<JobListing> {
+  const supabase = await createSupabaseServerClient();
+  
+  // Fetch company data from companies table
+  const { data: companyData } = await supabase
+    .from("companies")
+    .select("logo_url, industry, location_city, location_province, website_url, description")
+    .eq("name", jobListing.company_name)
+    .maybeSingle();
+
+  if (!companyData) {
+    return jobListing;
+  }
+
+  // Integrate company data with job listing
+  // Use company data if job listing doesn't have it, otherwise keep job listing data
+  const company = companyData as any;
+  return {
+    ...jobListing,
+    location_city: company?.location_city || jobListing.location_city,
+    location_province: company?.location_province || jobListing.location_province,
+  };
 }
 
 /**

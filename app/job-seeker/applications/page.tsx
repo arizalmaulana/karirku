@@ -16,6 +16,22 @@ async function getUserProfile(userId: string) {
     return data;
 }
 
+async function getCompanyLogo(companyName: string) {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
+        .from("companies")
+        .select("logo_url")
+        .eq("name", companyName)
+        .maybeSingle();
+    
+    if (data && (data as any).logo_url) {
+        return (data as any).logo_url;
+    }
+    
+    // Fallback to generated logo
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`;
+}
+
 async function getApplications(userId: string) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
@@ -39,7 +55,24 @@ async function getApplications(userId: string) {
         console.error("Error fetching applications:", error);
         return [];
     }
-    return data || [];
+
+    if (!data) {
+        return [];
+    }
+
+    // Fetch company logos for all applications
+    const applicationsWithLogos = await Promise.all(
+        data.map(async (app: any) => {
+            const companyName = app.job_listings?.company_name;
+            if (companyName) {
+                const logo = await getCompanyLogo(companyName);
+                return { ...app, companyLogo: logo };
+            }
+            return app;
+        })
+    );
+
+    return applicationsWithLogos;
 }
 
 export default async function ApplicationsPage() {

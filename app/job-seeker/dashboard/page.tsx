@@ -18,9 +18,10 @@ import {
     TrendingUp,
     CheckCircle2,
     XCircle,
-    Clock
+    Clock,
+    Sparkles
 } from "lucide-react";
-import { findMatchingJobs, calculateProfileProgress, calculateMatchScore } from "@/lib/utils/jobMatching";
+import { findMatchingJobs, calculateProfileProgress, calculateMatchScoreFromJobAndProfile } from "@/lib/utils/jobMatching";
 import { redirect } from "next/navigation";
 import type { JobListing, Profile } from "@/lib/types";
 
@@ -114,15 +115,10 @@ async function getRecommendedJobs(profile: Profile) {
 
     const jobs = data as JobListing[];
     
-    // Hitung match score langsung untuk setiap job (sama seperti di halaman jobs)
+    // Hitung match score langsung untuk setiap job dengan 4 variabel
     const jobsWithMatchScore = jobs.map(job => ({
         ...job,
-        matchScore: calculateMatchScore(
-            profile.skills || [],
-            job.skills_required || null,
-            profile.major || null,
-            job.major_required || null
-        )
+        matchScore: calculateMatchScoreFromJobAndProfile(job, profile)
     }))
     .sort((a, b) => b.matchScore - a.matchScore); // Sort by match score descending
     
@@ -513,8 +509,9 @@ export default async function JobSeekerDashboardPage() {
                                             <Badge variant="outline" className="text-xs border-gray-300">
                                                 {formatEmploymentType(job.employment_type)}
                                             </Badge>
-                                            {job.matchScore >= 70 && (
-                                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-xs shadow-md">
+                                            {job.matchScore !== undefined && job.matchScore !== null && (
+                                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-xs shadow-md font-semibold">
+                                                    <Sparkles className="w-3 h-3 mr-1 inline" />
                                                     {job.matchScore}% Match
                                                 </Badge>
                                             )}

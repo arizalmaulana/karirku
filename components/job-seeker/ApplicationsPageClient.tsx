@@ -5,6 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { 
     Search, 
     MapPin, 
@@ -23,6 +31,7 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import type { Application, Profile } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 
 interface ApplicationWithJob extends Application {
     job_listings?: {
@@ -35,6 +44,7 @@ interface ApplicationWithJob extends Application {
         max_salary: number | null;
         currency: string | null;
     };
+    companyLogo?: string;
 }
 
 interface ApplicationsPageClientProps {
@@ -88,6 +98,7 @@ function getStatusColor(status: string): string {
     return colors[status] || "bg-gray-100 text-gray-700 border-gray-300";
 }
 
+
 function formatTimeAgo(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -124,6 +135,26 @@ export function ApplicationsPageClient({
     const router = useRouter();
     const supabase = createBrowserClient();
 
+    // Helper function to get company logo
+    const getCompanyLogo = async (companyName: string): Promise<string> => {
+        try {
+            const { data } = await supabase
+                .from("companies")
+                .select("logo_url")
+                .eq("name", companyName)
+                .maybeSingle();
+            
+            if (data && (data as any).logo_url) {
+                return (data as any).logo_url;
+            }
+        } catch (error) {
+            console.error("Error fetching company logo:", error);
+        }
+        
+        // Fallback to generated logo
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`;
+    };
+
     // Refresh applications from database
     const refreshApplications = async () => {
         setIsLoading(true);
@@ -147,7 +178,18 @@ export function ApplicationsPageClient({
 
             if (error) throw error;
             if (data) {
-                setApplications(data as ApplicationWithJob[]);
+                // Fetch company logos for all applications
+                const applicationsWithLogos = await Promise.all(
+                    data.map(async (app: any) => {
+                        const companyName = app.job_listings?.company_name;
+                        if (companyName) {
+                            const logo = await getCompanyLogo(companyName);
+                            return { ...app, companyLogo: logo };
+                        }
+                        return app;
+                    })
+                );
+                setApplications(applicationsWithLogos as ApplicationWithJob[]);
             }
         } catch (error) {
             console.error("Error fetching applications:", error);
@@ -160,70 +202,52 @@ export function ApplicationsPageClient({
     useEffect(() => {
         if (!userId) return;
 
-        // Real-time subscription
-        const channel = supabase
-            .channel(`applications_changes_${userId}`)
-            .on(
-                "postgres_changes",
-                {
-                    event: "*",
-                    schema: "public",
-                    table: "applications",
-                    filter: `job_seeker_id=eq.${userId}`,
-                },
-                (payload) => {
-                    console.log("Real-time update:", payload);
-                    refreshApplications();
-                }
-            )
-            .subscribe((status) => {
-                console.log("Subscription status:", status);
-            });
+        // Real-time subscription - disabled untuk mengurangi refresh yang terlalu sering
+        // Gunakan polling interval saja untuk refresh berkala
+        // const channel = supabase
+        //     .channel(`applications_changes_${userId}`)
+        //     .on(
+        //         "postgres_changes",
+        //         {
+        //             event: "*",
+        //             schema: "public",
+        //             table: "applications",
+        //             filter: `job_seeker_id=eq.${userId}`,
+        //         },
+        //         (payload) => {
+        //             console.log("Real-time update:", payload);
+        //             refreshApplications();
+        //         }
+        //     )
+        //     .subscribe((status) => {
+        //         console.log("Subscription status:", status);
+        //     });
 
-        // Polling fallback - refresh every 10 seconds (only if page is visible)
+        // Polling fallback - refresh every 10 minutes (only if page is visible)
         const pollInterval = setInterval(() => {
             if (document.visibilityState === "visible") {
                 refreshApplications();
             }
-        }, 10000);
-
+        }, 600000); // 10 menit = 600000ms
         // Also listen for custom events (when application is submitted from other tabs)
         const handleApplicationSubmitted = () => {
             console.log("Application submitted event received");
-            setTimeout(() => refreshApplications(), 1000); // Wait 1 second for DB to update
+            setTimeout(() => refreshApplications(), 3000); // Wait 1 second for DB to update
         };
 
         window.addEventListener("application-submitted", handleApplicationSubmitted);
 
         return () => {
-            supabase.removeChannel(channel);
+            // supabase.removeChannel(channel);
             clearInterval(pollInterval);
             window.removeEventListener("application-submitted", handleApplicationSubmitted);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 
-    // Refresh on mount and when page becomes visible or focused
+    // Refresh on mount only (real-time subscription and polling will handle updates)
     useEffect(() => {
         refreshApplications();
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === "visible") {
-                refreshApplications();
-            }
-        };
-
-        const handleFocus = () => {
-            refreshApplications();
-        };
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("focus", handleFocus);
-
-        return () => {
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            window.removeEventListener("focus", handleFocus);
-        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -379,99 +403,123 @@ export function ApplicationsPageClient({
                 </Card>
             </div>
 
-            {/* Applications List */}
-            <div className="space-y-4">
-                {isLoading ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500">Memuat data...</p>
-                    </div>
-                ) : filteredApplications.length > 0 ? (
-                    filteredApplications.map((app) => (
-                        <Card
-                            key={app.id}
-                            className="border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300"
-                        >
-                            <CardContent className="p-6">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-start gap-4 mb-4">
-                                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md flex-shrink-0">
-                                                {app.job_listings?.company_name?.charAt(0).toUpperCase() || "?"}
+            {/* Applications Table */}
+            <Card>
+                <CardContent className="p-0">
+                    {isLoading ? (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500">Memuat data...</p>
+                        </div>
+                    ) : filteredApplications.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50">
+                                    <TableHead className="w-[50px] text-center">Logo</TableHead>
+                                    <TableHead className="text-center">Posisi</TableHead>
+                                    <TableHead className="text-center">Perusahaan</TableHead>
+                                    <TableHead className="text-center">Lokasi</TableHead>
+                                    <TableHead className="text-center">Tipe</TableHead>
+                                    <TableHead className="text-center">Gaji</TableHead>
+                                    <TableHead className="text-center">Tanggal</TableHead>
+                                    <TableHead className="text-center">Status</TableHead>
+                                    <TableHead className="text-center">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredApplications.map((app) => (
+                                    <TableRow 
+                                        key={app.id}
+                                        className="hover:bg-gray-50 transition-colors"
+                                    >
+                                        <TableCell>
+                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                                                <ImageWithFallback
+                                                    src={(app as any).companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.job_listings?.company_name || "Company")}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
+                                                    alt={app.job_listings?.company_name || "Company"}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                                    {app.job_listings?.title || "Unknown Position"}
-                                                </h3>
-                                                <p className="text-sm text-gray-600 mb-3">
-                                                    {app.job_listings?.company_name || "Unknown Company"}
-                                                </p>
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <MapPin className="w-4 h-4 text-gray-400" />
-                                                        <span>
-                                                            {app.job_listings?.location_city || "Tidak disebutkan"}
-                                                            {app.job_listings?.location_province && 
-                                                                `, ${app.job_listings.location_province}`
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <Clock className="w-4 h-4 text-gray-400" />
-                                                        <span>
-                                                            {app.job_listings?.employment_type 
-                                                                ? formatEmploymentType(app.job_listings.employment_type)
-                                                                : "Tidak disebutkan"
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                                        <span>Dilamar {formatTimeAgo(app.submitted_at)}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <DollarSign className="w-4 h-4 text-gray-400" />
-                                                        <span>
-                                                            {app.job_listings?.min_salary && app.job_listings?.max_salary
-                                                                ? `${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)} - ${formatCurrency(app.job_listings.max_salary, app.job_listings.currency)}`
-                                                                : app.job_listings?.min_salary
-                                                                ? `Mulai dari ${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)}`
-                                                                : "Tidak disebutkan"
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-semibold text-gray-900">
+                                                {app.job_listings?.title || "Unknown Position"}
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-3">
-                                        <Badge
-                                            className={`px-3 py-1.5 border-2 ${getStatusColor(app.status)}`}
-                                        >
-                                            {getStatusLabel(app.status)}
-                                        </Badge>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            asChild
-                                            className="border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
-                                        >
-                                            <Link 
-                                                href={`/job-seeker/applications/${app.id}`}
-                                                className="flex items-center gap-2"
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-gray-700">
+                                                {app.job_listings?.company_name || "Unknown Company"}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                                <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>
+                                                    {app.job_listings?.location_city || "-"}
+                                                    {app.job_listings?.location_province && 
+                                                        `, ${app.job_listings.location_province}`
+                                                    }
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>
+                                                    {app.job_listings?.employment_type 
+                                                        ? formatEmploymentType(app.job_listings.employment_type)
+                                                        : "-"
+                                                    }
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                                <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>
+                                                    {app.job_listings?.min_salary && app.job_listings?.max_salary
+                                                        ? `${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)} - ${formatCurrency(app.job_listings.max_salary, app.job_listings.currency)}`
+                                                        : app.job_listings?.min_salary
+                                                        ? `Mulai ${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)}`
+                                                        : "-"
+                                                    }
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>{formatTimeAgo(app.submitted_at)}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                className={`px-2.5 py-1 border ${getStatusColor(app.status)}`}
                                             >
-                                                <Eye className="h-4 w-4" />
-                                                Lihat Detail
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    <Card className="border-2 border-dashed border-gray-300">
-                        <CardContent className="p-12 text-center">
+                                                {getStatusLabel(app.status)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                asChild
+                                                className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
+                                            >
+                                                <Link 
+                                                    href={`/job-seeker/applications/${app.id}`}
+                                                    className="flex items-center gap-1.5"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                    Detail
+                                                </Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="p-12 text-center">
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                                 <Briefcase className="w-8 h-8 text-gray-400" />
                             </div>
@@ -492,10 +540,10 @@ export function ApplicationsPageClient({
                                     </Link>
                                 </Button>
                             )}
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

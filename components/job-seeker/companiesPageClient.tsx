@@ -4,14 +4,15 @@ import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Users, Building2, ExternalLink, Sparkles, TrendingUp, Star } from "lucide-react";
+import { Search, MapPin, Users, Building2, ExternalLink, Sparkles, TrendingUp, Star, Globe, X, Eye, CheckCircle2, FileText, Calendar, Shield } from "lucide-react";
 import { fetchCompaniesFromDatabase } from "@/lib/utils/companyData";
 import type { Company } from "@/lib/types";
 import {ImageWithFallback} from "@/components/figma/ImageWithFallback";
 import type { Profile } from "@/lib/types";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CompaniesPageClientProps {
     companies: Company[];
@@ -158,9 +159,9 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                     >
                         {/* Header - Logo & Rating */}
                         <div className="flex items-start justify-between mb-4">
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 group-hover:scale-110 transition-transform">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 group-hover:scale-110 transition-transform shadow-sm">
                                 <ImageWithFallback
-                                    src={company.logo || company.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&size=100&background=random`}
+                                    src={company.logo_url || company.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
                                     alt={company.name}
                                     className="w-full h-full object-cover"
                                 />
@@ -210,14 +211,24 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                             </p>
                         )}
 
-                        {/* Action Button */}
-                        <Link 
-                            href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}
-                            className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 group/btn"
-                        >
-                            <span>Lihat Lowongan ({company.openPositions || 0})</span>
-                            <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </Link>
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => setSelectedCompany(company)}
+                            >
+                                <Eye className="w-4 h-4 mr-2" />
+                                Lihat Detail Perusahaan
+                            </Button>
+                            <Link 
+                                href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}
+                                className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 group/btn"
+                            >
+                                <span>Lihat Lowongan ({company.openPositions || 0})</span>
+                                <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -226,6 +237,214 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                 <div className="text-center py-12">
                     <p className="text-gray-600">Tidak ada perusahaan ditemukan</p>
                 </div>
+            )}
+
+            {/* Company Detail Modal */}
+            {selectedCompany && (
+                <Dialog open={!!selectedCompany} onOpenChange={() => setSelectedCompany(null)}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-3">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-md">
+                                    <ImageWithFallback
+                                        src={selectedCompany.logo_url || selectedCompany.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedCompany.name)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
+                                        alt={selectedCompany.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">{selectedCompany.name}</h2>
+                                    {selectedCompany.industry && (
+                                        <Badge className={`mt-1 ${getIndustryColor(selectedCompany.industry)}`}>
+                                            {selectedCompany.industry}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="space-y-6 mt-4">
+                            {/* Status Badge */}
+                            <div className="flex items-center gap-2">
+                                {selectedCompany.status === 'approved' && selectedCompany.is_approved && (
+                                    <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" />
+                                        Terverifikasi
+                                    </Badge>
+                                )}
+                                {selectedCompany.is_blocked && (
+                                    <Badge variant="destructive" className="flex items-center gap-1">
+                                        <Shield className="w-3 h-3" />
+                                        Diblokir
+                                    </Badge>
+                                )}
+                            </div>
+
+                            {/* Company Description */}
+                            {selectedCompany.description && (
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                            <Building2 className="w-5 h-5" />
+                                            Tentang Perusahaan
+                                        </h3>
+                                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                            {selectedCompany.description}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Company Information Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {(selectedCompany.location_city || selectedCompany.location_province) && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Lokasi</p>
+                                                    <p className="font-medium text-gray-900">
+                                                        {selectedCompany.location_city || ""}
+                                                        {selectedCompany.location_province && `, ${selectedCompany.location_province}`}
+                                                    </p>
+                                                    {selectedCompany.address && (
+                                                        <p className="text-sm text-gray-600 mt-1">{selectedCompany.address}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.website_url && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Globe className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Website</p>
+                                                    <a
+                                                        href={selectedCompany.website_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 break-all"
+                                                    >
+                                                        {selectedCompany.website_url}
+                                                        <ExternalLink className="w-4 h-4 shrink-0" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.industry && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Sparkles className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Industri</p>
+                                                    <p className="font-medium text-gray-900">{selectedCompany.industry}</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.size && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Users className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Ukuran Perusahaan</p>
+                                                    <p className="font-medium text-gray-900">{selectedCompany.size} karyawan</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.openPositions !== undefined && selectedCompany.openPositions > 0 && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <TrendingUp className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Lowongan Tersedia</p>
+                                                    <p className="font-medium text-gray-900">{selectedCompany.openPositions} posisi terbuka</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.license_url && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <FileText className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Surat Izin</p>
+                                                    <a
+                                                        href={selectedCompany.license_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                                    >
+                                                        Lihat Dokumen
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {selectedCompany.created_at && (
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-500 mb-1">Bergabung Sejak</p>
+                                                    <p className="font-medium text-gray-900">
+                                                        {new Date(selectedCompany.created_at).toLocaleDateString('id-ID', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
+
+                            {/* Action Button */}
+                            <div className="flex gap-3 pt-4">
+                                <Button
+                                    asChild
+                                    className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white"
+                                >
+                                    <Link href={`/job-seeker/jobs?company=${encodeURIComponent(selectedCompany.name)}`}>
+                                        Lihat Semua Lowongan ({selectedCompany.openPositions || 0})
+                                        <ExternalLink className="w-4 h-4 ml-2" />
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setSelectedCompany(null)}
+                                >
+                                    Tutup
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             )}
         </div>
     );

@@ -13,13 +13,70 @@ import { Loader2, Upload, Save } from "lucide-react";
 interface ApplicationFormEnhancedProps {
     jobId: string;
     jobTitle: string;
+    profile?: {
+        full_name?: string | null;
+        headline?: string | null;
+        bio?: string | null;
+        skills?: string[] | null;
+        major?: string | null;
+        experience?: string | null;
+        education?: string | null;
+    } | null;
 }
 
-export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnhancedProps) {
+export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: ApplicationFormEnhancedProps) {
     const router = useRouter();
     const supabase = createBrowserClient();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Generate cover letter template from profile
+    const generateCoverLetterFromProfile = () => {
+        if (!profile) return "";
+        
+        const parts: string[] = [];
+        
+        // Introduction
+        if (profile.full_name) {
+            parts.push(`Dengan hormat,`);
+            parts.push(`\nSaya ${profile.full_name}`);
+        }
+        
+        // Headline/Bio
+        if (profile.headline) {
+            parts.push(profile.headline);
+        } else if (profile.bio) {
+            parts.push(profile.bio);
+        }
+        
+        // Education
+        if (profile.education) {
+            parts.push(`\nPendidikan: ${profile.education}`);
+        } else if (profile.major) {
+            parts.push(`\nJurusan: ${profile.major}`);
+        }
+        
+        // Experience
+        if (profile.experience) {
+            parts.push(`\nPengalaman: ${profile.experience}`);
+        }
+        
+        // Skills
+        if (profile.skills && profile.skills.length > 0) {
+            parts.push(`\nSkills: ${profile.skills.join(", ")}`);
+        }
+        
+        // Closing
+        parts.push(`\n\nSaya sangat tertarik untuk bergabung dengan tim Anda dan siap memberikan kontribusi terbaik.`);
+        parts.push(`\n\nTerima kasih atas perhatiannya.`);
+        parts.push(`\n\nHormat saya,`);
+        if (profile.full_name) {
+            parts.push(profile.full_name);
+        }
+        
+        return parts.join("");
+    };
+    
     const [formData, setFormData] = useState({
         cover_letter: "",
         cv_url: "",
@@ -27,6 +84,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
     });
     const [draftId, setDraftId] = useState<string | null>(null);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [isAutoFilled, setIsAutoFilled] = useState(false);
 
     // Load draft jika ada
     useEffect(() => {
@@ -56,6 +114,17 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
                         portfolio_url: draftData.portfolio_url || "",
                     });
                     toast.info("Draft lamaran ditemukan dan dimuat");
+                } else if (profile) {
+                    // Auto-fill cover letter from profile if no draft exists
+                    const autoFilledCoverLetter = generateCoverLetterFromProfile();
+                    if (autoFilledCoverLetter && autoFilledCoverLetter.trim().length > 0) {
+                        setFormData(prev => ({
+                            ...prev,
+                            cover_letter: autoFilledCoverLetter
+                        }));
+                        setIsAutoFilled(true);
+                        toast.success("Cover letter diisi otomatis dari profil Anda");
+                    }
                 }
             } catch (error) {
                 console.error("Error loading draft:", error);
@@ -64,7 +133,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
 
         loadDraft();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [jobId]);
+    }, [jobId, profile]);
 
     // Auto-save draft setiap 30 detik
     useEffect(() => {
@@ -272,12 +341,31 @@ export function ApplicationFormEnhanced({ jobId, jobTitle }: ApplicationFormEnha
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-                <Label htmlFor="cover_letter">Cover Letter *</Label>
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="cover_letter">Cover Letter *</Label>
+                    {profile && !isAutoFilled && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                const autoFilled = generateCoverLetterFromProfile();
+                                if (autoFilled) {
+                                    setFormData(prev => ({ ...prev, cover_letter: autoFilled }));
+                                    setIsAutoFilled(true);
+                                    toast.success("Cover letter diisi otomatis dari profil Anda");
+                                }
+                            }}
+                        >
+                            Isi Otomatis dari Profil
+                        </Button>
+                    )}
+                </div>
                 <Textarea
                     id="cover_letter"
                     value={formData.cover_letter}
                     onChange={(e) => setFormData({ ...formData, cover_letter: e.target.value })}
-                    rows={6}
+                    rows={8}
                     placeholder="Tuliskan cover letter Anda di sini..."
                     required
                 />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,12 +11,14 @@ import { Upload, FileText, Loader2, X } from "lucide-react";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Job } from "@/types/job";
+import type { Profile } from "@/lib/types";
 
 interface ApplicationFormProps {
   job: Job;
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  profile?: Profile | null;
 }
 
 interface FormData {
@@ -32,7 +34,7 @@ interface FormData {
   dokumenTambahan: File | null;
 }
 
-export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFormProps) {
+export function ApplicationForm({ job, open, onClose, onSuccess, profile }: ApplicationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     namaLengkap: "",
     email: "",
@@ -46,7 +48,53 @@ export function ApplicationForm({ job, open, onClose, onSuccess }: ApplicationFo
     dokumenTambahan: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
   const supabase = createBrowserClient();
+
+  // Auto-fill form from profile when modal opens
+  useEffect(() => {
+    if (open && profile && !isAutoFilled) {
+      const autoFill = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Map education to dropdown values
+        const mapEducation = (edu: string | null | undefined): string => {
+          if (!edu) return "";
+          const eduLower = edu.toLowerCase();
+          if (eduLower.includes("sma") || eduLower.includes("smk")) return "SMA/SMK";
+          if (eduLower.includes("d3") || eduLower.includes("diploma")) return "D3";
+          if (eduLower.includes("s1") || eduLower.includes("sarjana") || eduLower.includes("strata 1")) return "S1";
+          if (eduLower.includes("s2") || eduLower.includes("magister") || eduLower.includes("strata 2")) return "S2";
+          // Default to S1 if major exists
+          return profile.major ? "S1" : "";
+        };
+
+        setFormData(prev => ({
+          ...prev,
+          namaLengkap: profile.full_name || prev.namaLengkap,
+          email: user?.email || prev.email,
+          nomorTelepon: profile.phone || prev.nomorTelepon,
+          domisili: profile.location_city || prev.domisili,
+          pendidikanTerakhir: mapEducation(profile.education) || prev.pendidikanTerakhir,
+          pengalamanKerja: profile.experience || prev.pengalamanKerja,
+          skill: profile.skills ? profile.skills.join(", ") : prev.skill,
+          // Portfolio tidak ada di Profile, biarkan user isi manual
+          portfolio: prev.portfolio,
+        }));
+        setIsAutoFilled(true);
+        toast.success("Form diisi otomatis dari profil Anda");
+      };
+      
+      autoFill();
+    }
+  }, [open, profile, isAutoFilled, supabase]);
+
+  // Reset auto-fill flag when modal closes
+  useEffect(() => {
+    if (!open) {
+      setIsAutoFilled(false);
+    }
+  }, [open]);
 
   const handleFileChange = (field: "cvFile" | "dokumenTambahan", file: File | null) => {
     if (!file) {

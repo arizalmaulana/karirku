@@ -2,7 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ApplicationFormEnhanced } from "@/components/job-seeker/ApplicationFormEnhanced";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound, redirect } from "next/navigation";
-import type { JobListing } from "@/lib/types";
+import type { JobListing, Profile } from "@/lib/types";
 
 async function getJob(id: string) {
     const supabase = await createSupabaseServerClient();
@@ -32,6 +32,20 @@ async function checkExistingApplication(userId: string, jobId: string) {
     return data;
 }
 
+async function getUserProfile(userId: string) {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+    if (error || !data) {
+        return null;
+    }
+    return data as Profile;
+}
+
 export default async function ApplyJobPage({ params }: { params: { id: string } }) {
     const supabase = await createSupabaseServerClient();
     const {
@@ -42,9 +56,10 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
         redirect("/");
     }
 
-    const [job, existingApplication] = await Promise.all([
+    const [job, existingApplication, profile] = await Promise.all([
         getJob(params.id),
         checkExistingApplication(user.id, params.id),
+        getUserProfile(user.id),
     ]);
 
     if (!job) {
@@ -77,7 +92,11 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ApplicationFormEnhanced jobId={params.id} jobTitle={job.title} />
+                    <ApplicationFormEnhanced 
+                        jobId={params.id} 
+                        jobTitle={job.title}
+                        profile={profile}
+                    />
                 </CardContent>
             </Card>
         </div>

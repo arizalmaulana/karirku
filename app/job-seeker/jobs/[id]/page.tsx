@@ -28,7 +28,28 @@ async function getJob(id: string) {
     if (error || !data) {
         return null;
     }
-    return data as JobListing;
+
+    const jobListing = data as JobListing;
+
+    // Integrate company data from companies table
+    const { data: companyData } = await supabase
+        .from("companies")
+        .select("logo_url, industry, location_city, location_province, website_url, description")
+        .eq("name", jobListing.company_name)
+        .maybeSingle();
+
+    // If company data exists, integrate it with job listing
+    if (companyData) {
+        const company = companyData as any;
+        return {
+            ...jobListing,
+            // Use company location if job listing doesn't have it
+            location_city: company.location_city || jobListing.location_city,
+            location_province: company.location_province || jobListing.location_province,
+        } as JobListing;
+    }
+
+    return jobListing;
 }
 
 async function getLivingCost(livingCostId: string | null) {
@@ -40,6 +61,51 @@ async function getLivingCost(livingCostId: string | null) {
         .select("*")
         .eq("id", livingCostId)
         .single();
+
+    if (error || !data) {
+        return null;
+    }
+    return data as LivingCost;
+}
+
+async function getLivingCostByCity(cityName: string | null) {
+    if (!cityName) return null;
+
+    const supabase = await createSupabaseServerClient();
+    
+    // Try exact match first
+    let { data, error } = await supabase
+        .from("living_costs")
+        .select("*")
+        .eq("city", cityName)
+        .maybeSingle();
+
+    // If not found, try case-insensitive match
+    if (error || !data) {
+        const { data: data2, error: error2 } = await supabase
+            .from("living_costs")
+            .select("*")
+            .ilike("city", cityName)
+            .maybeSingle();
+        
+        if (!error2 && data2) {
+            data = data2;
+            error = null;
+        }
+    }
+
+    // If still not found, try partial match (contains)
+    if (error || !data) {
+        const { data: data3, error: error3 } = await supabase
+            .from("living_costs")
+            .select("*")
+            .ilike("city", `%${cityName}%`)
+            .maybeSingle();
+        
+        if (!error3 && data3) {
+            data = data3;
+        }
+    }
 
     if (error || !data) {
         return null;
@@ -106,9 +172,31 @@ export default async function JobDetailPage({
         notFound();
     }
 
-    const livingCost = job.living_cost_id
+    // Ambil living cost: prioritas dari living_cost_id, jika tidak ada ambil berdasarkan kota
+    let livingCost = job.living_cost_id
         ? await getLivingCost(job.living_cost_id)
         : null;
+    
+    // Jika tidak ada living_cost_id, coba ambil berdasarkan kota perusahaan
+    // Coba dari location_city job listing dulu, lalu dari companies table
+    if (!livingCost) {
+        if (job.location_city) {
+            livingCost = await getLivingCostByCity(job.location_city);
+        }
+        
+        // Jika masih tidak ada, coba ambil dari companies table
+        if (!livingCost && job.company_name) {
+            const { data: companyData } = await supabase
+                .from("companies")
+                .select("location_city")
+                .eq("name", job.company_name)
+                .maybeSingle();
+            
+            if (companyData && (companyData as any).location_city) {
+                livingCost = await getLivingCostByCity((companyData as any).location_city);
+            }
+        }
+    }
 
     const matchScore = profile
         ? calculateMatchScore(
