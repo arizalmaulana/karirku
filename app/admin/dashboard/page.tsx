@@ -182,7 +182,7 @@ export default async function AdminDashboardPage() {
                             {recentJobs.length > 0 ? (
                                 recentJobs.map((job: any) => (
                                     <Link key={job.id} href={`/admin/jobs/${job.id}`}>
-                                        <div className="flex items-center justify-between rounded-2xl border-2 border-gray-200 p-5 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
+                                        <div className="flex items-center justify-between rounded-2xl border-2 border-gray-200 p-5 hover:border-blue-200 hover:bg-purple-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
                                             <div className="flex-1">
                                                 <p className="font-bold text-gray-900 mb-1">{job.title}</p>
                                                 <p className="text-sm text-gray-600 font-medium mb-2">{job.company}</p>
