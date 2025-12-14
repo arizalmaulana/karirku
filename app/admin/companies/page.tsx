@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Eye, Building2, CheckCircle2, XCircle, Clock, Lock } from "lucide-react";
-import type { Company } from "@/lib/types";
+import type { Company, Profile } from "@/lib/types";
 import { redirect } from "next/navigation";
 
 async function getCompanies(filter?: string) {
@@ -33,7 +33,7 @@ async function getCompanies(filter?: string) {
         .eq("id", currentUser.id)
         .single();
 
-    if (!currentProfile || currentProfile.role !== "admin") {
+    if (!currentProfile || (currentProfile as Pick<Profile, 'role'>).role !== "admin") {
         redirect("/");
         return [];
     }
@@ -206,6 +206,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "pending" ? "default" : "outline"}
                         size="sm"
+                        className="hover:bg-yellow-600 hover:text-white transition-all duration-300"
                     >
                         Menunggu ({stats.pending})
                     </Button>
@@ -214,6 +215,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "approved" ? "default" : "outline"}
                         size="sm"
+                        className="hover:bg-green-600 hover:text-white transition-all duration-300"
                     >
                         Disetujui ({stats.approved})
                     </Button>
@@ -222,6 +224,7 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "rejected" ? "default" : "outline"}
                         size="sm"
+                        className="hover:bg-red-600 hover:text-white transition-all duration-300"
                     >
                         Ditolak ({stats.rejected})
                     </Button>
