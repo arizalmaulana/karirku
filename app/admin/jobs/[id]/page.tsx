@@ -88,7 +88,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500">Tipe Pekerjaan</p>
+                            <p className="text-sm text-black-500">Tipe Pekerjaan</p>
                             <Badge variant="outline">{job.employment_type}</Badge>
                         </div>
                         <div>

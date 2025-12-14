@@ -5,13 +5,13 @@ export default function NewJobPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold text-gray-900">Tambah Lowongan Baru</h1>
+                <h1 className="text-3xl font-semibold text-blue-900">Tambah Lowongan Baru</h1>
                 <p className="text-gray-500 mt-1">
                     Tambahkan lowongan pekerjaan baru ke platform
                 </p>
             </div>
 
-            <Card>
+            <Card className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-50/50 to-purple-50/50 shadow-lg">
                 <CardHeader>
                     <CardTitle>Informasi Lowongan</CardTitle>
                     <CardDescription>

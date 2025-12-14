@@ -139,11 +139,6 @@ export default async function AdminDashboardPage() {
                         terkini.
                     </p>
                 </div>
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all" variant="outline" size="lg" asChild>
-                        <Link href="/admin/jobs/new">
-                            Tambah Lowongan Baru
-                        </Link>
-                    </Button>
             </div>
 
             <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -151,7 +146,7 @@ export default async function AdminDashboardPage() {
                     <Card key={stat.title} className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-100 via-blue-50/50 to-blue shadow-lg text-black-700 hover:bg-purple-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                             <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
-                            <div className="p-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-md">
+                            <div className="p-3 bg-gradient-to-br from-purple-400 to-blue-600 rounded-xl shadow-md hover:bg-pink-600 hover:shadow-xl transition-all duration-300 hover:scale-105">
                                 <stat.icon className="h-5 w-5 text-white" />
                             </div>
                         </CardHeader>
@@ -170,7 +165,7 @@ export default async function AdminDashboardPage() {
                             <CardTitle className="text-xl font-bold">Lowongan Terbaru</CardTitle>
                             <CardDescription>Lowongan yang baru diajukan oleh recruiter</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/jobs">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -182,7 +177,7 @@ export default async function AdminDashboardPage() {
                             {recentJobs.length > 0 ? (
                                 recentJobs.map((job: any) => (
                                     <Link key={job.id} href={`/admin/jobs/${job.id}`}>
-                                        <div className="flex items-center justify-between rounded-2xl border-2 border-gray-200 p-5 hover:border-blue-200 hover:bg-purple-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
+                                        <div className="flex items-center justify-between rounded-2xl border-2 border-blue-200 p-5 hover:border-purple-200 hover:bg-purple-50/50 to-blue-50/50 text-black-700 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md mb-2">
                                             <div className="flex-1">
                                                 <p className="font-bold text-gray-900 mb-1">{job.title}</p>
                                                 <p className="text-sm text-gray-600 font-medium mb-2">{job.company}</p>
@@ -202,20 +197,20 @@ export default async function AdminDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-2 border-gray-200/50 shadow-lg">
+                <Card className="border-2 border-blue-200/50 shadow-lg border-blue-300 text-black-700 hover:bg-blue-50">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
                             <CardTitle className="text-xl font-bold">Aktivitas Lamaran</CardTitle>
                             <CardDescription>Lamaran terbaru yang masuk</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/applications">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 text-black-700">
                         {recentApplications.length > 0 ? (
                             recentApplications.map((application: any) => (
                                 <Link key={application.id} href={`/admin/applications/${application.id}`}>
@@ -242,10 +237,10 @@ export default async function AdminDashboardPage() {
             </section>
 
             {/* Tugas Prioritas Admin */}
-            <Card className="border-2 border-amber-200/50 bg-gradient-to-br from-amber-50/50 to-blue-50/50 shadow-lg">
+            <Card className="border-2 border-red-200/50 bg-gradient-to-br from-red-50/50 to-blue-50/50 shadow-lg">
                 <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                        <div className="p-2 bg-amber-100 rounded-xl">
+                        <div className="p-2 bg-red-100 rounded-xl">
                             <AlertCircle className="h-5 w-5 text-amber-600" />
                         </div>
                         Tugas Prioritas
@@ -259,7 +254,7 @@ export default async function AdminDashboardPage() {
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Users className="h-4 w-4 text-amber-600" />
+                                        <Users className="h-4 w-4 text-red-600" />
                                         <p className="font-semibold text-gray-900">
                                             {pendingRecruiters.length} Recruiter Menunggu Persetujuan
                                         </p>
@@ -269,7 +264,7 @@ export default async function AdminDashboardPage() {
                                     </p>
                                     <div className="space-y-2 mb-3">
                                         {pendingRecruiters.slice(0, 3).map((recruiter: any) => (
-                                            <div key={recruiter.id} className="flex items-center justify-between text-sm bg-white rounded-lg p-2">
+                                            <div key={recruiter.id} className="flex items-center justify-between text-sm bg-red rounded-lg p-2">
                                                 <div>
                                                     <p className="font-medium">{recruiter.name}</p>
                                                     <p className="text-xs text-gray-500">{recruiter.email}</p>
@@ -298,7 +293,7 @@ export default async function AdminDashboardPage() {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Clock className="h-4 w-4 text-blue-600" />
-                                        <p className="font-semibold text-gray-900">
+                                        <p className="font-semibold text-grey-900">
                                             {pendingApplications.length} Lamaran Menunggu Tindakan
                                         </p>
                                     </div>
@@ -332,18 +327,12 @@ export default async function AdminDashboardPage() {
                     )}
 
                     {/* Quick Actions */}
-                    <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
                         <p className="font-semibold text-gray-900 mb-3">Aksi Cepat</p>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/jobs/new">
-                                    <BriefcaseBusiness className="h-4 w-4 mr-2" />
-                                    Tambah Lowongan
-                                </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
+                        <div className="grid grid-cols-3 gap-4">
+                            <Button variant="outline" size="sm" asChild className="hover:bg-red-200 hover:text-black-600 transition-all duration-300 hover:scale-105">
                                 <Link href="/admin/living-costs/new">
-                                    <Wallet className="h-4 w-4 mr-2" />
+                                    <Wallet className="h-2 w-2 mr-2" />
                                     Tambah Biaya Hidup
                                 </Link>
                             </Button>

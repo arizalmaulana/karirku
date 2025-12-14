@@ -134,7 +134,7 @@ export default async function CompaniesManagementPage({
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
+                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -148,7 +148,7 @@ export default async function CompaniesManagementPage({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50">
+                <Card className="border border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -162,7 +162,7 @@ export default async function CompaniesManagementPage({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50">
+                <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -176,7 +176,7 @@ export default async function CompaniesManagementPage({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50">
+                <Card className="border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -196,7 +196,8 @@ export default async function CompaniesManagementPage({
                 <Link href="/admin/companies">
                     <Button
                         variant={!filter ? "default" : "outline"}
-                        size="sm"
+                        size="sm" 
+                        className="hover:bg-blue-600 hover:text-white transition-all duration-300"
                     >
                         Semua ({stats.total})
                     </Button>

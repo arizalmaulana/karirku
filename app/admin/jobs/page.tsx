@@ -56,7 +56,7 @@ export default async function JobsManagementPage() {
                 </Button>
             </div>
 
-            <Card className="border border-pink-200 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
+            <Card className="border border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
@@ -105,12 +105,12 @@ export default async function JobsManagementPage() {
                                             <div className="flex justify-end gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/jobs/${job.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4 text-black-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/jobs/${job.id}/edit`}>
-                                                        <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" asChild>
