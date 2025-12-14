@@ -42,7 +42,7 @@ export async function middleware(req: NextRequest) {
     // Gunakan maybeSingle() untuk menghindari error jika profil belum ada
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_approved')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -73,6 +73,16 @@ export async function middleware(req: NextRequest) {
       })
       return NextResponse.redirect(new URL('/', req.url))
     }
+
+    // Cek apakah user diblokir (is_approved = false atau null)
+    if (profile.is_approved === false || profile.is_approved === null) {
+      console.log('Admin access denied: Account blocked', {
+        userId: user.id,
+        is_approved: profile.is_approved,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
   }
 
   // Jika pengguna sedang mencoba mengakses rute recruiter
@@ -83,7 +93,7 @@ export async function middleware(req: NextRequest) {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_approved')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -105,8 +115,40 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
-    // Recruiter bisa langsung akses setelah verifikasi email
-    // Validasi surat izin dilakukan setelah login di halaman profile perusahaan
+    // Cek apakah user diblokir (is_approved = false atau null)
+    if (profile.is_approved === false || profile.is_approved === null) {
+      console.log('Recruiter access denied: Account blocked', {
+        userId: user.id,
+        is_approved: profile.is_approved,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+
+    // Cek apakah perusahaan recruiter diblokir
+    const { data: company, error: companyError } = await supabase
+      .from('companies')
+      .select('is_blocked, blocked_reason')
+      .eq('recruiter_id', user.id)
+      .maybeSingle()
+
+    if (companyError && companyError.code !== 'PGRST116') {
+      console.error('Middleware error fetching company for recruiter:', {
+        error: companyError.message,
+        code: companyError.code,
+        path: req.nextUrl.pathname
+      })
+    }
+
+    if (company && company.is_blocked === true) {
+      console.log('Recruiter access denied: Company blocked', {
+        userId: user.id,
+        companyId: company,
+        blockedReason: company.blocked_reason,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
   }
 
   // Jika pengguna sedang mencoba mengakses rute job-seeker
@@ -117,7 +159,7 @@ export async function middleware(req: NextRequest) {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_approved')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -142,6 +184,16 @@ export async function middleware(req: NextRequest) {
         hasProfile: !!profile,
         role: profile?.role,
         userId: user.id,
+        path: req.nextUrl.pathname
+      })
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+
+    // Cek apakah user diblokir (is_approved = false atau null)
+    if (profile.is_approved === false || profile.is_approved === null) {
+      console.log('Job-seeker access denied: Account blocked', {
+        userId: user.id,
+        is_approved: profile.is_approved,
         path: req.nextUrl.pathname
       })
       return NextResponse.redirect(new URL('/', req.url))

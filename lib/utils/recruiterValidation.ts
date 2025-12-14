@@ -55,3 +55,4 @@ export async function getRecruiterCompany(recruiterId: string): Promise<Company 
     return data as Company;
 }
 
+

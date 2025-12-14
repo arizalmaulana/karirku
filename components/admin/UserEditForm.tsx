@@ -64,12 +64,8 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
                 experience: formData.experience || null,
             };
 
-            // Hanya update is_approved jika role adalah recruiter
-            if (formData.role === 'recruiter') {
-                updateData.is_approved = formData.is_approved;
-            } else {
-                updateData.is_approved = null;
-            }
+            // Update is_approved untuk semua role (status aktif)
+            updateData.is_approved = formData.is_approved;
 
             const { error } = await (supabase
                 .from("profiles") as any)
@@ -156,18 +152,16 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
                     </Select>
                 </div>
 
-                {formData.role === 'recruiter' && (
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="is_approved"
-                            checked={formData.is_approved}
-                            onCheckedChange={(checked) => setFormData({ ...formData, is_approved: checked as boolean })}
-                        />
-                        <Label htmlFor="is_approved" className="cursor-pointer">
-                            Approved
-                        </Label>
-                    </div>
-                )}
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                        id="is_approved"
+                        checked={formData.is_approved}
+                        onCheckedChange={(checked) => setFormData({ ...formData, is_approved: checked as boolean })}
+                    />
+                    <Label htmlFor="is_approved" className="cursor-pointer">
+                        Status Aktif
+                    </Label>
+                </div>
 
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="skills">Skills (pisahkan dengan koma)</Label>

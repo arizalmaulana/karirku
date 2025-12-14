@@ -7,6 +7,7 @@ import { ArrowLeft, UserCheck, UserX, Mail, Phone, MapPin, Briefcase, Graduation
 import { notFound } from "next/navigation";
 import { UserManagementForm } from "@/components/admin/UserManagementForm";
 import { CompanyLicenseViewer } from "@/components/admin/CompanyLicenseViewer";
+import { formatDateIndonesian } from "@/lib/utils/dateFormat";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -201,32 +202,26 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                                     {user.role}
                                 </Badge>
                             </div>
-                            {user.role === "recruiter" && (
-                                <div>
-                                    <p className="text-sm text-gray-500">Status Approval</p>
-                                    <Badge variant={user.is_approved ? "default" : "secondary"} className="mt-1">
-                                        {user.is_approved ? (
-                                            <>
-                                                <UserCheck className="mr-1 h-3 w-3" />
-                                                Approved
-                                            </>
-                                        ) : (
-                                            <>
-                                                <UserX className="mr-1 h-3 w-3" />
-                                                Pending
-                                            </>
-                                        )}
-                                    </Badge>
-                                </div>
-                            )}
+                            <div>
+                                <p className="text-sm text-gray-500">Status</p>
+                                <Badge variant={user.is_approved ? "default" : "secondary"} className="mt-1">
+                                    {user.is_approved ? (
+                                        <>
+                                            <UserCheck className="mr-1 h-3 w-3" />
+                                            Aktif
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UserX className="mr-1 h-3 w-3" />
+                                            Tidak Aktif
+                                        </>
+                                    )}
+                                </Badge>
+                            </div>
                             <div>
                                 <p className="text-sm text-gray-500">Tanggal Bergabung</p>
                                 <p className="font-medium">
-                                    {new Date(user.created_at).toLocaleDateString("id-ID", {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                    })}
+                                    {formatDateIndonesian(user.created_at)}
                                 </p>
                             </div>
                         </CardContent>
@@ -236,7 +231,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                         <CardHeader>
                             <CardTitle>Kelola Pengguna</CardTitle>
                             <CardDescription>
-                                Update role atau status approval
+                                Update role atau status aktif
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

@@ -32,7 +32,7 @@ export function CreateUserForm() {
         location_city: "",
         bio: "",
         role: 'jobseeker' as UserRole,
-        is_approved: false,
+        is_approved: true,
         skills: "",
         education: "",
         major: "",
@@ -92,12 +92,8 @@ export function CreateUserForm() {
                 experience: formData.experience || null,
             };
 
-            // Hanya set is_approved jika role adalah recruiter
-            if (formData.role === 'recruiter') {
-                profileData.is_approved = formData.is_approved;
-            } else {
-                profileData.is_approved = null;
-            }
+            // Set is_approved untuk semua role (status aktif)
+            profileData.is_approved = formData.is_approved;
 
             const { error: profileError } = await (supabase
                 .from("profiles") as any)
@@ -197,18 +193,16 @@ export function CreateUserForm() {
                     </Select>
                 </div>
 
-                {formData.role === 'recruiter' && (
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="is_approved"
-                            checked={formData.is_approved}
-                            onCheckedChange={(checked) => setFormData({ ...formData, is_approved: checked as boolean })}
-                        />
-                        <Label htmlFor="is_approved" className="cursor-pointer">
-                            Approved
-                        </Label>
-                    </div>
-                )}
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                        id="is_approved"
+                        checked={formData.is_approved}
+                        onCheckedChange={(checked) => setFormData({ ...formData, is_approved: checked as boolean })}
+                    />
+                    <Label htmlFor="is_approved" className="cursor-pointer">
+                        Status Aktif
+                    </Label>
+                </div>
 
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="skills">Skills (pisahkan dengan koma)</Label>

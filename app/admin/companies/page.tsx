@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Eye, Building2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Eye, Building2, CheckCircle2, XCircle, Clock, Lock } from "lucide-react";
 import type { Company } from "@/lib/types";
 import { redirect } from "next/navigation";
 
@@ -264,7 +264,15 @@ export default async function CompaniesManagementPage({
                                 {companies.map((company) => (
                                     <TableRow key={company.id}>
                                         <TableCell className="font-medium">
-                                            {company.name}
+                                            <div className="flex items-center gap-2">
+                                                {company.name}
+                                                {company.is_blocked && (
+                                                    <Badge variant="destructive" className="text-xs">
+                                                        <Lock className="h-3 w-3 mr-1" />
+                                                        Diblokir
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             {company.profiles?.full_name || "-"}
@@ -317,6 +325,7 @@ export default async function CompaniesManagementPage({
         </div>
     );
 }
+
 
 
 

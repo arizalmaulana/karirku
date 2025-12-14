@@ -71,21 +71,24 @@ export function LoginDialog({
       // Ambil role dari user_metadata terlebih dahulu sebagai fallback
       const userMetadata = data.user.user_metadata;
       let role: UserRole = (userMetadata?.role as UserRole) || "jobseeker";
+      let isApproved: boolean | null = null;
 
       // Coba fetch profil, tapi jangan biarkan error memblokir login
       try {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("role")
+          .select("role, is_approved")
           .eq("id", userId)
           .maybeSingle();
 
         // Jika tidak ada error dan data ada, gunakan role dari profil
         if (!profileError && profileData) {
           const profile = profileData as { 
-            role?: UserRole; 
+            role?: UserRole;
+            is_approved?: boolean | null;
           };
           role = profile.role ?? role;
+          isApproved = profile.is_approved ?? null;
         } else if (profileError && profileError.code !== "PGRST116") {
           // Jika error selain "not found", log dan tetap lanjutkan
           console.warn("Profile fetch error during login:", {
@@ -103,8 +106,39 @@ export function LoginDialog({
         });
       }
 
-      // Recruiter bisa langsung login setelah verifikasi email
-      // Validasi surat izin dilakukan setelah login di halaman profile perusahaan
+      // Cek apakah user diblokir (is_approved = false atau null)
+      if (isApproved === false || isApproved === null) {
+        // Sign out user yang diblokir
+        await supabase.auth.signOut();
+        toast.error("Akun Anda telah diblokir. Silahkan hubungi admin.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Jika recruiter, cek apakah perusahaan diblokir
+      if (role === "recruiter") {
+        try {
+          const { data: companyData, error: companyError } = await supabase
+            .from("companies")
+            .select("is_blocked, blocked_reason")
+            .eq("recruiter_id", userId)
+            .maybeSingle();
+
+          if (!companyError && companyData && companyData.is_blocked === true) {
+            // Sign out recruiter yang perusahaannya diblokir
+            await supabase.auth.signOut();
+            const reason = companyData.blocked_reason 
+              ? `Perusahaan Anda telah diblokir. Alasan: ${companyData.blocked_reason}. Silahkan hubungi admin.`
+              : "Perusahaan Anda telah diblokir. Silahkan hubungi admin.";
+            toast.error(reason);
+            setIsLoading(false);
+            return;
+          }
+        } catch (err: any) {
+          console.warn("Error checking company block status:", err);
+          // Continue login jika error, jangan blokir
+        }
+      }
 
       // Pastikan role valid
       if (!role || !roleRedirectMap[role]) {

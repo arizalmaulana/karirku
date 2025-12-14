@@ -197,6 +197,7 @@ export function RegisterDialog({
                     id: data.user.id,
                     full_name: formData.name,
                     role: formData.role,
+                    is_approved: true, // Auto aktif untuk semua role setelah konfirmasi email
                 };
 
                 // Coba insert dulu, jika gagal karena sudah ada, gunakan upsert
@@ -329,23 +330,20 @@ export function RegisterDialog({
                 } else {
                     console.log("Profile created successfully:", profileResult);
                     
-                    // Untuk recruiter, update is_approved menjadi true setelah insert
-                    // (karena trigger akan set false, kita perlu override)
-                    if (formData.role === "recruiter") {
-                        const { error: updateError } = await (supabase
-                            .from("profiles") as any)
-                            .update({ is_approved: true })
-                            .eq("id", data.user.id);
-                        
-                        if (updateError) {
-                            console.warn("Gagal update is_approved untuk recruiter:", {
-                                message: updateError.message,
-                                code: updateError.code,
-                                details: updateError.details
-                            });
-                        } else {
-                            console.log("is_approved updated to true for recruiter");
-                        }
+                    // Pastikan is_approved = true untuk semua role
+                    const { error: updateError } = await (supabase
+                        .from("profiles") as any)
+                        .update({ is_approved: true })
+                        .eq("id", data.user.id);
+                    
+                    if (updateError) {
+                        console.warn("Gagal update is_approved:", {
+                            message: updateError.message,
+                            code: updateError.code,
+                            details: updateError.details
+                        });
+                    } else {
+                        console.log("is_approved updated to true");
                     }
                 }
             }

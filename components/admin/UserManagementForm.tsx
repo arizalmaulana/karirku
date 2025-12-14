@@ -37,13 +37,8 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
                 role: role,
             };
 
-            // Hanya update is_approved jika role adalah recruiter
-            if (role === 'recruiter') {
-                updateData.is_approved = isApproved;
-            } else {
-                // Jika role bukan recruiter, set is_approved ke null atau false
-                updateData.is_approved = null;
-            }
+            // Update is_approved untuk semua role (status aktif)
+            updateData.is_approved = isApproved;
 
             const { error } = await (supabase
                 .from("profiles") as any)
@@ -77,32 +72,30 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
                 </Select>
             </div>
 
-            {role === 'recruiter' && (
-                <div className="flex items-center space-x-2">
-                    <Checkbox
-                        id="is_approved"
-                        checked={isApproved}
-                        onCheckedChange={(checked) => setIsApproved(checked as boolean)}
-                    />
-                    <Label htmlFor="is_approved" className="cursor-pointer flex items-center gap-2">
-                        {isApproved ? (
-                            <>
-                                <UserCheck className="h-4 w-4 text-green-600" />
-                                Approved
-                            </>
-                        ) : (
-                            <>
-                                <UserX className="h-4 w-4 text-gray-400" />
-                                Pending Approval
-                            </>
-                        )}
-                    </Label>
-                </div>
-            )}
+            <div className="flex items-center space-x-2">
+                <Checkbox
+                    id="is_approved"
+                    checked={isApproved}
+                    onCheckedChange={(checked) => setIsApproved(checked as boolean)}
+                />
+                <Label htmlFor="is_approved" className="cursor-pointer flex items-center gap-2">
+                    {isApproved ? (
+                        <>
+                            <UserCheck className="h-4 w-4 text-green-600" />
+                            Aktif
+                        </>
+                    ) : (
+                        <>
+                            <UserX className="h-4 w-4 text-gray-400" />
+                            Tidak Aktif
+                        </>
+                    )}
+                </Label>
+            </div>
 
             <Button 
                 type="submit" 
-                disabled={isLoading || (role === user.role && (role !== 'recruiter' || isApproved === user.is_approved))}
+                disabled={isLoading || (role === user.role && isApproved === user.is_approved)}
                 className="w-full"
             >
                 {isLoading ? (
@@ -115,7 +108,7 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
                 )}
             </Button>
 
-            {(role === user.role && (role !== 'recruiter' || isApproved === user.is_approved)) && (
+            {(role === user.role && isApproved === user.is_approved) && (
                 <p className="text-xs text-gray-500 text-center">
                     Tidak ada perubahan
                 </p>
