@@ -1,4 +1,5 @@
-import { ArrowUpRight, BriefcaseBusiness, FileText, Users, Wallet, CheckCircle2, AlertCircle, Clock, XCircle } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, FileText, Users, Wallet, CheckCircle2, AlertCircle, Clock, XCircle, Building2, Lock } from "lucide-react";
+import { formatDateDayMonth } from "@/lib/utils/dateFormat";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,7 @@ export default async function AdminDashboardPage() {
         { count: cityCount },
         { data: recentJobsData },
         { data: recentApplicationsData },
-        { data: pendingRecruitersData },
-        { data: pendingApplicationsData },
+        { data: pendingCompaniesData },
     ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("job_listings").select("*", { count: "exact", head: true }),
@@ -34,16 +34,10 @@ export default async function AdminDashboardPage() {
             .select("id, status, submitted_at, profiles(full_name), job_listings(title, company_name)")
             .order("submitted_at", { ascending: false })
             .limit(5),
-        supabase.from("profiles")
-            .select("id, full_name, email, company_license_url, created_at")
-            .eq("role", "recruiter")
-            .eq("is_approved", false)
+        supabase.from("companies")
+            .select("id, name, industry, location_city, status, is_approved, is_blocked, blocked_reason, created_at, profiles!companies_recruiter_id_fkey(full_name, email)")
+            .or("status.eq.pending,is_approved.is.null,is_approved.eq.false")
             .order("created_at", { ascending: false })
-            .limit(5),
-        supabase.from("applications")
-            .select("id, status, submitted_at, profiles(full_name), job_listings(title, company_name)")
-            .in("status", ["submitted", "review"])
-            .order("submitted_at", { ascending: false })
             .limit(5),
     ]);
 
@@ -71,27 +65,18 @@ export default async function AdminDashboardPage() {
         }),
     }));
 
-    const pendingRecruiters = (pendingRecruitersData || []).map((recruiter: any) => ({
-        id: recruiter.id,
-        name: recruiter.full_name || "Unknown",
-        email: recruiter.email || "-",
-        hasLicense: !!recruiter.company_license_url,
-        registered: new Date(recruiter.created_at).toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "short",
-        }),
-    }));
-
-    const pendingApplications = (pendingApplicationsData || []).map((app: any) => ({
-        id: app.id,
-        candidate: app.profiles?.full_name || "Unknown",
-        job: app.job_listings?.title || "Unknown",
-        company: app.job_listings?.company_name || "Unknown",
-        status: app.status,
-        submitted: new Date(app.submitted_at).toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "short",
-        }),
+    const pendingCompanies = (pendingCompaniesData || []).map((company: any) => ({
+        id: company.id,
+        name: company.name || "Unknown",
+        industry: company.industry || "-",
+        location: company.location_city || "-",
+        status: company.status || "pending",
+        isApproved: company.is_approved || false,
+        isBlocked: company.is_blocked || false,
+        blockedReason: company.blocked_reason || null,
+        recruiterName: company.profiles?.full_name || "-",
+        recruiterEmail: company.profiles?.email || "-",
+        created: formatDateDayMonth(company.created_at),
     }));
 
     function getStatusBadgeVariant(status: string) {
@@ -241,91 +226,98 @@ export default async function AdminDashboardPage() {
                 </Card>
             </section>
 
-            {/* Tugas Prioritas Admin */}
+            {/* Validasi Perusahaan */}
             <Card className="border-2 border-amber-200/50 bg-gradient-to-br from-amber-50/50 to-blue-50/50 shadow-lg">
                 <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl font-bold">
                         <div className="p-2 bg-amber-100 rounded-xl">
-                            <AlertCircle className="h-5 w-5 text-amber-600" />
+                            <Building2 className="h-5 w-5 text-amber-600" />
                         </div>
-                        Tugas Prioritas
+                        Validasi Perusahaan
                     </CardTitle>
-                    <CardDescription>Tugas yang memerlukan perhatian segera</CardDescription>
+                    <CardDescription>Perusahaan yang perlu divalidasi dan disetujui</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Recruiter Pending Approval */}
-                    {pendingRecruiters.length > 0 && (
+                    {/* Pending Companies */}
+                    {pendingCompanies.length > 0 ? (
                         <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Users className="h-4 w-4 text-amber-600" />
+                                        <Building2 className="h-4 w-4 text-amber-600" />
                                         <p className="font-semibold text-gray-900">
-                                            {pendingRecruiters.length} Recruiter Menunggu Persetujuan
+                                            {pendingCompanies.length} Perusahaan Menunggu Validasi
                                         </p>
                                     </div>
                                     <p className="text-sm text-gray-600 mb-3">
-                                        Ada recruiter baru yang perlu diverifikasi dan disetujui
+                                        Perusahaan baru yang perlu diverifikasi dan disetujui oleh admin
                                     </p>
                                     <div className="space-y-2 mb-3">
-                                        {pendingRecruiters.slice(0, 3).map((recruiter: any) => (
-                                            <div key={recruiter.id} className="flex items-center justify-between text-sm bg-white rounded-lg p-2">
-                                                <div>
-                                                    <p className="font-medium">{recruiter.name}</p>
-                                                    <p className="text-xs text-gray-500">{recruiter.email}</p>
-                                                </div>
-                                                <Badge variant={recruiter.hasLicense ? "outline" : "destructive"}>
-                                                    {recruiter.hasLicense ? "Ada License" : "Tanpa License"}
-                                                </Badge>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <Button variant="outline" size="sm" asChild className="w-full">
-                                        <Link href="/admin/users?filter=pending">
-                                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                                            Kelola Recruiter ({pendingRecruiters.length})
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Pending Applications */}
-                    {pendingApplications.length > 0 && (
-                        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Clock className="h-4 w-4 text-blue-600" />
-                                        <p className="font-semibold text-gray-900">
-                                            {pendingApplications.length} Lamaran Menunggu Tindakan
-                                        </p>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-3">
-                                        Lamaran yang masih dalam status "Dikirim" atau "Dalam Review"
-                                    </p>
-                                    <div className="space-y-2 mb-3">
-                                        {pendingApplications.slice(0, 3).map((app: any) => (
-                                            <Link key={app.id} href={`/admin/applications/${app.id}`}>
-                                                <div className="flex items-center justify-between text-sm bg-white rounded-lg p-2 hover:bg-gray-50 transition-colors cursor-pointer">
-                                                    <div>
-                                                        <p className="font-medium">{app.candidate}</p>
-                                                        <p className="text-xs text-gray-500">{app.job} • {app.company}</p>
+                                        {pendingCompanies.slice(0, 5).map((company: any) => (
+                                            <Link key={company.id} href={`/admin/companies/${company.id}`}>
+                                                <div className="flex items-center justify-between text-sm bg-white rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer border border-gray-200">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <p className="font-medium text-gray-900">{company.name}</p>
+                                                            {company.isBlocked && (
+                                                                <Badge variant="destructive" className="text-xs">
+                                                                    <Lock className="h-3 w-3 mr-1" />
+                                                                    Diblokir
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        {company.isBlocked && company.blockedReason && (
+                                                            <div className="mb-2 rounded bg-red-50 border border-red-200 p-2">
+                                                                <p className="text-xs font-semibold text-red-900 mb-1">Alasan diblokir:</p>
+                                                                <p className="text-xs text-red-700">{company.blockedReason}</p>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center gap-3 mt-1">
+                                                            {company.industry && (
+                                                                <p className="text-xs text-gray-500">{company.industry}</p>
+                                                            )}
+                                                            {company.location && (
+                                                                <p className="text-xs text-gray-500">📍 {company.location}</p>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <p className="text-xs text-gray-500">
+                                                                Recruiter: {company.recruiterName}
+                                                            </p>
+                                                            {company.recruiterEmail && (
+                                                                <p className="text-xs text-gray-400">• {company.recruiterEmail}</p>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-gray-400 mt-1">Didaftarkan: {formatDateDayMonth(company.created)}</p>
                                                     </div>
-                                                    <Badge variant={getStatusBadgeVariant(app.status)}>
-                                                        {getStatusLabel(app.status)}
-                                                    </Badge>
+                                                    <div className="flex flex-col items-end gap-2">
+                                                        <Badge 
+                                                            variant={company.status === "pending" ? "outline" : company.status === "approved" ? "default" : "destructive"}
+                                                        >
+                                                            {company.status === "pending" ? "Menunggu" : company.status === "approved" ? "Disetujui" : "Ditolak"}
+                                                        </Badge>
+                                                        <ArrowUpRight className="h-4 w-4 text-gray-400" />
+                                                    </div>
                                                 </div>
                                             </Link>
                                         ))}
                                     </div>
                                     <Button variant="outline" size="sm" asChild className="w-full">
-                                        <Link href="/admin/applications?status=submitted,review">
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Kelola Lamaran ({pendingApplications.length})
+                                        <Link href="/admin/companies?filter=pending">
+                                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                                            Kelola Perusahaan ({pendingCompanies.length})
                                         </Link>
                                     </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-green-200 bg-green-50/50 p-4">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                <div>
+                                    <p className="font-semibold text-gray-900">Tidak Ada Perusahaan yang Perlu Divalidasi</p>
+                                    <p className="text-sm text-gray-600">Semua perusahaan sudah divalidasi dengan baik!</p>
                                 </div>
                             </div>
                         </div>
@@ -335,6 +327,12 @@ export default async function AdminDashboardPage() {
                     <div className="rounded-xl border border-gray-200 bg-white p-4">
                         <p className="font-semibold text-gray-900 mb-3">Aksi Cepat</p>
                         <div className="grid grid-cols-2 gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href="/admin/companies">
+                                    <Building2 className="h-4 w-4 mr-2" />
+                                    Semua Perusahaan
+                                </Link>
+                            </Button>
                             <Button variant="outline" size="sm" asChild>
                                 <Link href="/admin/jobs/new">
                                     <BriefcaseBusiness className="h-4 w-4 mr-2" />
@@ -348,32 +346,13 @@ export default async function AdminDashboardPage() {
                                 </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/users/new">
+                                <Link href="/admin/users">
                                     <Users className="h-4 w-4 mr-2" />
-                                    Tambah Pengguna
-                                </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/applications">
-                                    <FileText className="h-4 w-4 mr-2" />
-                                    Semua Lamaran
+                                    Kelola Pengguna
                                 </Link>
                             </Button>
                         </div>
                     </div>
-
-                    {/* Info jika tidak ada tugas prioritas */}
-                    {pendingRecruiters.length === 0 && pendingApplications.length === 0 && (
-                        <div className="rounded-xl border border-green-200 bg-green-50/50 p-4">
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                <div>
-                                    <p className="font-semibold text-gray-900">Tidak Ada Tugas Prioritas</p>
-                                    <p className="text-sm text-gray-600">Semua tugas sudah ditangani dengan baik!</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
         </div>

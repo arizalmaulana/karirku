@@ -61,3 +61,4 @@ Lowongan yang ditutup (`is_closed = true`) akan difilter di:
 - Field `is_closed` default adalah `false` untuk backward compatibility
 
 
+

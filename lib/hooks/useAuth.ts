@@ -58,13 +58,14 @@ export function useAuth() {
                             const userMetadata = userData.user.user_metadata;
                             const defaultRole = (userMetadata?.role as string) || 'jobseeker';
                             
-                            // Coba buat profil
+                            // Coba buat profil dengan is_approved = true (auto aktif setelah email confirmation)
                             const { error: createError } = await (supabase
                                 .from('profiles') as any)
                                 .upsert({
                                     id: userId,
                                     full_name: userMetadata?.full_name || null,
                                     role: defaultRole,
+                                    is_approved: true, // Auto aktif untuk semua role setelah konfirmasi email
                                 }, {
                                     onConflict: 'id',
                                 });

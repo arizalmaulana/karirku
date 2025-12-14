@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Eye, UserCheck, UserX, Plus, Pencil, Trash2 } from "lucide-react";
 import type { Profile } from "@/lib/types";
+import { formatDateIndonesianShort } from "@/lib/utils/dateFormat";
 
 async function getUsers(filter?: string) {
     const supabase = await createSupabaseServerClient();
@@ -156,16 +157,12 @@ export default async function UsersManagementPage({
                                                 : "-"}
                                         </TableCell>
                                         <TableCell>
-                                            {user.role === "recruiter" ? (
-                                                <Badge variant={user.is_approved ? "default" : "secondary"}>
-                                                    {user.is_approved ? "Approved" : "Pending"}
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline">Active</Badge>
-                                            )}
+                                            <Badge variant={user.is_approved ? "default" : "secondary"}>
+                                                {user.is_approved ? "Aktif" : "Tidak Aktif"}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {new Date(user.created_at).toLocaleDateString("id-ID")}
+                                            {formatDateIndonesianShort(user.created_at)}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">

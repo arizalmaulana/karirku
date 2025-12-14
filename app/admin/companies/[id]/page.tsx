@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, Building2, CheckCircle2, XCircle, Clock, ExternalLink, FileText, MapPin, Globe, Users } from "lucide-react";
+import { ArrowLeft, Building2, CheckCircle2, XCircle, Clock, ExternalLink, FileText, MapPin, Globe, Users, Lock } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CompanyApprovalForm } from "@/components/admin/CompanyApprovalForm";
+import { CompanyBlockButton } from "@/components/admin/CompanyBlockButton";
 import type { Company } from "@/lib/types";
 
 async function getCompany(id: string) {
@@ -201,7 +202,15 @@ export default async function CompanyDetailPage({
                     {recruiter && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Informasi Recruiter</CardTitle>
+                                <CardTitle className="flex items-center justify-between">
+                                    <span>Informasi Recruiter</span>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={`/admin/users/${recruiter.id}`}>
+                                            <Lock className="h-4 w-4 mr-2" />
+                                            Lihat User
+                                        </Link>
+                                    </Button>
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
@@ -289,6 +298,31 @@ export default async function CompanyDetailPage({
 
                     <Card>
                         <CardHeader>
+                            <CardTitle>Blokir Perusahaan</CardTitle>
+                            <CardDescription>
+                                {company.is_blocked 
+                                    ? "Perusahaan ini sedang diblokir. Recruiter tidak bisa login."
+                                    : "Blokir perusahaan untuk mencegah recruiter login"}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <CompanyBlockButton
+                                companyId={company.id}
+                                companyName={company.name}
+                                isBlocked={company.is_blocked || false}
+                                blockedReason={company.blocked_reason}
+                            />
+                            {company.is_blocked && company.blocked_reason && (
+                                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                                    <p className="text-sm font-semibold text-red-900 mb-1">Alasan Pemblokiran:</p>
+                                    <p className="text-sm text-red-700">{company.blocked_reason}</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
                             <CardTitle>Informasi Tambahan</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -321,6 +355,7 @@ export default async function CompanyDetailPage({
         </div>
     );
 }
+
 
 
 

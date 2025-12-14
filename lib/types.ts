@@ -94,6 +94,8 @@ export interface Company {
     license_url: string | null; // URL surat izin perusahaan dari bucket company_licenses
     is_approved: boolean | null; // Status approval dari admin
     status: 'pending' | 'approved' | 'rejected' | null; // Status approval
+    is_blocked: boolean | null; // Status blokir perusahaan
+    blocked_reason: string | null; // Alasan perusahaan diblokir
     created_at: string;
     updated_at: string;
     // Computed fields (tidak ada di database)
