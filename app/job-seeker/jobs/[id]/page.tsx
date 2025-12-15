@@ -210,7 +210,7 @@ export default async function JobDetailPage({
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
                     <Link href="/job-seeker/jobs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali

@@ -155,50 +155,40 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                 {filteredCompanies.map((company) => (
                     <div
                         key={company.id}
-                        className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
+                        className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 group flex flex-col"
                     >
-                        {/* Header - Logo & Rating */}
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 group-hover:scale-110 transition-transform shadow-sm">
+                        {/* Header - Logo & Company Name */}
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 group-hover:scale-105 transition-transform shadow-sm shrink-0">
                                 <ImageWithFallback
                                     src={company.logo_url || company.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
                                     alt={company.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors line-clamp-2">
+                                    {company.name}
+                                </h3>
+                                {company.industry && (
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${getIndustryColor(company.industry)}`}>
+                                        {company.industry}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Company Name */}
-                        <h3 className="text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
-                            {company.name}
-                        </h3>
-
-                        {/* Industry Badge */}
-                        {company.industry && (
-                            <div className="mb-4">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${getIndustryColor(company.industry)}`}>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                    {company.industry}
-                                </span>
-                            </div>
-                        )}
-
                         {/* Info Items */}
-                        <div className="space-y-2.5 mb-4">
+                        <div className="space-y-2 mb-4 flex-1">
                             {(company.location || company.location_city) && (
                                 <div className="flex items-start gap-2 text-sm text-gray-600">
-                                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                    <div className="flex-1">
-                                        <span>{company.location || company.location_city}</span>
-                                        {company.address && (
-                                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{company.address}</p>
-                                        )}
-                                    </div>
+                                    <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                                    <span className="line-clamp-1">{company.location || company.location_city}</span>
                                 </div>
                             )}
                             {company.openPositions !== undefined && company.openPositions > 0 && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <TrendingUp className="w-4 h-4 text-green-500" />
+                                    <TrendingUp className="w-3.5 h-3.5 text-green-500 shrink-0" />
                                     <span>{company.openPositions} posisi terbuka</span>
                                 </div>
                             )}
@@ -206,28 +196,32 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
 
                         {/* Description */}
                         {company.description && (
-                            <p className="text-sm text-gray-600 mb-5 line-clamp-3 leading-relaxed">
+                            <p className="text-xs text-gray-600 mb-4 line-clamp-2 leading-relaxed">
                                 {company.description}
                             </p>
                         )}
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex gap-2 mt-auto">
                             <Button
                                 variant="outline"
-                                className="w-full"
+                                size="sm"
+                                className="flex-1 text-xs h-8"
                                 onClick={() => setSelectedCompany(company)}
                             >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Lihat Detail Perusahaan
+                                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                                Detail
                             </Button>
-                            <Link 
-                                href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}
-                                className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 group/btn"
+                            <Button
+                                asChild
+                                size="sm"
+                                className="flex-1 text-xs h-8 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-md"
                             >
-                                <span>Lihat Lowongan ({company.openPositions || 0})</span>
-                                <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                            </Link>
+                                <Link href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}>
+                                    Lowongan
+                                    <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 ))}
@@ -322,15 +316,16 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                                         <CardContent className="p-4">
                                             <div className="flex items-start gap-3">
                                                 <Globe className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-500 mb-1">Website</p>
                                                     <a
                                                         href={selectedCompany.website_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 break-all"
+                                                        className="font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1.5 min-w-0"
+                                                        title={selectedCompany.website_url}
                                                     >
-                                                        {selectedCompany.website_url}
+                                                        <span className="truncate">{selectedCompany.website_url}</span>
                                                         <ExternalLink className="w-4 h-4 shrink-0" />
                                                     </a>
                                                 </div>

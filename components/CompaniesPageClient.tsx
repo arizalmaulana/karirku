@@ -25,6 +25,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "./ui/dialog";
+import { RegisterDialog } from "@/components/RegisterDialog";
+import { LoginDialog } from "@/components/LoginDialog";
 
 interface CompaniesPageClientProps {
   companies: Company[];
@@ -34,6 +36,8 @@ interface CompaniesPageClientProps {
 export function CompaniesPageClient({ companies: initialCompanies, jobs }: CompaniesPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   const filteredCompanies = useMemo(() => {
     return initialCompanies.filter((company) => {
@@ -123,15 +127,15 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
       </section>
 
       {/* Companies Grid */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h2 className="text-gray-900 mb-1">Perusahaan Terdaftar</h2>
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-purple-900 mb-1">Perusahaan Terdaftar</h2>
           <p className="text-gray-600" style={{ fontSize: "14px" }}>
             Menampilkan <span className="font-semibold gradient-text-cyan">{filteredCompanies.length}</span> perusahaan terpercaya
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCompanies.map((company, index) => (
             <div
               key={company.id}
@@ -145,11 +149,6 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                 {/* Shimmer effect */}
                 <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100"></div>
 
-                {/* Star rating badge */}
-                <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 shadow-md flex items-center gap-1">
-                  <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                  <span className="text-gray-900" style={{ fontSize: "12px" }}>4.5</span>
-                </div>
 
                 <div className="relative flex flex-col h-full">
                   {/* Company Logo */}
@@ -314,7 +313,13 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                 </div>
 
                 <div className="mt-4 flex justify-end">
-                  <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600">
+                  <Button 
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
+                    onClick={() => {
+                      setSelectedCompany(null);
+                      setShowRegister(true);
+                    }}
+                  >
                     Detail & Lamar
                   </Button>
                 </div>
@@ -323,6 +328,26 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Register Dialog */}
+      <RegisterDialog
+        open={showRegister}
+        onClose={() => setShowRegister(false)}
+        onSwitchToLogin={() => {
+          setShowRegister(false);
+          setShowLogin(true);
+        }}
+      />
+
+      {/* Login Dialog */}
+      <LoginDialog
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSwitchToRegister={() => {
+          setShowLogin(false);
+          setShowRegister(true);
+        }}
+      />
     </div>
   );
 }

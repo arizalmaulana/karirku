@@ -153,7 +153,11 @@ export function LivingCostForm({ initialData, livingCostId }: LivingCostFormProp
             </div>
 
             <div className="flex gap-4">
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30 cursor-pointer" type="submit" disabled={isLoading}>
+                <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -163,10 +167,11 @@ export function LivingCostForm({ initialData, livingCostId }: LivingCostFormProp
                         livingCostId ? "Perbarui Data" : "Tambah Data"
                     )}
                 </Button>
-                <Button className="cursor-pointer"
+                <Button 
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/admin/living-costs")}
+                    className="hover:bg-gray-50 transition-all"
                 >
                     Batal
                 </Button>

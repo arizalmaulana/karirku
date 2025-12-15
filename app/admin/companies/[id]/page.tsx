@@ -111,7 +111,7 @@ export default async function CompanyDetailPage({
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
                     <Link href="/admin/companies">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -167,33 +167,24 @@ export default async function CompanyDetailPage({
                                 {(company.location_city || company.location_province) && (
                                     <div>
                                         <p className="text-sm text-gray-500">Lokasi</p>
-                                        <p className="font-medium flex items-center gap-2">
-                                            <MapPin className="h-4 w-4" />
-                                            {company.location_city || ""}
-                                            {company.location_province && `, ${company.location_province}`}
-                                        </p>
-                                    </div>
-                                )}
-                                {company.address && (
-                                    <div className="md:col-span-2">
-                                        <p className="text-sm text-gray-500">Alamat Lengkap</p>
-                                        <p className="font-medium flex items-start gap-2">
-                                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                            <span className="whitespace-pre-wrap">{company.address}</span>
+                                        <p className="font-medium flex items-center gap-2 break-words overflow-wrap-anywhere">
+                                            <MapPin className="h-4 w-4 shrink-0" />
+                                            <span>{company.location_city || ""}{company.location_province && `, ${company.location_province}`}</span>
                                         </p>
                                     </div>
                                 )}
                                 {company.website_url && (
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-sm text-gray-500">Website</p>
                                         <a 
                                             href={company.website_url} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
-                                            className="font-medium flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                                            className="font-medium flex items-center gap-2 text-blue-600 hover:text-blue-800 min-w-0"
+                                            title={company.website_url}
                                         >
-                                            <Globe className="h-4 w-4" />
-                                            {company.website_url}
+                                            <Globe className="h-4 w-4 shrink-0" />
+                                            <span className="truncate min-w-0">{company.website_url}</span>
                                         </a>
                                     </div>
                                 )}
@@ -229,13 +220,13 @@ export default async function CompanyDetailPage({
                                 {recruiter.email && (
                                     <div>
                                         <p className="text-sm text-gray-500">Email</p>
-                                        <p className="font-medium">{recruiter.email}</p>
+                                        <p className="font-medium break-words overflow-wrap-anywhere">{recruiter.email}</p>
                                     </div>
                                 )}
                                 {recruiter.phone && (
                                     <div>
                                         <p className="text-sm text-gray-500">Telepon</p>
-                                        <p className="font-medium">{recruiter.phone}</p>
+                                        <p className="font-medium break-words overflow-wrap-anywhere">{recruiter.phone}</p>
                                     </div>
                                 )}
                                 {recruiter.headline && (
@@ -247,7 +238,7 @@ export default async function CompanyDetailPage({
                                 {recruiter.location_city && (
                                     <div>
                                         <p className="text-sm text-gray-500">Lokasi</p>
-                                        <p className="font-medium">{recruiter.location_city}</p>
+                                        <p className="font-medium break-words overflow-wrap-anywhere">{recruiter.location_city}</p>
                                     </div>
                                 )}
                             </CardContent>
@@ -324,7 +315,7 @@ export default async function CompanyDetailPage({
                             {company.is_blocked && company.blocked_reason && (
                                 <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                                     <p className="text-sm font-semibold text-red-900 mb-1">Alasan Pemblokiran:</p>
-                                    <p className="text-sm text-red-700">{company.blocked_reason}</p>
+                                    <p className="text-sm text-red-700 break-words overflow-wrap-anywhere">{company.blocked_reason}</p>
                                 </div>
                             )}
                         </CardContent>

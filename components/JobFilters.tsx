@@ -67,9 +67,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Pilih tipe pekerjaan" />
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+          <SelectContent className="!bg-white text-black border border-gray-200">
             {employmentTypeOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}
@@ -87,9 +87,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full ">
             <SelectValue placeholder="Pilih kategori" />
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+          <SelectContent className="!bg-white text-black border border-gray-200">
             {categoryOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}
@@ -107,9 +107,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Pilih level" />
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
+          <SelectContent className="!bg-white text-black border border-gray-200">
             {levelOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="focus:bg-blue-50 focus:text-blue-800" >
+              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}

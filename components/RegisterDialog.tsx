@@ -104,13 +104,48 @@ export function RegisterDialog({
         setIsLoading(true);
 
         try {
-            // Cek apakah email sudah terdaftar dengan mencoba cek di auth.users
-            // Kita tidak bisa akses langsung ke auth.users, jadi kita cek dengan cara lain:
-            // Cek apakah ada profile dengan email yang sama (jika email disimpan di profile)
-            // Atau lebih baik: cek setelah signUp apakah user benar-benar dibuat
+            // ============================================
+            // CEK EMAIL SEBELUM SIGNUP - PENTING!
+            // ============================================
+            // 1. Cek email di auth.users menggunakan database function
+            // Ini adalah pengecekan utama untuk memastikan email belum terdaftar
+            const { data: emailExistsInAuth, error: checkEmailError } = await supabase
+                .rpc('check_email_exists', {
+                    email_to_check: formData.email.trim().toLowerCase()
+                });
 
+            if (checkEmailError) {
+                console.error("Error checking email in auth.users:", checkEmailError);
+                // Jika function tidak ada, lanjutkan dengan pengecekan lain
+                // (untuk backward compatibility jika function belum di-deploy)
+            } else if (emailExistsInAuth === true) {
+                // Email sudah terdaftar di auth.users
+                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsg);
+                toast.error(errorMsg);
+                setIsLoading(false);
+                return;
+            }
+
+            // 2. Cek apakah ada profile dengan email yang sama (backup check)
+            // Ini untuk memastikan tidak ada email yang terlewat
+            const { data: existingProfileByEmail } = await supabase
+                .from("profiles")
+                .select("id, email, full_name")
+                .eq("email", formData.email.trim().toLowerCase())
+                .maybeSingle();
+
+            if (existingProfileByEmail && existingProfileByEmail.email) {
+                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsg);
+                toast.error(errorMsg);
+                setIsLoading(false);
+                return;
+            }
+
+            // 3. Coba signUp - Supabase akan mengembalikan error jika email sudah terdaftar
             const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
+                email: formData.email.trim().toLowerCase(),
                 password: formData.password,
                 options: {
                     data: {
@@ -130,7 +165,10 @@ export function RegisterDialog({
                     errorMessage.includes('email already exists') ||
                     errorMessage.includes('already registered') ||
                     errorMessage.includes('user already exists') ||
+                    errorMessage.includes('email address is already registered') ||
+                    errorMessage.includes('user with this email already exists') ||
                     errorCode === 'signup_disabled' ||
+                    errorCode === 'user_already_registered' ||
                     (errorMessage.includes('email') && errorMessage.includes('already'))) {
                     const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
                     setEmailError(errorMsg);
@@ -158,47 +196,111 @@ export function RegisterDialog({
                 return;
             }
 
-            // Verifikasi bahwa user benar-benar baru dibuat
-            // Cek apakah profile sudah ada untuk user ID ini dengan data lengkap
-            const { data: existingProfile, error: checkError } = await supabase
-                .from("profiles")
-                .select("id, full_name, role")
-                .eq("id", data.user.id)
-                .maybeSingle();
-
-            // Jika profile sudah ada dengan data lengkap (full_name tidak kosong), berarti email terdaftar
-            if (existingProfile && existingProfile.full_name && existingProfile.full_name.trim().length > 0) {
-                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
-                setEmailError(errorMsg);
+            // Verifikasi tambahan: cek apakah email user sama dengan yang didaftarkan
+            if (data.user.email && data.user.email.toLowerCase() !== formData.email.trim().toLowerCase()) {
+                // Email tidak sesuai, kemungkinan ada masalah
+                const errorMsg = "Terjadi kesalahan saat registrasi. Email tidak sesuai.";
                 toast.error(errorMsg);
                 setIsLoading(false);
-                // Sign out jika ada session
                 try {
                     await supabase.auth.signOut();
                 } catch (e) {
-                    // Ignore error
+                    // Ignore
                 }
                 return;
             }
 
-            // Tunggu sebentar dan verifikasi session ter-set dengan benar
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Simpan user ID dan created_at untuk digunakan di seluruh proses
+            const newUserId = data.user.id;
+            const userCreatedAt: string | undefined = data.user.created_at;
             
-            // Verifikasi session sudah ter-set
-            const { data: { user: currentUser }, error: sessionError } = await supabase.auth.getUser();
+            // Catatan: Pengecekan email sudah dilakukan SEBELUM signup menggunakan check_email_exists()
+            // Jadi jika sampai di sini, berarti email belum terdaftar di auth.users
+            // Kita hanya perlu memastikan tidak ada duplikasi di profiles (edge case)
             
-            // Jika tidak ada session (misalnya karena perlu email confirmation), 
-            // skip pembuatan profil - akan dibuat otomatis saat login pertama kali
-            if (!currentUser || currentUser.id !== data.user.id) {
-                console.log("Session belum ter-set (mungkin perlu email confirmation). Profil akan dibuat otomatis saat login.");
+            // Flag untuk menandai apakah email sudah terdaftar
+            let isEmailAlreadyRegistered = false;
+
+            // Cek apakah ada profile dengan email yang sama tapi user ID berbeda
+            // Hanya block jika ada profile LENGKAP (dengan full_name) dengan email yang sama
+            // Ini untuk menangani edge case di mana ada duplikasi di profiles
+            const { data: emailCheckProfiles } = await supabase
+                .from("profiles")
+                .select("id, email, full_name")
+                .eq("email", formData.email.trim().toLowerCase());
+
+            if (emailCheckProfiles && emailCheckProfiles.length > 0) {
+                // Cek apakah ada profile dengan email yang sama tapi user ID berbeda
+                // DAN memiliki full_name lengkap (berarti sudah terdaftar sebelumnya)
+                const otherProfile = emailCheckProfiles.find(
+                    p => p.id !== newUserId && 
+                    p.full_name && 
+                    p.full_name.trim().length > 0
+                );
+                
+                if (otherProfile) {
+                    // Email sudah terdaftar dengan user ID lain yang memiliki profile lengkap
+                    // Ini berarti email sudah terdaftar sebelumnya
+                    isEmailAlreadyRegistered = true;
+                    const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                    setEmailError(errorMsg);
+                    toast.error(errorMsg);
+                    setIsLoading(false);
+                    // Hapus user yang baru dibuat
+                    try {
+                        await supabase.auth.signOut();
+                    } catch (e) {
+                        // Ignore error
+                    }
+                    return;
+                }
+            }
+
+            // Untuk jobseeker, langsung buat profile dengan is_approved = true
+            // agar bisa langsung login tanpa perlu approval admin
+            // Untuk role lain (recruiter), tetap perlu approval admin
+            const isJobseeker = formData.role === 'jobseeker';
+            const shouldAutoApprove = isJobseeker; // Hanya jobseeker yang auto-approve
+            
+            // Buat profil di tabel profiles setelah registrasi
+            const profileData: any = {
+                id: newUserId,
+                full_name: formData.name,
+                role: formData.role,
+                email: formData.email.trim().toLowerCase(),
+                is_approved: shouldAutoApprove ? true : false, // Auto aktif untuk jobseeker, recruiter perlu approval
+            };
+
+            // Untuk jobseeker, selalu coba buat profile langsung (bahkan jika belum ada session)
+            // Jika gagal karena RLS (belum ada session), tidak apa-apa - profile akan dibuat otomatis saat login
+            // Untuk role lain (recruiter), tunggu session ter-set
+            let shouldCreateProfile = false;
+            let hasSession = false;
+            
+            if (isJobseeker) {
+                // Jobseeker: selalu coba buat profile, bahkan jika belum ada session
+                // Jika gagal karena RLS, profile akan dibuat otomatis saat login pertama kali
+                shouldCreateProfile = true;
             } else {
-                // Buat profil di tabel profiles setelah registrasi
-                const profileData: any = {
-                    id: data.user.id,
-                    full_name: formData.name,
-                    role: formData.role,
-                    is_approved: true, // Auto aktif untuk semua role setelah konfirmasi email
-                };
+                // Role lain: tunggu session ter-set
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const { data: { user: currentUser }, error: sessionError } = await supabase.auth.getUser();
+                
+                if (currentUser && currentUser.id === newUserId) {
+                    shouldCreateProfile = true;
+                    hasSession = true;
+                } else {
+                    console.log("Session belum ter-set (mungkin perlu email confirmation). Profil akan dibuat otomatis saat login.");
+                }
+            }
+
+            // Cek apakah ada session untuk jobseeker juga
+            if (isJobseeker && !hasSession) {
+                const { data: { user: currentUser } } = await supabase.auth.getUser();
+                hasSession = currentUser && currentUser.id === newUserId;
+            }
+
+            if (shouldCreateProfile) {
 
                 // Coba insert dulu, jika gagal karena sudah ada, gunakan upsert
                 let profileResult: any = null;
@@ -217,8 +319,8 @@ export function RegisterDialog({
                         // Cek apakah profile sudah ada dengan data lengkap
                         const { data: existingProfileCheck } = await supabase
                             .from("profiles")
-                            .select("id, full_name, role")
-                            .eq("id", data.user.id)
+                            .select("id, full_name, role, email")
+                            .eq("id", newUserId)
                             .maybeSingle();
 
                         if (existingProfileCheck && existingProfileCheck.full_name && existingProfileCheck.full_name.trim().length > 0) {
@@ -256,20 +358,30 @@ export function RegisterDialog({
 
                 // Verifikasi bahwa profile benar-benar dibuat/updated
                 if (profileError) {
-                    // Jika masih ada error setelah upsert, kemungkinan ada masalah
-                    console.error("Error creating/updating profile:", profileError);
-                    // Tapi jangan throw error, karena user sudah dibuat
+                    // Untuk jobseeker yang belum ada session, error RLS adalah normal
+                    // Profile akan dibuat otomatis saat login pertama kali
+                    if (isJobseeker && !hasSession) {
+                        // Error karena RLS (belum ada session) adalah normal untuk jobseeker
+                        // Profile akan dibuat otomatis saat login pertama kali oleh useAuth hook
+                        console.log("Profile jobseeker belum dibuat karena belum ada session (perlu email confirmation). Profile akan dibuat otomatis saat login.");
+                    } else {
+                        // Untuk kasus lain, log error
+                        console.error("Error creating/updating profile:", profileError);
+                        // Jika error bukan karena duplicate, berarti ada masalah serius
+                        // Tapi jangan throw error, karena user sudah dibuat dan email sudah terkirim
+                        // Kita akan tetap lanjutkan, profile mungkin akan dibuat otomatis oleh trigger
+                    }
                 } else {
                     // Verifikasi bahwa profile benar-benar tersimpan dengan data yang benar
                     const { data: verifyProfile } = await supabase
                         .from("profiles")
-                        .select("id, full_name, role")
-                        .eq("id", data.user.id)
+                        .select("id, full_name, role, email")
+                        .eq("id", newUserId)
                         .maybeSingle();
 
                     if (!verifyProfile) {
                         // Profile tidak dibuat, ada masalah
-                        console.warn("Profile tidak berhasil dibuat");
+                        console.warn("Profile tidak berhasil dibuat, tetapi user sudah dibuat. Profile mungkin akan dibuat otomatis saat login.");
                     } else if (verifyProfile.full_name && verifyProfile.full_name.trim() !== formData.name.trim()) {
                         // Profile sudah ada dengan nama berbeda, berarti email terdaftar
                         const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
@@ -290,83 +402,216 @@ export function RegisterDialog({
 
                 // Log error dengan detail lengkap jika ada
                 if (profileError) {
-                const errorInfo: any = {
-                    hasError: true,
-                    errorType: typeof profileError,
-                    errorConstructor: profileError?.constructor?.name,
-                };
+                    // Untuk jobseeker yang belum ada session, error RLS adalah normal
+                    if (isJobseeker && !hasSession) {
+                        // Error karena RLS (belum ada session) adalah normal untuk jobseeker
+                        // Profile akan dibuat otomatis saat login pertama kali oleh useAuth hook
+                        console.log("Profile jobseeker belum dibuat karena belum ada session (perlu email confirmation). Profile akan dibuat otomatis saat login.");
+                    } else {
+                        // Log error dengan detail untuk debugging
+                        const errorInfo: any = {
+                            hasError: true,
+                            errorType: typeof profileError,
+                            errorConstructor: profileError?.constructor?.name,
+                        };
 
-                // Coba ambil semua properti yang mungkin ada
-                if (profileError.message) errorInfo.message = profileError.message;
-                if (profileError.code) errorInfo.code = profileError.code;
-                if (profileError.details) errorInfo.details = profileError.details;
-                if (profileError.hint) errorInfo.hint = profileError.hint;
-                if (profileError.statusCode) errorInfo.statusCode = profileError.statusCode;
+                        // Coba ambil semua properti yang mungkin ada
+                        if (profileError && typeof profileError === 'object') {
+                            if ('message' in profileError) errorInfo.message = (profileError as any).message;
+                            if ('code' in profileError) errorInfo.code = (profileError as any).code;
+                            if ('details' in profileError) errorInfo.details = (profileError as any).details;
+                            if ('hint' in profileError) errorInfo.hint = (profileError as any).hint;
+                            if ('statusCode' in profileError) errorInfo.statusCode = (profileError as any).statusCode;
 
-                // Coba stringify
-                try {
-                    errorInfo.errorString = JSON.stringify(profileError, null, 2);
-                } catch (e) {
-                    errorInfo.stringifyError = String(e);
-                }
+                            // Coba stringify
+                            try {
+                                errorInfo.errorString = JSON.stringify(profileError, null, 2);
+                            } catch (e) {
+                                errorInfo.stringifyError = String(e);
+                            }
 
-                // Coba ambil semua keys
-                try {
-                    errorInfo.keys = Object.keys(profileError);
-                    errorInfo.ownPropertyNames = Object.getOwnPropertyNames(profileError);
-                } catch (e) {
-                    // ignore
-                }
+                            // Coba ambil semua keys
+                            try {
+                                errorInfo.keys = Object.keys(profileError);
+                                errorInfo.ownPropertyNames = Object.getOwnPropertyNames(profileError);
+                            } catch (e) {
+                                // ignore
+                            }
+                        } else {
+                            errorInfo.errorValue = String(profileError);
+                        }
 
-                errorInfo.profileData = profileData;
-                errorInfo.userId = data.user.id;
+                        errorInfo.profileData = profileData;
+                        errorInfo.userId = newUserId;
+                        errorInfo.isJobseeker = isJobseeker;
+                        errorInfo.hasSession = hasSession;
 
-                console.error("Error creating profile:", errorInfo);
-                
-                    // Jika error bukan karena profil sudah ada, tampilkan warning
-                    if (profileError.code !== '23505' && !profileError.message?.includes('duplicate')) {
-                        console.warn("Gagal membuat profil, tetapi user sudah dibuat. Profil mungkin akan dibuat otomatis saat login.");
+                        console.error("Error creating profile:", errorInfo);
+                        
+                        // Jika error bukan karena profil sudah ada, tampilkan warning
+                        const errorCode = (profileError as any)?.code;
+                        const errorMessage = (profileError as any)?.message || '';
+                        if (errorCode !== '23505' && !errorMessage.includes('duplicate')) {
+                            console.warn("Gagal membuat profil, tetapi user sudah dibuat. Profil mungkin akan dibuat otomatis saat login.");
+                        }
                     }
                 } else {
                     console.log("Profile created successfully:", profileResult);
                     
-                    // Pastikan is_approved = true untuk semua role
-                    const { error: updateError } = await (supabase
-                        .from("profiles") as any)
-                        .update({ is_approved: true })
-                        .eq("id", data.user.id);
-                    
-                    if (updateError) {
-                        console.warn("Gagal update is_approved:", {
-                            message: updateError.message,
-                            code: updateError.code,
-                            details: updateError.details
-                        });
-                    } else {
-                        console.log("is_approved updated to true");
+                    // Pastikan is_approved = true hanya untuk jobseeker
+                    // Recruiter tetap perlu approval admin
+                    if (isJobseeker) {
+                        const { error: updateError } = await (supabase
+                            .from("profiles") as any)
+                            .update({ is_approved: true })
+                            .eq("id", newUserId);
+                        
+                        if (updateError) {
+                            console.warn("Gagal update is_approved untuk jobseeker:", {
+                                message: updateError.message,
+                                code: updateError.code,
+                                details: updateError.details
+                            });
+                        } else {
+                            console.log("is_approved updated to true untuk jobseeker");
+                        }
                     }
                 }
             }
 
-            // Verifikasi final: pastikan profile benar-benar tersimpan sebelum menampilkan success
-            const { data: finalCheck } = await supabase
-                .from("profiles")
-                .select("id, full_name, role")
-                .eq("id", data.user.id)
-                .single();
+            // Untuk jobseeker, verifikasi final bahwa profile sudah dibuat dengan is_approved = true
+            // Ini penting agar jobseeker bisa langsung login
+            // Hanya lakukan verifikasi jika ada session (user sudah terkonfirmasi)
+            if (isJobseeker && data.session) {
+                const { data: finalCheck } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, role, email, is_approved")
+                    .eq("id", newUserId)
+                    .maybeSingle();
 
-            if (!finalCheck || !finalCheck.full_name || finalCheck.full_name.trim() !== formData.name.trim()) {
-                // Profile tidak sesuai atau tidak tersimpan, kemungkinan email terdaftar
-                const errorMsg = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
-                setEmailError(errorMsg);
-                toast.error(errorMsg);
+                if (!finalCheck || !finalCheck.full_name || finalCheck.full_name.trim() !== formData.name.trim()) {
+                    // Profile tidak sesuai atau tidak tersimpan
+                    console.warn("Profile jobseeker tidak sesuai setelah registrasi. Mencoba membuat ulang...");
+                    
+                    // Coba buat ulang profile untuk jobseeker (hanya jika ada session)
+                    try {
+                        const { error: retryError } = await (supabase
+                            .from("profiles") as any)
+                            .upsert({
+                                id: newUserId,
+                                full_name: formData.name,
+                                role: formData.role,
+                                email: formData.email.trim().toLowerCase(),
+                                is_approved: true, // Pastikan jobseeker langsung aktif
+                            }, {
+                                onConflict: "id",
+                            });
+                        
+                        if (retryError) {
+                            // Log error dengan detail
+                            const errorDetails: any = {
+                                message: retryError?.message || 'Unknown error',
+                                code: retryError?.code || 'Unknown code',
+                                details: retryError?.details || null,
+                                hint: retryError?.hint || null,
+                            };
+                            
+                            // Coba stringify error
+                            try {
+                                errorDetails.fullError = JSON.stringify(retryError, null, 2);
+                            } catch (e) {
+                                errorDetails.stringifyError = String(e);
+                            }
+                            
+                            console.error("Gagal membuat ulang profile jobseeker:", errorDetails);
+                            console.warn("Profile akan dibuat otomatis saat jobseeker login pertama kali setelah konfirmasi email.");
+                        } else {
+                            console.log("Profile jobseeker berhasil dibuat ulang dengan is_approved = true");
+                        }
+                    } catch (e: any) {
+                        const errorDetails = {
+                            message: e?.message || String(e),
+                            stack: e?.stack || null,
+                            name: e?.name || null,
+                        };
+                        console.error("Error saat membuat ulang profile:", errorDetails);
+                        console.warn("Profile akan dibuat otomatis saat jobseeker login pertama kali setelah konfirmasi email.");
+                    }
+                } else if (finalCheck.is_approved !== true) {
+                    // Pastikan is_approved = true untuk jobseeker
+                    console.log("Memastikan is_approved = true untuk jobseeker...");
+                    const { error: ensureApprovedError } = await (supabase
+                        .from("profiles") as any)
+                        .update({ is_approved: true })
+                        .eq("id", newUserId);
+                    
+                    if (ensureApprovedError) {
+                        const errorDetails: any = {
+                            message: ensureApprovedError?.message || 'Unknown error',
+                            code: ensureApprovedError?.code || 'Unknown code',
+                        };
+                        console.error("Gagal memastikan is_approved = true:", errorDetails);
+                    } else {
+                        console.log("is_approved berhasil di-set ke true untuk jobseeker");
+                    }
+                }
+            } else if (isJobseeker && !data.session) {
+                // Jobseeker belum ada session (perlu email confirmation)
+                // Profile akan dibuat otomatis saat login pertama kali dengan is_approved = true
+                console.log("Jobseeker belum ada session. Profile akan dibuat otomatis saat login pertama kali dengan is_approved = true.");
+            }
+
+            // ============================================
+            // VERIFIKASI FINAL: Pastikan email belum terdaftar
+            // ============================================
+            // Catatan: Pengecekan utama sudah dilakukan SEBELUM signup menggunakan check_email_exists()
+            // Pengecekan di sini hanya untuk memastikan tidak ada duplikasi di profiles (edge case)
+            
+            // Jika flag isEmailAlreadyRegistered sudah true, langsung block
+            if (isEmailAlreadyRegistered) {
+                const errorMsgDuplicate = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                setEmailError(errorMsgDuplicate);
+                toast.error(errorMsgDuplicate);
                 setIsLoading(false);
                 try {
                     await supabase.auth.signOut();
                 } catch (e) {
-                    // Ignore
+                    // Ignore error
                 }
                 return;
+            }
+            
+            // Final check: cek sekali lagi di profiles untuk memastikan tidak ada duplikasi
+            // Hanya block jika ada profile LENGKAP (dengan full_name) dengan email yang sama dan user ID berbeda
+            // Ini untuk menangani edge case di mana ada duplikasi di profiles
+            const { data: finalEmailCheck } = await supabase
+                .from("profiles")
+                .select("id, email, full_name")
+                .eq("email", formData.email.trim().toLowerCase());
+
+            if (finalEmailCheck && finalEmailCheck.length > 0) {
+                // Cek apakah ada profile dengan email yang sama yang:
+                // - Bukan profile yang baru dibuat (id berbeda)
+                // - Memiliki full_name lengkap (berarti sudah terdaftar sebelumnya)
+                const duplicateProfile = finalEmailCheck.find(
+                    p => p.id !== newUserId && 
+                    p.full_name && 
+                    p.full_name.trim().length > 0
+                );
+
+                if (duplicateProfile) {
+                    // Email sudah terdaftar dengan profile lengkap yang berbeda
+                    const errorMsgDuplicate = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk dengan email ini.";
+                    setEmailError(errorMsgDuplicate);
+                    toast.error(errorMsgDuplicate);
+                    setIsLoading(false);
+                    try {
+                        await supabase.auth.signOut();
+                    } catch (e) {
+                        // Ignore error
+                    }
+                    return;
+                }
             }
 
             const dashboardPath = {
@@ -376,18 +621,49 @@ export function RegisterDialog({
             }[formData.role] || "/job-seeker/dashboard";
 
             if (data.session) {
-                toast.success("Registrasi berhasil! Mengarahkan ke dashboard Anda.");
+                // Ada session, tampilkan notifikasi dulu, baru redirect setelah delay
+                if (isJobseeker) {
+                    toast.success("Registrasi berhasil! Akun Anda sudah aktif. Mengarahkan ke dashboard...");
+                } else {
+                    toast.success("Registrasi berhasil! Mengarahkan ke dashboard Anda.");
+                }
                 closeDialog();
-                // Menggunakan window.location.href untuk full page reload.
-                // Ini memastikan middleware berjalan dengan benar setelah registrasi.
-                window.location.href = dashboardPath;
+                
+                // Tunggu sebentar agar notifikasi terlihat sebelum redirect
+                setTimeout(() => {
+                    // Menggunakan window.location.href untuk full page reload.
+                    // Ini memastikan middleware berjalan dengan benar setelah registrasi.
+                    window.location.href = dashboardPath;
+                }, 2000); // Delay 2 detik agar notifikasi terlihat
             } else {
-                toast.success("Registrasi berhasil! Silakan konfirmasi email Anda sebelum masuk.");
+                // Tidak ada session, perlu email confirmation
+                if (isJobseeker) {
+                    toast.success("Registrasi berhasil! Silakan cek email Anda untuk konfirmasi. Setelah konfirmasi, Anda bisa langsung login - akun Anda sudah aktif.");
+                } else {
+                    toast.success("Registrasi berhasil! Silakan cek email Anda untuk konfirmasi sebelum masuk.");
+                }
                 closeDialog();
             }
         } catch (err) {
+            // Jika ada error di catch, berarti ada masalah serius
+            // User mungkin sudah dibuat dan email sudah terkirim
             const message = err instanceof Error ? err.message : "Terjadi kesalahan saat registrasi.";
-            toast.error(message);
+            console.error("Error during registration:", err);
+            
+            // Cek apakah user sudah dibuat sebelum error
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    // User sudah dibuat, email mungkin sudah terkirim
+                    toast.warning("Registrasi mungkin berhasil, tetapi ada masalah teknis. Silakan cek email Anda atau coba login.");
+                } else {
+                    // User tidak dibuat, tampilkan error biasa
+                    toast.error(message);
+                }
+            } catch (checkErr) {
+                // Tidak bisa cek user, tampilkan error biasa
+                toast.error(message);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -471,9 +747,9 @@ export function RegisterDialog({
                         <SelectTrigger id="register-role">
                             <SelectValue placeholder="Pilih peran" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white dark:bg-white-50 text-gray-900 dark:text-black-50">
-                            <SelectItem value="jobseeker" className="focus:bg-blue-50 focus:text-blue-800">Pencari Kerja</SelectItem>
-                            <SelectItem value="recruiter" className="focus:bg-blue-50 focus:text-blue-800">Recruiter / Perusahaan</SelectItem>
+                        <SelectContent className="bg-white text-black">
+                            <SelectItem value="jobseeker" className="text-black hover:bg-gray-100">Pencari Kerja</SelectItem>
+                            <SelectItem value="recruiter" className="text-black hover:bg-gray-100">Recruiter / Perusahaan</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>

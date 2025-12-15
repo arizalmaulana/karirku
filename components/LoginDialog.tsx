@@ -54,6 +54,11 @@ export function LoginDialog({
     setIsLoading(true);
 
     try {
+      // Validasi supabase client
+      if (!supabase) {
+        throw new Error("Koneksi ke server gagal. Silakan coba lagi.");
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -89,12 +94,50 @@ export function LoginDialog({
           };
           role = profile.role ?? role;
           isApproved = profile.is_approved ?? null;
+          
+          // Untuk jobseeker, pastikan is_approved = true
+          // Jika belum true, update terlebih dahulu
+          if (role === "jobseeker" && isApproved !== true) {
+            console.log("Updating is_approved to true for jobseeker during login...");
+            const { error: updateError } = await (supabase
+              .from("profiles") as any)
+              .update({ is_approved: true })
+              .eq("id", userId);
+            
+            if (!updateError) {
+              isApproved = true;
+              console.log("is_approved successfully updated to true for jobseeker");
+            } else {
+              console.warn("Could not update is_approved for jobseeker:", updateError);
+            }
+          }
         } else if (profileError && profileError.code !== "PGRST116") {
           // Jika error selain "not found", log dan tetap lanjutkan
           console.warn("Profile fetch error during login:", {
             message: profileError.message,
             code: profileError.code,
           });
+        } else if (profileError && profileError.code === "PGRST116") {
+          // Profile tidak ditemukan, buat profile baru untuk jobseeker
+          if (role === "jobseeker") {
+            console.log("Profile not found for jobseeker, creating new profile...");
+            const { error: createError } = await (supabase
+              .from("profiles") as any)
+              .insert({
+                id: userId,
+                full_name: userMetadata?.full_name || null,
+                role: "jobseeker",
+                email: data.user.email || null,
+                is_approved: true, // Jobseeker langsung aktif
+              });
+            
+            if (!createError) {
+              isApproved = true;
+              console.log("Profile created successfully for jobseeker with is_approved = true");
+            } else {
+              console.warn("Could not create profile for jobseeker:", createError);
+            }
+          }
         }
       } catch (err: any) {
         // Log error tapi jangan blokir login
@@ -107,8 +150,9 @@ export function LoginDialog({
       }
 
       // Cek apakah user diblokir (is_approved = false atau null)
-      if (isApproved === false || isApproved === null) {
-        // Sign out user yang diblokir
+      // Kecuali untuk jobseeker yang sudah di-update di atas
+      if (isApproved === false || (isApproved === null && role !== "jobseeker")) {
+        // Sign out user yang diblokir (bukan jobseeker)
         await supabase.auth.signOut();
         toast.error("Akun Anda telah diblokir. Silahkan hubungi admin.");
         setIsLoading(false);
@@ -150,21 +194,47 @@ export function LoginDialog({
       toast.success("Berhasil masuk, mengarahkan ke dashboard Anda.");
       onClose();
 
-      // Tunggu sedikit untuk memastikan session ter-set
+      // Tunggu sedikit untuk memastikan session ter-set dan notifikasi terlihat
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Gunakan router.push untuk navigasi yang lebih smooth
-      router.push(destination);
-      
-      // Fallback: jika router.push tidak bekerja, gunakan window.location
+      // Tunggu lagi agar notifikasi terlihat sebelum redirect (total ~2 detik)
       setTimeout(() => {
-        if (window.location.pathname === '/') {
-          window.location.href = destination;
-        }
-      }, 1000);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Terjadi kesalahan saat login";
+        // Gunakan router.push untuk navigasi yang lebih smooth
+        router.push(destination);
+        
+        // Fallback: jika router.push tidak bekerja, gunakan window.location
+        setTimeout(() => {
+          if (window.location.pathname === '/') {
+            window.location.href = destination;
+          }
+        }, 1000);
+      }, 1500); // Delay tambahan 1.5 detik agar notifikasi terlihat
+    } catch (err: any) {
+      let message = "Terjadi kesalahan saat login";
+      
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (err?.message) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+      
+      // Handle network errors
+      if (message.includes("Failed to fetch") || message.includes("NetworkError") || message.includes("fetch")) {
+        message = "Koneksi ke server gagal. Periksa koneksi internet Anda dan coba lagi.";
+      }
+      
+      // Handle specific Supabase errors
+      if (err?.status === 400 || err?.code === 'invalid_credentials') {
+        message = "Email atau password salah. Silakan coba lagi.";
+      } else if (err?.status === 429) {
+        message = "Terlalu banyak percobaan login. Silakan tunggu sebentar dan coba lagi.";
+      } else if (err?.status === 500 || err?.code === 'internal_error') {
+        message = "Terjadi kesalahan pada server. Silakan coba lagi nanti.";
+      }
+      
+      console.error("Login error:", err);
       toast.error(message);
     } finally {
       setIsLoading(false);

@@ -123,43 +123,43 @@ export default async function RecruiterJobsPage() {
                         <Table>
                             <TableHeader>
                                     <TableRow className="bg-gray-50">
-                                        <TableHead className="font-semibold">Judul</TableHead>
-                                        <TableHead className="font-semibold">Perusahaan</TableHead>
-                                        <TableHead className="font-semibold">Lokasi</TableHead>
-                                        <TableHead className="font-semibold">Gaji</TableHead>
-                                        <TableHead className="font-semibold">Tipe</TableHead>
-                                        <TableHead className="font-semibold">Pelamar</TableHead>
-                                        <TableHead className="font-semibold">Status</TableHead>
-                                        <TableHead className="font-semibold text-right">Aksi</TableHead>
+                                        <TableHead className="font-semibold text-center">Judul</TableHead>
+                                        <TableHead className="font-semibold text-center">Perusahaan</TableHead>
+                                        <TableHead className="font-semibold text-center">Lokasi</TableHead>
+                                        <TableHead className="font-semibold text-center">Gaji</TableHead>
+                                        <TableHead className="font-semibold text-center">Tipe</TableHead>
+                                        <TableHead className="font-semibold text-center">Pelamar</TableHead>
+                                        <TableHead className="font-semibold text-center">Status</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {jobsWithCounts.map((job: any) => (
                                         <TableRow key={job.id} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium">{job.title}</TableCell>
-                                        <TableCell>{job.company_name}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="font-medium text-center">{job.title}</TableCell>
+                                        <TableCell className="text-center">{job.company_name}</TableCell>
+                                        <TableCell className="text-center">
                                             {job.location_city}
                                             {job.location_province && `, ${job.location_province}`}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {job.min_salary && job.max_salary
                                                 ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
                                                 : job.min_salary
                                                 ? `Mulai dari ${formatCurrency(job.min_salary)}`
                                                 : "Tidak disebutkan"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant="outline">{job.employment_type}</Badge>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <Users className="h-4 w-4 text-gray-400" />
                                                     <span className="font-medium">{job.applicationCount || 0}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
+                                        <TableCell className="text-center">
+                                            <div className="flex flex-col items-center gap-1">
                                                 {job.is_closed ? (
                                                     <Badge variant="destructive" className="w-fit">
                                                         Ditutup
@@ -171,8 +171,8 @@ export default async function RecruiterJobsPage() {
                                                 )}
                                             </div>
                                         </TableCell>
-                                            <TableCell>
-                                            <div className="flex justify-end gap-2">
+                                            <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                     <Button variant="ghost" size="sm" asChild title="Lihat Detail">
                                                     <Link href={`/recruiter/jobs/${job.id}`}>
                                                         <Eye className="h-4 w-4" />
@@ -181,11 +181,6 @@ export default async function RecruiterJobsPage() {
                                                     <Button variant="ghost" size="sm" asChild title="Edit Lowongan">
                                                     <Link href={`/recruiter/jobs/${job.id}/edit`}>
                                                         <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                    <Button variant="ghost" size="sm" asChild title="Lihat Pelamar">
-                                                    <Link href={`/recruiter/applications?job=${job.id}`}>
-                                                        <Users className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                                     <CloseJobButton 

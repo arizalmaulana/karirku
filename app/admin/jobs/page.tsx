@@ -62,41 +62,41 @@ export default async function JobsManagementPage() {
                         <Table>
                             <TableHeader >
                                 <TableRow>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Judul</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Perusahaan</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Lokasi</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Gaji</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Tipe</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700">Status</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Judul</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Perusahaan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lokasi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Gaji</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tipe</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {jobs.map((job) => (
                                     <TableRow key={job.id}>
-                                        <TableCell className="font-medium">{job.title}</TableCell>
-                                        <TableCell>{job.company_name}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="font-medium text-center">{job.title}</TableCell>
+                                        <TableCell className="text-center">{job.company_name}</TableCell>
+                                        <TableCell className="text-center">
                                             {job.location_city}
                                             {job.location_province && `, ${job.location_province}`}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {job.min_salary && job.max_salary
                                                 ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
                                                 : job.min_salary
                                                 ? `Mulai dari ${formatCurrency(job.min_salary)}`
                                                 : "Tidak disebutkan"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-purple-100/50 border-purple-200 text-gray-700 shadow-sm">{job.employment_type}</Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant={job.featured ? "default" : "secondary"}>
                                                 {job.featured ? "Featured" : "Aktif"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/jobs/${job.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />

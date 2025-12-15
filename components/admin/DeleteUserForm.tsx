@@ -80,6 +80,7 @@ export function DeleteUserForm({ userId }: DeleteUserFormProps) {
                     variant="destructive"
                     onClick={handleDelete}
                     disabled={isLoading}
+                    className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all"
                 >
                     {isLoading ? (
                         <>
@@ -90,7 +91,7 @@ export function DeleteUserForm({ userId }: DeleteUserFormProps) {
                         "Ya, Hapus"
                     )}
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="hover:bg-gray-50 transition-all">
                     <Link href="/admin/users">Batal</Link>
                 </Button>
             </div>

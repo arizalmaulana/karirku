@@ -130,42 +130,42 @@ export default async function UsersManagementPage({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Nama</TableHead>
-                                    <TableHead>Role</TableHead>
-                                    <TableHead>Lokasi</TableHead>
-                                    <TableHead>Skills</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Tanggal Bergabung</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Nama</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Role</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lokasi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Skills</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Bergabung</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {users.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-center">
                                             {user.full_name || "Tidak ada nama"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant={getRoleBadgeVariant(user.role)}>
                                                 {user.role}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{user.location_city || "-"}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">{user.location_city || "-"}</TableCell>
+                                        <TableCell className="text-center">
                                             {user.skills && user.skills.length > 0
                                                 ? user.skills.slice(0, 3).join(", ")
                                                 : "-"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant={user.is_approved ? "default" : "secondary"}>
                                                 {user.is_approved ? "Aktif" : "Tidak Aktif"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {formatDateIndonesianShort(user.created_at)}
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/users/${user.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />

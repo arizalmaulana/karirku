@@ -196,13 +196,14 @@ export function JobSearch({ jobs, profile, livingCosts }: JobSearchProps) {
                                     <SelectTrigger>
                                         <SelectValue placeholder="Semua Lokasi" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="">Semua Lokasi</SelectItem>
+                                    <SelectContent className="!bg-white text-black border border-gray-200">
+                                        <SelectItem value="" className="!bg-white text-black hover:bg-gray-100" >Semua Lokasi</SelectItem>
                                         {availableCities.map((city) => (
-                                            <SelectItem key={city} value={city}>
+                                            <SelectItem key={city} value={city} className="!bg-white text-black hover:bg-gray-100"  >
                                                 {city}
                                             </SelectItem>
                                         ))}
+                                        
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -213,10 +214,10 @@ export function JobSearch({ jobs, profile, livingCosts }: JobSearchProps) {
                                     <SelectTrigger>
                                         <SelectValue placeholder="Semua Tipe" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="!bg-white text-black border border-gray-200">
                                         <SelectItem value="">Semua Tipe</SelectItem>
                                         {employmentTypes.map((type) => (
-                                            <SelectItem key={type} value={type}>
+                                            <SelectItem key={type} value={type} className="!bg-white text-black hover:bg-gray-100">
                                                 {getEmploymentTypeLabel(type)}
                                             </SelectItem>
                                         ))}

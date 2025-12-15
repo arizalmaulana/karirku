@@ -44,7 +44,7 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
                     <Link href="/admin/living-costs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -58,13 +58,13 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                    <Button variant="outline" asChild className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 shadow-md hover:shadow-lg transition-all">
                         <Link href={`/admin/living-costs/${livingCost.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild>
+                    <Button variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all">
                         <Link href={`/admin/living-costs/${livingCost.id}/delete`}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Hapus

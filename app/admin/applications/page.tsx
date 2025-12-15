@@ -104,40 +104,40 @@ export default async function ApplicationsManagementPage({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Pelamar</TableHead>
-                                    <TableHead>Lowongan</TableHead>
-                                    <TableHead>Perusahaan</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Tanggal Submit</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Pelamar</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lowongan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Perusahaan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Submit</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {applications.map((app: any) => (
                                     <TableRow key={app.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-center">
                                             {app.profiles?.full_name || "Unknown"}
                                         </TableCell>
-                                        <TableCell>{app.job_listings?.title || "Unknown"}</TableCell>
-                                        <TableCell>{app.job_listings?.company_name || "Unknown"}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">{app.job_listings?.title || "Unknown"}</TableCell>
+                                        <TableCell className="text-center">{app.job_listings?.company_name || "Unknown"}</TableCell>
+                                        <TableCell className="text-center">
                                             <Badge variant={getStatusBadgeVariant(app.status)}>
                                                 {getStatusLabel(app.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {new Date(app.submitted_at).toLocaleDateString("id-ID")}
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="sm" asChild>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
+                                                <Button variant="ghost" size="sm" asChild className="hover:bg-blue-50 transition-all">
                                                     <Link href={`/admin/applications/${app.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="hover:bg-green-50 transition-all">
                                                     <Link href={`/admin/applications/${app.id}/edit`}>
-                                                        <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
                                                 </Button>
                                                 <DeleteApplicationButton applicationId={app.id} />

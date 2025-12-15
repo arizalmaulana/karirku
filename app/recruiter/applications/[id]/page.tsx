@@ -122,7 +122,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
                     <Link href="/recruiter/applications">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -237,19 +237,19 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                                                         {parsed.email && (
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 uppercase">Email</p>
-                                                                <p className="text-sm">{parsed.email}</p>
+                                                                <p className="text-sm break-words overflow-wrap-anywhere">{parsed.email}</p>
                                                             </div>
                                                         )}
                                                         {parsed.nomorTelepon && (
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 uppercase">Nomor Telepon</p>
-                                                                <p className="text-sm">{parsed.nomorTelepon}</p>
+                                                                <p className="text-sm break-words overflow-wrap-anywhere">{parsed.nomorTelepon}</p>
                                                             </div>
                                                         )}
                                                         {parsed.domisili && (
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 uppercase">Domisili</p>
-                                                                <p className="text-sm">{parsed.domisili}</p>
+                                                                <p className="text-sm break-words overflow-wrap-anywhere">{parsed.domisili}</p>
                                                             </div>
                                                         )}
                                                         {parsed.pendidikanTerakhir && (

@@ -263,16 +263,16 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                     />
                                     <label
                                         htmlFor="avatar-upload"
-                                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-2xl transition-all cursor-pointer font-semibold text-base hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
+                                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-2xl transition-all cursor-pointer font-semibold text-sm hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
                                     >
                                         {isUploading ? (
                                             <>
-                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                <Loader2 className="w-4 h-4 animate-spin" />
                                                 <span>Mengunggah...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <Camera className="w-5 h-5" />
+                                                <Camera className="w-4 h-4" />
                                                 <span>{previewImage ? "Ganti Foto" : "Unggah Foto"}</span>
                                             </>
                                         )}
@@ -283,7 +283,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                             type="button"
                                             variant="outline"
                                             onClick={handleRemoveImage}
-                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-8 py-4 rounded-xl transition-all ml-2"
+                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-6 py-2.5 rounded-xl transition-all ml-2"
                                         >
                                             <X className="w-4 h-4 mr-2" />
                                             Hapus Foto
@@ -491,11 +491,11 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                 <Button 
                     type="submit" 
                     disabled={isLoading || isUploading}
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-xl transition-all px-8 py-6 text-base font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-xl transition-all px-6 py-2.5 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Menyimpan...
                         </>
                     ) : (
@@ -506,7 +506,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                     type="button" 
                     variant="outline"
                     onClick={() => router.back()}
-                    className="border-2 px-8 py-6 text-base font-semibold hover:bg-gray-50"
+                    className="border-2 px-6 py-2.5 text-sm font-semibold hover:bg-gray-50"
                 >
                     Batal
                 </Button>

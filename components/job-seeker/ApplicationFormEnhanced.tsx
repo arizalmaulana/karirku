@@ -342,12 +342,15 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <Label htmlFor="cover_letter">Cover Letter *</Label>
+                    <Label htmlFor="cover_letter">
+                        Cover Letter <span className="text-red-500">*</span>
+                    </Label>
                     {profile && !isAutoFilled && (
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="text-xs"
                             onClick={() => {
                                 const autoFilled = generateCoverLetterFromProfile();
                                 if (autoFilled) {
@@ -384,7 +387,9 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="cv">CV / Resume *</Label>
+                <Label htmlFor="cv">
+                    CV / Resume <span className="text-red-500">*</span>
+                </Label>
                 <div className="flex items-center gap-4">
                     <Input
                         id="cv"
@@ -428,13 +433,13 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                 </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex gap-3 flex-col sm:flex-row">
                 <Button 
                     type="button" 
                     variant="outline"
                     onClick={() => handleSaveDraft()}
                     disabled={isSaving}
-                    className="flex-1"
+                    className="flex-1 border-2 hover:bg-gray-50"
                 >
                     {isSaving ? (
                         <>
@@ -448,7 +453,11 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                         </>
                     )}
                 </Button>
-                <Button type="submit" disabled={isLoading} className="flex-1">
+                <Button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all"
+                >
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -465,6 +474,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
+                    className="border-2 hover:bg-gray-50"
                 >
                     Batal
                 </Button>

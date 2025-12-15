@@ -189,9 +189,9 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="!bg-white text-black border border-gray-200">
                                 {statusOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
+                                    <SelectItem key={option.value} value={option.value} className="!bg-white text-black hover:bg-gray-100">
                                         {option.label}
                                     </SelectItem>
                                 ))}
@@ -329,11 +329,11 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </Card>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-4">
                 <Button 
                     type="submit" 
                     disabled={isLoading} 
-                    className="flex-1"
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>

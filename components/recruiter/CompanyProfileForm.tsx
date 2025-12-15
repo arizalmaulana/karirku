@@ -266,12 +266,24 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 throw new Error("User not authenticated");
             }
 
-            // Validasi: surat izin wajib diisi
-            if (!formData.license_url) {
+            // Validasi: surat izin wajib diisi (cek formData atau initialData)
+            const hasLicense = formData.license_url || initialData?.license_url;
+            if (!hasLicense) {
                 toast.error("Surat izin perusahaan wajib diunggah");
                 setIsLoading(false);
                 return;
             }
+            
+            // Validasi: logo wajib diisi (cek formData, initialData, atau logoPreview)
+            const hasLogo = formData.logo_url || initialData?.logo_url || logoPreview;
+            if (!hasLogo) {
+                toast.error("Logo perusahaan wajib diunggah");
+                setIsLoading(false);
+                return;
+            }
+            
+            // Gunakan license_url dari formData jika ada, jika tidak gunakan dari initialData
+            const licenseUrlToSave = formData.license_url || initialData?.license_url || null;
 
             // Cek apakah recruiter sudah punya company
             const { data: existingCompanyData, error: checkError } = await (supabase
@@ -287,13 +299,6 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
 
             const existingCompany = existingCompanyData as { id: string; is_approved: boolean | null; status: string | null; name: string } | null;
 
-            // Jika company sudah approved, recruiter tidak bisa update
-            if (existingCompany && existingCompany.is_approved && existingCompany.status === 'approved') {
-                toast.error("Profile perusahaan sudah disetujui. Untuk mengubah data, silakan hubungi admin.");
-                setIsLoading(false);
-                return;
-            }
-
             const companyData: any = {
                 recruiter_id: user.id,
                 name: formData.name || null,
@@ -304,8 +309,8 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 description: formData.description || null,
                 website_url: formData.website_url || null,
                 size: formData.size || null,
-                logo_url: formData.logo_url || null,
-                license_url: formData.license_url || null,
+                logo_url: formData.logo_url || initialData?.logo_url || null,
+                license_url: licenseUrlToSave,
             };
 
             // Hanya set is_approved dan status jika insert baru
@@ -507,14 +512,13 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="address">Alamat Lengkap Perusahaan <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="address">Alamat Lengkap Perusahaan</Label>
                         <Textarea
                             id="address"
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                             placeholder="Contoh: Jl. Sudirman No. 123, Gedung ABC, Lantai 5, Jakarta Pusat"
                             rows={3}
-                            required
                         />
                         <p className="text-xs text-gray-500">
                             Alamat lengkap kantor perusahaan (opsional)
@@ -569,7 +573,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                                 onChange={handleLogoFileChange}
                                 className="hidden"
                                 disabled={isUploadingLogo}
-                                required
+                                required={!logoPreview}
                             />
                             <label
                                 htmlFor="logo_file"
@@ -629,12 +633,12 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 <CardContent className="space-y-4">
                     {licenseFileName || formData.license_url ? (
                         <div className="flex items-center justify-between p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-green-100 rounded-lg">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                                <div className="p-3 bg-green-100 rounded-lg shrink-0">
                                     <FileText className="w-6 h-6 text-green-700" />
                                 </div>
-                                <div>
-                                    <p className="font-semibold text-green-900 mb-1">
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-green-900 mb-1 truncate" title={licenseFileName || formData.license_url || "Surat izin sudah diunggah"}>
                                         {licenseFileName || "Surat izin sudah diunggah"}
                                     </p>
                                     <p className="text-sm text-green-700">
@@ -647,7 +651,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                                 variant="outline"
                                 size="sm"
                                 onClick={handleRemoveLicense}
-                                className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400"
+                                className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 shrink-0"
                             >
                                 <X className="w-4 h-4 mr-1" />
                                 Hapus
@@ -679,7 +683,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                                         onChange={handleLicenseFileChange}
                                         className="hidden"
                                         disabled={isUploadingLicense}
-                                        required
+                                        required={!formData.license_url && !initialData?.license_url}
                                     />
                                 </div>
                                 {isUploadingLicense && (
@@ -712,8 +716,14 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                 </Button>
                 <Button
                     type="submit"
-                    disabled={isLoading || isUploadingLicense || isUploadingLogo || !formData.license_url}
-                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                    disabled={
+                        isLoading || 
+                        isUploadingLicense || 
+                        isUploadingLogo || 
+                        (!formData.license_url && !initialData?.license_url) ||
+                        (!formData.logo_url && !initialData?.logo_url && !logoPreview)
+                    }
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>

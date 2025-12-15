@@ -58,19 +58,37 @@ export function useAuth() {
                             const userMetadata = userData.user.user_metadata;
                             const defaultRole = (userMetadata?.role as string) || 'jobseeker';
                             
-                            // Coba buat profil dengan is_approved = true (auto aktif setelah email confirmation)
+                            // Untuk jobseeker, langsung aktif (is_approved = true)
+                            // Untuk recruiter, perlu approval admin (is_approved = false)
+                            const isJobseeker = defaultRole === 'jobseeker';
+                            const shouldAutoApprove = isJobseeker || defaultRole === 'admin';
+                            
+                            // Coba buat profil dengan is_approved sesuai role
                             const { error: createError } = await (supabase
                                 .from('profiles') as any)
                                 .upsert({
                                     id: userId,
                                     full_name: userMetadata?.full_name || null,
                                     role: defaultRole,
-                                    is_approved: true, // Auto aktif untuk semua role setelah konfirmasi email
+                                    email: userData.user.email || null,
+                                    is_approved: shouldAutoApprove ? true : false, // Jobseeker langsung aktif, recruiter perlu approval
                                 }, {
                                     onConflict: 'id',
                                 });
 
                             if (!createError) {
+                                // Untuk jobseeker, pastikan is_approved = true setelah dibuat
+                                if (isJobseeker) {
+                                    const { error: updateError } = await (supabase
+                                        .from('profiles') as any)
+                                        .update({ is_approved: true })
+                                        .eq('id', userId);
+                                    
+                                    if (updateError) {
+                                        console.warn('Could not update is_approved for jobseeker:', updateError);
+                                    }
+                                }
+                                
                                 // Fetch ulang setelah dibuat
                                 const { data: newData } = await supabase
                                     .from('profiles')
@@ -90,12 +108,87 @@ export function useAuth() {
                         setProfile(null);
                     }
                 } else {
-                    // Profil belum ada atau tidak ditemukan, set null
-                    setProfile(null);
+                    // Profil belum ada atau tidak ditemukan, coba buat profil default
+                    try {
+                        const { data: userData } = await supabase.auth.getUser();
+                        if (userData?.user) {
+                            const userMetadata = userData.user.user_metadata;
+                            const defaultRole = (userMetadata?.role as string) || 'jobseeker';
+                            const isJobseeker = defaultRole === 'jobseeker';
+                            const shouldAutoApprove = isJobseeker || defaultRole === 'admin';
+                            
+                            // Buat profil baru
+                            const { error: createError } = await (supabase
+                                .from('profiles') as any)
+                                .insert({
+                                    id: userId,
+                                    full_name: userMetadata?.full_name || null,
+                                    role: defaultRole,
+                                    email: userData.user.email || null,
+                                    is_approved: shouldAutoApprove ? true : false,
+                                });
+
+                            if (!createError) {
+                                // Untuk jobseeker, pastikan is_approved = true
+                                if (isJobseeker) {
+                                    const { error: updateError } = await (supabase
+                                        .from('profiles') as any)
+                                        .update({ is_approved: true })
+                                        .eq('id', userId);
+                                    
+                                    if (updateError) {
+                                        console.warn('Could not update is_approved for jobseeker:', updateError);
+                                    }
+                                }
+                                
+                                // Fetch ulang setelah dibuat
+                                const { data: newData } = await supabase
+                                    .from('profiles')
+                                    .select('*')
+                                    .eq('id', userId)
+                                    .maybeSingle();
+                                setProfile(newData);
+                            } else {
+                                console.warn('Could not create profile:', createError);
+                                setProfile(null);
+                            }
+                        } else {
+                            setProfile(null);
+                        }
+                    } catch (createErr) {
+                        console.warn('Error creating profile in useAuth:', createErr);
+                        setProfile(null);
+                    }
                 }
             } else {
-                // Profil ditemukan, set data
-                setProfile(data);
+                // Profil ditemukan, pastikan jobseeker memiliki is_approved = true
+                const profileRole = (data as any)?.role;
+                const isApproved = (data as any)?.is_approved;
+                
+                if (profileRole === 'jobseeker' && isApproved !== true) {
+                    // Update is_approved untuk jobseeker yang belum aktif
+                    console.log('Updating is_approved to true for jobseeker...');
+                    const { error: updateError } = await (supabase
+                        .from('profiles') as any)
+                        .update({ is_approved: true })
+                        .eq('id', userId);
+                    
+                    if (!updateError) {
+                        // Fetch ulang setelah update
+                        const { data: updatedData } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', userId)
+                            .maybeSingle();
+                        setProfile(updatedData);
+                    } else {
+                        console.warn('Could not update is_approved for jobseeker:', updateError);
+                        setProfile(data);
+                    }
+                } else {
+                    // Profil sudah benar, set data
+                    setProfile(data);
+                }
             }
         } catch (error: any) {
             // Log error dengan lebih detail untuk debugging

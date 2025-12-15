@@ -333,11 +333,11 @@ export function ApplicantsTable({
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50">
-                            <TableHead className="font-semibold">Name</TableHead>
-                            <TableHead className="font-semibold">Nama Lowongan</TableHead>
-                            <TableHead className="font-semibold">Phone Number</TableHead>
-                            <TableHead className="font-semibold">Email</TableHead>
-                            <TableHead className="font-semibold">CV</TableHead>
+                            <TableHead className="font-semibold text-center">Name</TableHead>
+                            <TableHead className="font-semibold text-center">Nama Lowongan</TableHead>
+                            <TableHead className="font-semibold text-center">Phone Number</TableHead>
+                            <TableHead className="font-semibold text-center">Email</TableHead>
+                            <TableHead className="font-semibold text-center">CV</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -347,16 +347,16 @@ export function ApplicantsTable({
                                 const applicantName = name || app.profiles?.full_name || "Unknown";
                                 return (
                                     <TableRow key={app.id} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-center">
                                             {applicantName}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {app.job_listings?.title || "Unknown"}
                                         </TableCell>
-                                        <TableCell>{phone}</TableCell>
-                                        <TableCell>{email}</TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-2">
+                                        <TableCell className="text-center">{phone}</TableCell>
+                                        <TableCell className="text-center">{email}</TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                 <CVDownloadButton
                                                     cvUrl={app.cv_url}
                                                     jobSeekerId={app.job_seeker_id}

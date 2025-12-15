@@ -154,13 +154,13 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className=" bg-white text-sm text-gray-700">
-                            <SelectItem value="fulltime" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Full Time</SelectItem>
-                            <SelectItem value="parttime" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Part Time</SelectItem>
-                            <SelectItem value="contract" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Contract</SelectItem>
-                            <SelectItem value="internship" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Internship</SelectItem>
-                            <SelectItem value="remote" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Remote</SelectItem>
-                            <SelectItem value="hybrid" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Hybrid</SelectItem>
+                        <SelectContent className="bg-white text-sm text-black">
+                            <SelectItem value="fulltime" className="text-sm text-black hover:bg-gray-100">Full Time</SelectItem>
+                            <SelectItem value="parttime" className="text-sm text-black hover:bg-gray-100">Part Time</SelectItem>
+                            <SelectItem value="contract" className="text-sm text-black hover:bg-gray-100">Contract</SelectItem>
+                            <SelectItem value="internship" className="text-sm text-black hover:bg-gray-100">Internship</SelectItem>
+                            <SelectItem value="remote" className="text-sm text-black hover:bg-gray-100">Remote</SelectItem>
+                            <SelectItem value="hybrid" className="text-sm text-black hover:bg-gray-100">Hybrid</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -240,15 +240,15 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className=" bg-white text-sm text-gray-700">
-                            <SelectItem value="Technology" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Technology</SelectItem>
-                            <SelectItem value="Design" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Design</SelectItem>
-                            <SelectItem value="Marketing" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Marketing</SelectItem>
-                            <SelectItem value="Business" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Business</SelectItem>
-                            <SelectItem value="Finance" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Finance</SelectItem>
-                            <SelectItem value="Healthcare" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Healthcare</SelectItem>
-                            <SelectItem value="Education" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Education</SelectItem>
-                            <SelectItem value="Other" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Other</SelectItem>
+                        <SelectContent className="bg-white text-sm text-black">
+                            <SelectItem value="Technology" className="text-sm text-black hover:bg-gray-100">Technology</SelectItem>
+                            <SelectItem value="Design" className="text-sm text-black hover:bg-gray-100">Design</SelectItem>
+                            <SelectItem value="Marketing" className="text-sm text-black hover:bg-gray-100">Marketing</SelectItem>
+                            <SelectItem value="Business" className="text-sm text-black hover:bg-gray-100">Business</SelectItem>
+                            <SelectItem value="Finance" className="text-sm text-black hover:bg-gray-100">Finance</SelectItem>
+                            <SelectItem value="Healthcare" className="text-sm text-black hover:bg-gray-100">Healthcare</SelectItem>
+                            <SelectItem value="Education" className="text-sm text-black hover:bg-gray-100">Education</SelectItem>
+                            <SelectItem value="Other" className="text-sm text-black hover:bg-gray-100">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -262,11 +262,11 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className=" bg-white text-sm text-gray-700">
-                            <SelectItem value="Entry Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Entry Level</SelectItem>
-                            <SelectItem value="Mid Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Mid Level</SelectItem>
-                            <SelectItem value="Senior Level" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Senior Level</SelectItem>
-                            <SelectItem value="Executive" className="text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">Executive</SelectItem>
+                        <SelectContent className="bg-white text-sm text-black">
+                            <SelectItem value="Entry Level" className="text-sm text-black hover:bg-gray-100">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level" className="text-sm text-black hover:bg-gray-100">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level" className="text-sm text-black hover:bg-gray-100">Senior Level</SelectItem>
+                            <SelectItem value="Executive" className="text-sm text-black hover:bg-gray-100">Executive</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

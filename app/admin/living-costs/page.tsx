@@ -68,26 +68,26 @@ export default async function LivingCostsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Kota</TableHead>
-                                    <TableHead>Provinsi</TableHead>
-                                    <TableHead>Rata-rata Sewa</TableHead>
-                                    <TableHead>Rata-rata Makan</TableHead>
-                                    <TableHead>Rata-rata Transport</TableHead>
-                                    <TableHead>Gaji Referensi</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Kota</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Provinsi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Sewa</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Makan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Transport</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Gaji Referensi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {livingCosts.map((cost) => (
                                     <TableRow key={cost.id}>
-                                        <TableCell className="font-medium">{cost.city}</TableCell>
-                                        <TableCell>{cost.province}</TableCell>
-                                        <TableCell>{formatCurrency(cost.avg_rent)}</TableCell>
-                                        <TableCell>{formatCurrency(cost.avg_food)}</TableCell>
-                                        <TableCell>{formatCurrency(cost.avg_transport)}</TableCell>
-                                        <TableCell>{formatCurrency(cost.salary_reference)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <TableCell className="font-medium text-center">{cost.city}</TableCell>
+                                        <TableCell className="text-center">{cost.province}</TableCell>
+                                        <TableCell className="text-center">{formatCurrency(cost.avg_rent)}</TableCell>
+                                        <TableCell className="text-center">{formatCurrency(cost.avg_food)}</TableCell>
+                                        <TableCell className="text-center">{formatCurrency(cost.avg_transport)}</TableCell>
+                                        <TableCell className="text-center">{formatCurrency(cost.salary_reference)}</TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/living-costs/${cost.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />

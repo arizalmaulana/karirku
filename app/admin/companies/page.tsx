@@ -254,20 +254,20 @@ export default async function CompaniesManagementPage({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Nama Perusahaan</TableHead>
-                                    <TableHead>Recruiter</TableHead>
-                                    <TableHead>Industri</TableHead>
-                                    <TableHead>Lokasi</TableHead>
-                                    <TableHead >Status</TableHead>
-                                    <TableHead>Tanggal Daftar</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Nama Perusahaan</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Recruiter</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Industri</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lokasi</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Daftar</TableHead>
+                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {companies.map((company) => (
                                     <TableRow key={company.id}>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="font-medium text-center">
+                                            <div className="flex items-center justify-center gap-2">
                                                 {company.name}
                                                 {company.is_blocked && (
                                                     <Badge variant="destructive" className="text-xs bg-red-100 text-red-500">
@@ -277,31 +277,31 @@ export default async function CompaniesManagementPage({
                                                 )}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {company.profiles?.full_name || "-"}
                                             {company.profiles?.email && (
                                                 <p className="text-xs text-red-500">{company.profiles.email}</p>
                                             )}
                                         </TableCell>
-                                        <TableCell>{company.industry || "-"}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">{company.industry || "-"}</TableCell>
+                                        <TableCell className="text-center">
                                             {company.location_city || ""}
                                             {company.location_province && `, ${company.location_province}`}
                                             {!company.location_city && !company.location_province && "-"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge 
                                                 variant={getStatusBadgeVariant(company.status)} 
-                                                className="flex items-center gap-1 w-fit"
+                                                className="flex items-center gap-1 w-fit mx-auto"
                                             >
                                                 {getStatusIcon(company.status)}
                                                 {getStatusLabel(company.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {new Date(company.created_at).toLocaleDateString("id-ID")}
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-center">
                                             <Button variant="ghost" size="sm" asChild className="hover:text-blue-500 transition-all duration-300 rounded-xl">
                                                 <Link href={`/admin/companies/${company.id}`}>
                                                     <Eye className="h-4 w-4 mr-2 text-blue-500" />

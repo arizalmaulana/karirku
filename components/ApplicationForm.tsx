@@ -273,7 +273,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Nama Lengkap */}
           <div className="space-y-2">
-            <Label htmlFor="namaLengkap">Nama Lengkap *</Label>
+            <Label htmlFor="namaLengkap">
+              Nama Lengkap <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="namaLengkap"
               value={formData.namaLengkap}
@@ -284,7 +286,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">
+              Email <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="email"
               type="email"
@@ -296,7 +300,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Nomor Telepon */}
           <div className="space-y-2">
-            <Label htmlFor="nomorTelepon">Nomor Telepon *</Label>
+            <Label htmlFor="nomorTelepon">
+              Nomor Telepon <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="nomorTelepon"
               type="tel"
@@ -308,7 +314,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Domisili */}
           <div className="space-y-2">
-            <Label htmlFor="domisili">Domisili *</Label>
+            <Label htmlFor="domisili">
+              Domisili <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="domisili"
               value={formData.domisili}
@@ -319,27 +327,42 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Pendidikan Terakhir */}
           <div className="space-y-2">
-            <Label htmlFor="pendidikanTerakhir">Pendidikan Terakhir *</Label>
+            <Label htmlFor="pendidikanTerakhir">
+              Pendidikan Terakhir <span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.pendidikanTerakhir}
               onValueChange={(value) => setFormData({ ...formData, pendidikanTerakhir: value })}
               required
             >
-              <SelectTrigger id="pendidikanTerakhir">
+              <SelectTrigger 
+                id="pendidikanTerakhir"
+                className="w-full h-10 border-0 hover:border-0 focus:ring-2 focus:ring-purple-500 focus:border-0 bg-gray-50 hover:bg-gray-100"
+              >
                 <SelectValue placeholder="Pilih pendidikan terakhir" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SMA/SMK">SMA/SMK</SelectItem>
-                <SelectItem value="D3">D3</SelectItem>
-                <SelectItem value="S1">S1</SelectItem>
-                <SelectItem value="S2">S2</SelectItem>
+              <SelectContent className="bg-white">
+                <SelectItem value="SMA/SMK" className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50">
+                  SMA/SMK
+                </SelectItem>
+                <SelectItem value="D3" className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50">
+                  D3
+                </SelectItem>
+                <SelectItem value="S1" className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50">
+                  S1
+                </SelectItem>
+                <SelectItem value="S2" className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50">
+                  S2
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Pengalaman Kerja */}
           <div className="space-y-2">
-            <Label htmlFor="pengalamanKerja">Pengalaman Kerja *</Label>
+            <Label htmlFor="pengalamanKerja">
+              Pengalaman Kerja <span className="text-red-500">*</span>
+            </Label>
             <Textarea
               id="pengalamanKerja"
               value={formData.pengalamanKerja}
@@ -351,7 +374,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Skill */}
           <div className="space-y-2">
-            <Label htmlFor="skill">Skill *</Label>
+            <Label htmlFor="skill">
+              Skill <span className="text-red-500">*</span>
+            </Label>
             <Textarea
               id="skill"
               value={formData.skill}
@@ -376,7 +401,9 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
 
           {/* Upload CV */}
           <div className="space-y-2">
-            <Label htmlFor="cvFile">Upload CV (PDF, maks 5MB) *</Label>
+            <Label htmlFor="cvFile">
+              Upload CV (PDF, maks 5MB) <span className="text-red-500">*</span>
+            </Label>
             <div className="flex items-center gap-2">
               <Input
                 id="cvFile"
@@ -409,10 +436,10 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 flex-col sm:flex-row">
             <Button
               type="submit"
-              className="flex-1"
+              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -421,10 +448,18 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
                   Mengirim...
                 </>
               ) : (
-                "Kirim Lamaran"
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Kirim Lamaran
+                </>
               )}
             </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="border-2 hover:bg-gray-50"
+            >
               Batal
             </Button>
           </div>

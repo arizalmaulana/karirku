@@ -50,7 +50,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
                     <Link href="/admin/users">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -66,13 +66,13 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                     <Badge variant={getRoleBadgeVariant(user.role)}>
                         {user.role}
                     </Badge>
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 shadow-md hover:shadow-lg transition-all">
                         <Link href={`/admin/users/${user.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild>
+                    <Button variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all">
                         <Link href={`/admin/users/${user.id}/delete`}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Hapus
@@ -104,7 +104,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                                         <Mail className="h-4 w-4" />
                                         Email
                                     </p>
-                                    <p className="font-medium">{user.email}</p>
+                                    <p className="font-medium break-words overflow-wrap-anywhere">{user.email}</p>
                                 </div>
                             )}
                             {user.phone && (
@@ -113,7 +113,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                                         <Phone className="h-4 w-4" />
                                         Telepon
                                     </p>
-                                    <p className="font-medium">{user.phone}</p>
+                                    <p className="font-medium break-words overflow-wrap-anywhere">{user.phone}</p>
                                 </div>
                             )}
                             {user.location_city && (

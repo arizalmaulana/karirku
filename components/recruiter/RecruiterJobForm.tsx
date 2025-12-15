@@ -321,7 +321,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
             )}
 
                 <div className="space-y-2">
-                    <Label htmlFor="title">Judul Lowongan *</Label>
+                    <Label htmlFor="title">Judul Lowongan <span className="text-red-500">*</span></Label>
                     <Input
                         id="title"
                         value={formData.title}
@@ -335,7 +335,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="company_name">
-                        Nama Perusahaan *
+                        Nama Perusahaan <span className="text-red-500">*</span>
                         {companyProfile && (
                             <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
                         )}
@@ -360,7 +360,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
 
                 <div className="space-y-2">
                     <Label htmlFor="location_city">
-                        Kota *
+                        Kota <span className="text-red-500">*</span>
                         {companyProfile && (
                             <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
                         )}
@@ -394,7 +394,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
 
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                    <Label htmlFor="employment_type">Tipe Pekerjaan *</Label>
+                    <Label htmlFor="employment_type">Tipe Pekerjaan <span className="text-red-500">*</span></Label>
                     <Select
                         value={formData.employment_type}
                         onValueChange={(value) => setFormData({ ...formData, employment_type: value as EmploymentType })}
@@ -402,13 +402,13 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="fulltime">Full Time</SelectItem>
-                            <SelectItem value="parttime">Part Time</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="internship">Internship</SelectItem>
-                            <SelectItem value="remote">Remote</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                        <SelectContent className="!bg-white text-black border border-gray-200">
+                            <SelectItem value="fulltime" className="!bg-white text-black hover:bg-gray-100">Full Time</SelectItem>
+                            <SelectItem value="parttime" className="!bg-white text-black hover:bg-gray-100">Part Time</SelectItem>
+                            <SelectItem value="contract" className="!bg-white text-black hover:bg-gray-100">Contract</SelectItem>
+                            <SelectItem value="internship" className="!bg-white text-black hover:bg-gray-100">Internship</SelectItem>
+                            <SelectItem value="remote" className="!bg-white text-black hover:bg-gray-100">Remote</SelectItem>
+                            <SelectItem value="hybrid" className="!bg-white text-black hover:bg-gray-100">Hybrid</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -477,7 +477,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="category">Kategori *</Label>
+                    <Label htmlFor="category">Kategori <span className="text-red-500">*</span></Label>
                     <Select
                         value={formData.category}
                         onValueChange={(value) => setFormData({ ...formData, category: value as JobCategory })}
@@ -485,21 +485,21 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Technology">Technology</SelectItem>
-                            <SelectItem value="Design">Design</SelectItem>
-                            <SelectItem value="Marketing">Marketing</SelectItem>
-                            <SelectItem value="Business">Business</SelectItem>
-                            <SelectItem value="Finance">Finance</SelectItem>
-                            <SelectItem value="Healthcare">Healthcare</SelectItem>
-                            <SelectItem value="Education">Education</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
+                        <SelectContent className="!bg-white text-black border border-gray-200">
+                            <SelectItem value="Technology" className="!bg-white text-black hover:bg-gray-100">Technology</SelectItem>
+                            <SelectItem value="Design" className="!bg-white text-black hover:bg-gray-100">Design</SelectItem>
+                            <SelectItem value="Marketing" className="!bg-white text-black hover:bg-gray-100">Marketing</SelectItem>
+                            <SelectItem value="Business" className="!bg-white text-black hover:bg-gray-100">Business</SelectItem>
+                            <SelectItem value="Finance" className="!bg-white text-black hover:bg-gray-100">Finance</SelectItem>
+                            <SelectItem value="Healthcare" className="!bg-white text-black hover:bg-gray-100">Healthcare</SelectItem>
+                            <SelectItem value="Education" className="!bg-white text-black hover:bg-gray-100">Education</SelectItem>
+                            <SelectItem value="Other" className="!bg-white text-black hover:bg-gray-100">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="job_level">Level Pekerjaan *</Label>
+                    <Label htmlFor="job_level">Level Pekerjaan <span className="text-red-500">*</span></Label>
                     <Select
                         value={formData.job_level}
                         onValueChange={(value) => setFormData({ ...formData, job_level: value as JobLevel })}
@@ -507,11 +507,11 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Entry Level">Entry Level</SelectItem>
-                            <SelectItem value="Mid Level">Mid Level</SelectItem>
-                            <SelectItem value="Senior Level">Senior Level</SelectItem>
-                            <SelectItem value="Executive">Executive</SelectItem>
+                        <SelectContent className="!bg-white text-black border border-gray-200">
+                            <SelectItem value="Entry Level" className="!bg-white text-black hover:bg-gray-100">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level" className="!bg-white text-black hover:bg-gray-100">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level" className="!bg-white text-black hover:bg-gray-100">Senior Level</SelectItem>
+                            <SelectItem value="Executive" className="!bg-white text-black hover:bg-gray-100">Executive</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -529,7 +529,11 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
             </div>
 
             <div className="flex gap-4">
-                <Button type="submit" disabled={isLoading}>
+                <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -543,6 +547,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/recruiter/jobs")}
+                    className="hover:bg-gray-50 transition-all"
                 >
                     Batal
                 </Button>

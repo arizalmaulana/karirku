@@ -64,10 +64,10 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="jobseeker">Job Seeker</SelectItem>
-                        <SelectItem value="recruiter">Recruiter</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                    <SelectContent className="!bg-white text-black border border-gray-200">
+                        <SelectItem value="jobseeker" className="!bg-white text-black hover:bg-gray-100">Job Seeker</SelectItem>
+                        <SelectItem value="recruiter" className="!bg-white text-black hover:bg-gray-100">Recruiter</SelectItem>
+                        <SelectItem value="admin" className="!bg-white text-black hover:bg-gray-100">Admin</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -96,7 +96,7 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
             <Button 
                 type="submit" 
                 disabled={isLoading || (role === user.role && isApproved === user.is_approved)}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isLoading ? (
                     <>

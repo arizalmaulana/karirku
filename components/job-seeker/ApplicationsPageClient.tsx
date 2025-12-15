@@ -431,8 +431,8 @@ export function ApplicationsPageClient({
                                         key={app.id}
                                         className="hover:bg-gray-50 transition-colors"
                                     >
-                                        <TableCell>
-                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                                        <TableCell className="text-center">
+                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200 mx-auto">
                                                 <ImageWithFallback
                                                     src={(app as any).companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.job_listings?.company_name || "Company")}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
                                                     alt={app.job_listings?.company_name || "Company"}
@@ -440,18 +440,18 @@ export function ApplicationsPageClient({
                                                 />
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <div className="font-semibold text-gray-900">
                                                 {app.job_listings?.title || "Unknown Position"}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <div className="text-gray-700">
                                                 {app.job_listings?.company_name || "Unknown Company"}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
                                                 <MapPin className="w-3.5 h-3.5 text-gray-400" />
                                                 <span>
                                                     {app.job_listings?.location_city || "-"}
@@ -461,8 +461,8 @@ export function ApplicationsPageClient({
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
                                                 <Clock className="w-3.5 h-3.5 text-gray-400" />
                                                 <span>
                                                     {app.job_listings?.employment_type 
@@ -472,8 +472,8 @@ export function ApplicationsPageClient({
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
                                                 <DollarSign className="w-3.5 h-3.5 text-gray-400" />
                                                 <span>
                                                     {app.job_listings?.min_salary && app.job_listings?.max_salary
@@ -485,20 +485,20 @@ export function ApplicationsPageClient({
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
                                                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
                                                 <span>{formatTimeAgo(app.submitted_at)}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge
                                                 className={`px-2.5 py-1 border ${getStatusColor(app.status)}`}
                                             >
                                                 {getStatusLabel(app.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-center">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
