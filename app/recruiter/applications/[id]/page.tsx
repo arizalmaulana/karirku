@@ -26,7 +26,6 @@ function getStatusBadgeVariant(status: string) {
 
 function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
-        draft: "Draft",
         submitted: "Dikirim",
         review: "Dalam Review",
         interview: "Interview",

@@ -30,3 +30,4 @@ COMMENT ON FUNCTION public.check_email_exists(text) IS
 'Function untuk mengecek apakah email sudah terdaftar di auth.users. Dapat dipanggil dari client sebelum signup untuk mencegah duplikasi email.';
 
 
+

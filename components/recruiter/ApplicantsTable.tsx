@@ -57,7 +57,6 @@ function getStatusBadgeVariant(status: string) {
 
 function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
-        draft: "Draft",
         submitted: "Dikirim",
         review: "Dalam Review",
         interview: "Interview",
@@ -277,14 +276,14 @@ export function ApplicantsTable({
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600 whitespace-nowrap">Sort by:</span>
                         <Select value={sortBy} onValueChange={setSortBy}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-[180px] bg-gray-200">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent> 
-                                <SelectItem value="newest bg-blue-50">Newest</SelectItem>
-                                <SelectItem value="oldest">Oldest</SelectItem>
-                                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                            <SelectContent className="bg-gray-200"> 
+                                <SelectItem value="newest" className="bg-gray-200 hover:bg-gray-300">Newest</SelectItem>
+                                <SelectItem value="oldest" className="bg-gray-200 hover:bg-gray-300">Oldest</SelectItem>
+                                <SelectItem value="name-asc" className="bg-gray-200 hover:bg-gray-300">Name (A-Z)</SelectItem>
+                                <SelectItem value="name-desc" className="bg-gray-200 hover:bg-gray-300">Name (Z-A)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -295,13 +294,13 @@ export function ApplicantsTable({
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Filter Lowongan</label>
                         <Select value={jobFilter} onValueChange={(value) => handleFilterChange('job', value)}>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-gray-200">
                                 <SelectValue placeholder="Semua Lowongan" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semua Lowongan</SelectItem>
+                            <SelectContent className="bg-gray-200">
+                                <SelectItem value="all" className="bg-gray-200 hover:bg-gray-300">Semua Lowongan</SelectItem>
                                 {jobs.map((job) => (
-                                    <SelectItem key={job.id} value={job.id}>
+                                    <SelectItem key={job.id} value={job.id} className="bg-gray-200 hover:bg-gray-300">
                                         {job.title}
                                     </SelectItem>
                                 ))}
@@ -312,16 +311,16 @@ export function ApplicantsTable({
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Filter Status</label>
                         <Select value={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-gray-200">
                                 <SelectValue placeholder="Semua Status" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semua Status</SelectItem>
-                                <SelectItem value="submitted">Dikirim</SelectItem>
-                                <SelectItem value="review">Dalam Review</SelectItem>
-                                <SelectItem value="interview">Interview</SelectItem>
-                                <SelectItem value="accepted">Diterima</SelectItem>
-                                <SelectItem value="rejected">Ditolak</SelectItem>
+                            <SelectContent className="bg-gray-200">
+                                <SelectItem value="all" className="hover:bg-gray-300 bg-gray-200">Semua Status</SelectItem>
+                                <SelectItem value="submitted" className="hover:bg-gray-300 bg-gray-200">Dikirim</SelectItem>
+                                <SelectItem value="review" className="hover:bg-gray-300 bg-gray-200">Dalam Review</SelectItem>
+                                <SelectItem value="interview" className="hover:bg-gray-300 bg-gray-200">Interview</SelectItem>
+                                <SelectItem value="accepted" className="hover:bg-gray-300 bg-gray-200">Diterima</SelectItem>
+                                <SelectItem value="rejected" className="hover:bg-gray-300 bg-gray-200">Ditolak</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

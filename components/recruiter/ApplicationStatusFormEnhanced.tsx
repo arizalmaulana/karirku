@@ -123,14 +123,14 @@ export function ApplicationStatusFormEnhanced({
             <div className="space-y-2">
                 <Label htmlFor="status">Status Lamaran</Label>
                 <Select value={status} onValueChange={(value) => setStatus(value as ApplicationStatus)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-gray-200">
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-200">
                         {statusOptions
                             .filter(opt => opt.value !== "draft") // Jangan tampilkan draft untuk recruiter
                             .map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
+                                <SelectItem key={option.value} value={option.value} className="bg-gray-200 hover:bg-gray-300">
                                     {option.label}
                                 </SelectItem>
                             ))}

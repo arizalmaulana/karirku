@@ -31,7 +31,6 @@ interface ApplicationEditFormProps {
 }
 
 const statusOptions: { value: ApplicationStatus; label: string; description: string }[] = [
-    { value: "draft", label: "Draft", description: "Lamaran masih dalam draft" },
     { value: "submitted", label: "Dikirim", description: "Lamaran telah dikirim" },
     { value: "review", label: "Dalam Review", description: "Lamaran sedang direview" },
     { value: "interview", label: "Interview", description: "Kandidat diundang interview" },
@@ -44,7 +43,6 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
     const supabase = createBrowserClient();
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<ApplicationStatus>(initialData.status);
-    const [notes, setNotes] = useState(initialData.notes || "");
     const [rejectionReason, setRejectionReason] = useState(initialData.rejection_reason || "");
     const [interviewDate, setInterviewDate] = useState(
         initialData.interview_date 
@@ -87,6 +85,13 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
         setIsLoading(true);
 
         try {
+            // Validasi keterangan untuk status accepted
+            if (status === "accepted" && !acceptedNotes.trim()) {
+                toast.error("Mohon isi keterangan untuk status diterima");
+                setIsLoading(false);
+                return;
+            }
+
             // Validasi notes untuk status rejected
             if (status === "rejected" && !rejectionReason.trim()) {
                 toast.error("Mohon berikan alasan penolakan");
@@ -126,19 +131,11 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 updated_at: new Date().toISOString(),
             };
 
-            // Set notes - untuk accepted, gunakan acceptedNotes; untuk lainnya gunakan notes
+            // Set notes - untuk accepted, gunakan acceptedNotes (wajib)
             if (status === "accepted") {
-                if (acceptedNotes.trim()) {
-                    updateData.notes = acceptedNotes.trim();
-                } else {
-                    updateData.notes = null;
-                }
+                updateData.notes = acceptedNotes.trim();
             } else {
-                if (notes.trim()) {
-                    updateData.notes = notes.trim();
-                } else {
-                    updateData.notes = null;
-                }
+                updateData.notes = null;
             }
 
             // Set rejection reason
@@ -186,15 +183,17 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
                         <Select value={status} onValueChange={(value) => handleStatusChange(value as ApplicationStatus)}>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-gray-200">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="!bg-white text-black border border-gray-200">
-                                {statusOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value} className="!bg-white text-black hover:bg-gray-100">
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
+                            <SelectContent className="bg-gray-200">
+                                {statusOptions
+                                    .filter(opt => opt.value !== "draft")
+                                    .map((option) => (
+                                        <SelectItem key={option.value} value={option.value} className="bg-gray-200 hover:bg-gray-300">
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
                             </SelectContent>
                         </Select>
                         {selectedStatus && (
@@ -213,7 +212,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="interview_date">Jadwal Interview *</Label>
+                        <Label htmlFor="interview_date">Jadwal Interview<span className="text-red-500">*</span></Label> 
                         <Input
                             id="interview_date"
                             type="datetime-local"
@@ -230,7 +229,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="interview_location">Lokasi Interview *</Label>
+                        <Label htmlFor="interview_location">Lokasi Interview <span className="text-red-500">*</span></Label>
                         <Input
                             id="interview_location"
                             value={interviewLocation}
@@ -250,14 +249,14 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Informasi Penerimaan</CardTitle>
+                    <CardTitle>Keterangan Ketika Status Diterima</CardTitle>
                     <CardDescription>
                         Isi jika status adalah Diterima
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="accepted_notes">Informasi Lebih Lanjut (Opsional)</Label>
+                        <Label htmlFor="accepted_notes">Keterangan <span className="text-red-500">*</span></Label>
                         <Textarea
                             id="accepted_notes"
                             value={acceptedNotes}
@@ -265,10 +264,11 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                             rows={4}
                             placeholder="Contoh: Nomor telepon yang bisa dihubungi: 081234567890, Email: hr@company.com, atau informasi lainnya untuk follow-up..."
                             disabled={status !== "accepted"}
+                            required={status === "accepted"}
                         />
                         <p className="text-xs text-gray-500">
                             {status === "accepted" 
-                                ? "Informasi ini akan dikirim ke pelamar. Bisa diisi dengan nomor telepon, email, atau informasi kontak lainnya untuk follow-up."
+                                ? "Wajib diisi untuk status Diterima. Keterangan ini akan dikirim ke pelamar. Bisa diisi dengan nomor telepon, email, atau informasi kontak lainnya untuk follow-up."
                                 : "Aktif jika status adalah Diterima"}
                         </p>
                     </div>
@@ -284,7 +284,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="rejection_reason">Alasan Penolakan *</Label>
+                        <Label htmlFor="rejection_reason">Alasan Penolakan <span className="text-red-500">*</span></Label>
                         <Textarea
                             id="rejection_reason"
                             value={rejectionReason}
@@ -303,31 +303,6 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardContent>
             </Card>
 
-            {status !== "accepted" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Catatan Internal</CardTitle>
-                        <CardDescription>
-                            Catatan tambahan untuk lamaran ini (tidak dikirim ke pelamar)
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Catatan (Opsional)</Label>
-                            <Textarea
-                                id="notes"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                rows={4}
-                                placeholder="Catatan internal untuk lamaran ini..."
-                            />
-                            <p className="text-xs text-gray-500">
-                                Catatan internal yang tidak akan dikirim ke pelamar
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
 
             <div className="flex gap-4">
                 <Button 

@@ -38,7 +38,6 @@ function getStatusBadgeVariant(status: string) {
 
 function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
-        draft: "Draft",
         submitted: "Dikirim",
         review: "Dalam Review",
         interview: "Interview",
@@ -105,13 +104,13 @@ export function ApplicationsList({
                         Filter Lowongan
                     </label>
                     <Select value={jobFilter} onValueChange={(value) => handleFilterChange('job', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-gray-200">
                             <SelectValue placeholder="Semua Lowongan" />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="">Semua Lowongan</SelectItem>
+                        <SelectContent className="bg-gray-200">
+                            <SelectItem value="" className="bg-gray-200 hover:bg-gray-300">Semua Lowongan</SelectItem>
                             {jobs.map((job) => (
-                                <SelectItem key={job.id} value={job.id}>
+                                <SelectItem key={job.id} value={job.id} className="bg-gray-200 hover:bg-gray-300">
                                     {job.title}
                                 </SelectItem>
                             ))}
@@ -122,16 +121,16 @@ export function ApplicationsList({
                 <div className="space-y-2">
                     <label className="text-sm font-medium">Filter Status</label>
                     <Select value={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-gray-200">
                             <SelectValue placeholder="Semua Status" />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="">Semua Status</SelectItem>
-                            <SelectItem value="submitted">Dikirim</SelectItem>
-                            <SelectItem value="review">Dalam Review</SelectItem>
-                            <SelectItem value="interview">Interview</SelectItem>
-                            <SelectItem value="accepted">Diterima</SelectItem>
-                            <SelectItem value="rejected">Ditolak</SelectItem>
+                        <SelectContent className="bg-gray-200">
+                            <SelectItem value="" className="bg-gray-200 hover:bg-gray-300">Semua Status</SelectItem>
+                            <SelectItem value="submitted" className="bg-gray-200 hover:bg-gray-300">Dikirim</SelectItem>
+                            <SelectItem value="review" className="bg-gray-200 hover:bg-gray-300">Dalam Review</SelectItem>
+                            <SelectItem value="interview" className="bg-gray-200 hover:bg-gray-300">Interview</SelectItem>
+                            <SelectItem value="accepted" className="bg-gray-200 hover:bg-gray-300">Diterima</SelectItem>
+                            <SelectItem value="rejected" className="bg-gray-200 hover:bg-gray-300">Ditolak</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

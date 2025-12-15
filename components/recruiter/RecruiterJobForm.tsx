@@ -357,7 +357,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                             </Link>
                         </p>
                     )}
-            </div>
+                </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="location_city">
@@ -375,22 +375,22 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         required
                     />
                 </div>
-                </div>
+            </div>
 
-                <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="location_province">
                     Provinsi
                     {companyProfile && (
                         <span className="text-xs text-gray-500 ml-2">(dari profile perusahaan)</span>
                     )}
                 </Label>
-                    <Input
-                        id="location_province"
-                        value={formData.location_province}
-                        onChange={(e) => setFormData({ ...formData, location_province: e.target.value })}
+                <Input
+                    id="location_province"
+                    value={formData.location_province}
+                    onChange={(e) => setFormData({ ...formData, location_province: e.target.value })}
                     disabled={!!companyProfile && !jobId}
                     className={companyProfile && !jobId ? "bg-gray-100" : ""}
-                    />
+                />
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -400,16 +400,16 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         value={formData.employment_type}
                         onValueChange={(value) => setFormData({ ...formData, employment_type: value as EmploymentType })}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-gray-200">
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white text-black border border-gray-200">
-                            <SelectItem value="fulltime" className="!bg-white text-black hover:bg-gray-100">Full Time</SelectItem>
-                            <SelectItem value="parttime" className="!bg-white text-black hover:bg-gray-100">Part Time</SelectItem>
-                            <SelectItem value="contract" className="!bg-white text-black hover:bg-gray-100">Contract</SelectItem>
-                            <SelectItem value="internship" className="!bg-white text-black hover:bg-gray-100">Internship</SelectItem>
-                            <SelectItem value="remote" className="!bg-white text-black hover:bg-gray-100">Remote</SelectItem>
-                            <SelectItem value="hybrid" className="!bg-white text-black hover:bg-gray-100">Hybrid</SelectItem>
+                        <SelectContent className="bg-gray-200">
+                            <SelectItem value="fulltime" className="bg-gray-200 hover:bg-gray-300">Full Time</SelectItem>
+                            <SelectItem value="parttime" className="bg-gray-200 hover:bg-gray-300">Part Time</SelectItem>
+                            <SelectItem value="contract" className="bg-gray-200 hover:bg-gray-300">Contract</SelectItem>
+                            <SelectItem value="internship" className="bg-gray-200 hover:bg-gray-300">Internship</SelectItem>
+                            <SelectItem value="remote" className="bg-gray-200 hover:bg-gray-300">Remote</SelectItem>
+                            <SelectItem value="hybrid" className="bg-gray-200 hover:bg-gray-300">Hybrid</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -483,18 +483,18 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         value={formData.category}
                         onValueChange={(value) => setFormData({ ...formData, category: value as JobCategory })}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-gray-200">
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white text-black border border-gray-200">
-                            <SelectItem value="Technology" className="!bg-white text-black hover:bg-gray-100">Technology</SelectItem>
-                            <SelectItem value="Design" className="!bg-white text-black hover:bg-gray-100">Design</SelectItem>
-                            <SelectItem value="Marketing" className="!bg-white text-black hover:bg-gray-100">Marketing</SelectItem>
-                            <SelectItem value="Business" className="!bg-white text-black hover:bg-gray-100">Business</SelectItem>
-                            <SelectItem value="Finance" className="!bg-white text-black hover:bg-gray-100">Finance</SelectItem>
-                            <SelectItem value="Healthcare" className="!bg-white text-black hover:bg-gray-100">Healthcare</SelectItem>
-                            <SelectItem value="Education" className="!bg-white text-black hover:bg-gray-100">Education</SelectItem>
-                            <SelectItem value="Other" className="!bg-white text-black hover:bg-gray-100">Other</SelectItem>
+                        <SelectContent className="bg-gray-200">
+                            <SelectItem value="Technology" className="bg-gray-200 hover:bg-gray-300">Technology</SelectItem>
+                            <SelectItem value="Design" className="bg-gray-200 hover:bg-gray-300">Design</SelectItem>
+                            <SelectItem value="Marketing" className="bg-gray-200 hover:bg-gray-300">Marketing</SelectItem>
+                            <SelectItem value="Business" className="bg-gray-200 hover:bg-gray-300">Business</SelectItem>
+                            <SelectItem value="Finance" className="bg-gray-200 hover:bg-gray-300">Finance</SelectItem>
+                            <SelectItem value="Healthcare" className="bg-gray-200 hover:bg-gray-300">Healthcare</SelectItem>
+                            <SelectItem value="Education" className="bg-gray-200 hover:bg-gray-300">Education</SelectItem>
+                            <SelectItem value="Other" className="bg-gray-200 hover:bg-gray-300">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -505,14 +505,14 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                         value={formData.job_level}
                         onValueChange={(value) => setFormData({ ...formData, job_level: value as JobLevel })}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-gray-200">
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white text-black border border-gray-200">
-                            <SelectItem value="Entry Level" className="!bg-white text-black hover:bg-gray-100">Entry Level</SelectItem>
-                            <SelectItem value="Mid Level" className="!bg-white text-black hover:bg-gray-100">Mid Level</SelectItem>
-                            <SelectItem value="Senior Level" className="!bg-white text-black hover:bg-gray-100">Senior Level</SelectItem>
-                            <SelectItem value="Executive" className="!bg-white text-black hover:bg-gray-100">Executive</SelectItem>
+                        <SelectContent className="bg-gray-200">
+                            <SelectItem value="Entry Level" className="bg-gray-200 hover:bg-gray-300">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level" className="bg-gray-200 hover:bg-gray-300">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level" className="bg-gray-200 hover:bg-gray-300">Senior Level</SelectItem>
+                            <SelectItem value="Executive" className="bg-gray-200 hover:bg-gray-300">Executive</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
