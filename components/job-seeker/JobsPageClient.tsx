@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobCard } from "@/components/JobCard";
 import { JobFilters } from "@/components/JobFilters";
-import { JobDetail } from "@/components/JobDetail";
 import { MapModal } from "@/components/MapModal";
 import { 
     Search, 
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { Job } from "@/types/job";
 import type { Profile } from "@/lib/types";
-import { calculateMatchScoreFromJobUIAndProfile } from "@/lib/utils/jobMatching";
+import { calculateMatchScore as calculateMatchScoreUtil } from "@/lib/utils/jobMatching";
 
 interface JobsPageClientProps {
     jobs: Job[];
@@ -29,8 +29,8 @@ interface JobsPageClientProps {
 }
 
 export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCompany }: JobsPageClientProps) {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState(initialCompany || "");
-    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [showMap, setShowMap] = useState(false);
     const [filters, setFilters] = useState({
         type: "all",
@@ -40,6 +40,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
     const [activeTab, setActiveTab] = useState("all");
     const [savedJobs, setSavedJobs] = useState<string[]>([]);
 
+    // Load saved jobs from localStorage
     useEffect(() => {
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem(`saved_jobs_${userId}`);
@@ -49,18 +50,14 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         }
     }, [userId]);
 
+    // Check for jobId in URL params to redirect to job detail after login
     useEffect(() => {
         if (initialJobId) {
-            const job = jobs.find((j) => j.id === initialJobId);
-            if (job) {
-                setSelectedJob(job);
-                if (typeof window !== "undefined") {
-                    window.history.replaceState({}, "", "/job-seeker/jobs");
-                }
-            }
+            router.push(`/job-seeker/jobs/${initialJobId}`);
         }
-    }, [initialJobId, jobs]);
+    }, [initialJobId, router]);
 
+    // Helper function to convert display type to database type
     const getDatabaseTypeFromDisplay = (displayType: string): string => {
         const typeMap: Record<string, string> = {
             "Full-time": "fulltime",
@@ -73,15 +70,42 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         return typeMap[displayType] || displayType.toLowerCase();
     };
 
+    // Helper function to calculate match score (using same logic as dashboard)
+    const calculateMatchScore = (job: Job, userProfile: Profile | null): number => {
+        if (!userProfile) {
+            return 0;
+        }
+        
+        return calculateMatchScoreUtil(
+            userProfile.skills || [],
+            job.skills_required || null,
+            userProfile.major || null,
+            job.major_required || null
+        );
+    };
+
+    // Filter jobs based on active tab and filters
     const filteredJobs = useMemo(() => {
         let result = jobs;
 
+        // Apply tab filter
         if (activeTab === "bookmark") {
             result = result.filter((job) => savedJobs.includes(job.id));
         } else if (activeTab === "matched" && profile) {
-            result = result;
+            // Filter jobs based on profile skills (simple matching)
+            if (profile.skills && profile.skills.length > 0) {
+                const userSkills = profile.skills.map(s => s.toLowerCase());
+                result = result.filter((job) => {
+                    // Simple matching: check if job description or requirements contain user skills
+                    const jobText = `${job.description} ${job.requirements?.join(' ')}`.toLowerCase();
+                    return userSkills.some(skill => jobText.includes(skill));
+                });
+            } else {
+                result = [];
+            }
         }
 
+        // Apply search query and filters
         return result.filter((job) => {
             const matchesSearch =
                 !searchQuery.trim() ||
@@ -89,6 +113,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                 job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 job.location.toLowerCase().includes(searchQuery.toLowerCase());
 
+            // Fix type filter: convert display type to database type for comparison
             const jobDbType = getDatabaseTypeFromDisplay(job.type);
             const matchesType = filters.type === "all" || jobDbType === filters.type;
             const matchesCategory = filters.category === "all" || job.category === filters.category;
@@ -98,6 +123,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         });
     }, [jobs, searchQuery, filters, activeTab, savedJobs, profile]);
 
+    // Toggle save job
     const toggleSaveJob = (jobId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setSavedJobs((prev) => {
@@ -111,10 +137,16 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         });
     };
 
+    // Handle job click - navigate to detail page
+    const handleJobClick = (job: Job) => {
+        router.push(`/job-seeker/jobs/${job.id}`);
+    };
+
     return (
         <>
             <div className="container mx-auto px-2 py-4">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    {/* Filters Sidebar */}
                     <aside className="lg:col-span-1 border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
                         <JobFilters
                             filters={filters}
@@ -122,7 +154,9 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                         />
                     </aside>
 
+                    {/* Job Listings */}
                     <main className="lg:col-span-3">
+                        {/* Header */}
                         <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
                             <div>
                                 <h2 className="text-3xl font-bold text-purple-900">Lowongan Tersedia</h2>
@@ -134,16 +168,17 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                                     lowongan kerja yang sesuai
                                 </p>
                             </div>
-                            <Button 
+                            {/* <Button 
                                 variant="outline" 
                                 onClick={() => setShowMap(true)}
                                 className="flex items-center gap-2 border-2 border-cyan-200 text-cyan-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all"
                             >
                                 <Map className="w-4 h-4" />
                                 Lihat di Map
-                            </Button>
+                            </Button> */}
                         </div>
 
+                        {/* Search Bar */}
                         <div className="mb-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -157,6 +192,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                             </div>
                         </div>
 
+                        {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
                             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
                                 <TabsTrigger value="all" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-purple-600">
@@ -178,7 +214,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                                     jobs={filteredJobs}
                                     savedJobs={savedJobs}
                                     onToggleSave={toggleSaveJob}
-                                    onJobClick={setSelectedJob}
+                                    onJobClick={handleJobClick}
                                 />
                             </TabsContent>
 
@@ -193,7 +229,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                                         jobs={filteredJobs}
                                         savedJobs={savedJobs}
                                         onToggleSave={toggleSaveJob}
-                                        onJobClick={setSelectedJob}
+                                        onJobClick={handleJobClick}
                                     />
                                 )}
                             </TabsContent>
@@ -215,7 +251,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                                         savedJobs={savedJobs}
                                         profile={profile}
                                         onToggleSave={toggleSaveJob}
-                                        onJobClick={setSelectedJob}
+                                        onJobClick={handleJobClick}
                                     />
                                 )}
                             </TabsContent>
@@ -224,24 +260,18 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                 </div>
             </div>
 
-            {selectedJob && (
-                <JobDetail
-                    job={selectedJob}
-                    open={!!selectedJob}
-                    onClose={() => setSelectedJob(null)}
-                />
-            )}
-
+            {/* Map Modal */}
             <MapModal
                 jobs={filteredJobs}
                 open={showMap}
                 onClose={() => setShowMap(false)}
-                onJobSelect={(job) => setSelectedJob(job)}
+                onJobSelect={(job) => handleJobClick(job)}
             />
         </>
     );
 }
 
+// Job List Content Component
 interface JobListContentProps {
     jobs: Job[];
     savedJobs: string[];
@@ -294,6 +324,7 @@ function JobListContent({ jobs, savedJobs, onToggleSave, onJobClick }: JobListCo
     );
 }
 
+// Job List Content with Match Score Component
 interface JobListContentWithMatchProps {
     jobs: Job[];
     savedJobs: string[];
@@ -303,19 +334,14 @@ interface JobListContentWithMatchProps {
 }
 
 function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJobClick }: JobListContentWithMatchProps) {
+    // Calculate match scores for all jobs
     const jobsWithScores = useMemo(() => {
         return jobs.map(job => {
-            const jobData = job as any;
-            const matchScore = calculateMatchScoreFromJobUIAndProfile(
-                {
-                    skills_required: jobData.skills_required || null,
-                    major_required: jobData.major_required || null,
-                    education_required: jobData.education_required || null,
-                    experience_required: jobData.experience_required || null,
-                    level: jobData.level,
-                    requirements: jobData.requirements
-                },
-                profile
+            const matchScore = calculateMatchScoreUtil(
+                profile.skills || [],
+                job.skills_required || null,
+                profile.major || null,
+                job.major_required || null
             );
             
             return { job, matchScore };
@@ -345,6 +371,7 @@ function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJob
                     style={{ animationDelay: `${index * 0.05}s` }}
                 >
                     <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                        
                         <button
                             onClick={(e) => onToggleSave(job.id, e)}
                             className="p-2 bg-white rounded-lg shadow-md hover:bg-purple-50 transition-colors"
@@ -361,7 +388,6 @@ function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJob
                     </div>
                     <JobCard
                         job={job}
-                        matchScore={matchScore}
                         onClick={() => onJobClick(job)}
                     />
                 </div>
@@ -369,3 +395,6 @@ function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJob
         </div>
     );
 }
+
+
+

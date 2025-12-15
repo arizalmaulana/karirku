@@ -91,25 +91,30 @@ export function Header() {
                             <>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild className="cursor-pointer">
-                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden">
                                             {profile.role === 'recruiter' && company ? (
-                                                <Avatar className="h-10 w-10 border-2 border-purple-200">
+                                                <Avatar className="h-10 w-10 border-2 border-purple-200 rounded-full">
                                                     {company.logo_url ? (
                                                         <AvatarImage 
                                                             src={company.logo_url} 
                                                             alt={company.name || "Company Logo"}
+                                                            className="object-cover object-center"
                                                         />
                                                     ) : null}
-                                                    <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white">
+                                                    <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white rounded-full">
                                                         <Building2 className="w-5 h-5" />
                                                     </AvatarFallback>
                                                 </Avatar>
                                             ) : (
-                                                <Avatar className="h-10 w-10 border-2 border-purple-200">
+                                                <Avatar className="h-10 w-10 border-2 border-purple-200 rounded-full">
                                                     {profile.avatar_url ? (
-                                                        <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
+                                                        <AvatarImage 
+                                                            src={profile.avatar_url} 
+                                                            alt={profile.full_name || "User"}
+                                                            className="object-cover object-center"
+                                                        />
                                                     ) : null}
-                                                    <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white">
+                                                    <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white rounded-full">
                                                         {getInitials()}
                                                     </AvatarFallback>
                                                 </Avatar>

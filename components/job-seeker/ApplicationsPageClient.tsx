@@ -25,8 +25,10 @@ import {
     XCircle,
     Hourglass,
     FileSearch,
-    RefreshCw
+    RefreshCw,
+    Info
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Application, Profile } from "@/lib/types";
 import Link from "next/link";
@@ -76,7 +78,6 @@ function formatEmploymentType(type: string): string {
 
 function getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-        draft: "Draft",
         submitted: "Menunggu",
         review: "Direview",
         interview: "Interview",
@@ -88,7 +89,6 @@ function getStatusLabel(status: string): string {
 
 function getStatusColor(status: string): string {
     const colors: Record<string, string> = {
-        draft: "bg-gray-100 text-gray-700 border-gray-300",
         submitted: "bg-yellow-100 text-yellow-700 border-yellow-300",
         review: "bg-blue-100 text-blue-700 border-blue-300",
         interview: "bg-purple-100 text-purple-700 border-purple-300",
@@ -132,6 +132,7 @@ export function ApplicationsPageClient({
     const [searchQuery, setSearchQuery] = useState("");
     const [activeStatus, setActiveStatus] = useState<string>("all");
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedApplication, setSelectedApplication] = useState<ApplicationWithJob | null>(null);
     const router = useRouter();
     const supabase = createBrowserClient();
 
@@ -251,9 +252,12 @@ export function ApplicationsPageClient({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Filter applications
+    // Filter applications (exclude draft status)
     const filteredApplications = useMemo(() => {
         return applications.filter((app) => {
+            // Exclude draft applications
+            if (app.status === "draft") return false;
+
             const matchesSearch =
                 !searchQuery.trim() ||
                 app.job_listings?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -271,15 +275,16 @@ export function ApplicationsPageClient({
         });
     }, [applications, searchQuery, activeStatus]);
 
-    // Calculate statistics
+    // Calculate statistics (exclude draft)
     const stats = useMemo(() => {
+        const nonDraftApps = applications.filter((a) => a.status !== "draft");
         return {
-            total: applications.length,
-            submitted: applications.filter((a) => a.status === "submitted").length,
-            review: applications.filter((a) => a.status === "review").length,
-            interview: applications.filter((a) => a.status === "interview").length,
-            accepted: applications.filter((a) => a.status === "accepted").length,
-            rejected: applications.filter((a) => a.status === "rejected").length,
+            total: nonDraftApps.length,
+            submitted: nonDraftApps.filter((a) => a.status === "submitted").length,
+            review: nonDraftApps.filter((a) => a.status === "review").length,
+            interview: nonDraftApps.filter((a) => a.status === "interview").length,
+            accepted: nonDraftApps.filter((a) => a.status === "accepted").length,
+            rejected: nonDraftApps.filter((a) => a.status === "rejected").length,
         };
     }, [applications]);
 
@@ -414,14 +419,10 @@ export function ApplicationsPageClient({
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50">
-                                    <TableHead className="w-[50px] text-center">Logo</TableHead>
-                                    <TableHead className="text-center">Posisi</TableHead>
-                                    <TableHead className="text-center">Perusahaan</TableHead>
-                                    <TableHead className="text-center">Lokasi</TableHead>
-                                    <TableHead className="text-center">Tipe</TableHead>
-                                    <TableHead className="text-center">Gaji</TableHead>
-                                    <TableHead className="text-center">Tanggal</TableHead>
+                                    <TableHead className="text-left">Posisi</TableHead>
+                                    <TableHead className="text-left">Perusahaan</TableHead>
                                     <TableHead className="text-center">Status</TableHead>
+                                    <TableHead className="text-center">Tanggal</TableHead>
                                     <TableHead className="text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -431,64 +432,14 @@ export function ApplicationsPageClient({
                                         key={app.id}
                                         className="hover:bg-gray-50 transition-colors"
                                     >
-                                        <TableCell className="text-center">
-                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200 mx-auto">
-                                                <ImageWithFallback
-                                                    src={(app as any).companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.job_listings?.company_name || "Company")}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
-                                                    alt={app.job_listings?.company_name || "Company"}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell>
                                             <div className="font-semibold text-gray-900">
                                                 {app.job_listings?.title || "Unknown Position"}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell>
                                             <div className="text-gray-700">
                                                 {app.job_listings?.company_name || "Unknown Company"}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
-                                                <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                                                <span>
-                                                    {app.job_listings?.location_city || "-"}
-                                                    {app.job_listings?.location_province && 
-                                                        `, ${app.job_listings.location_province}`
-                                                    }
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
-                                                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                                <span>
-                                                    {app.job_listings?.employment_type 
-                                                        ? formatEmploymentType(app.job_listings.employment_type)
-                                                        : "-"
-                                                    }
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
-                                                <DollarSign className="w-3.5 h-3.5 text-gray-400" />
-                                                <span>
-                                                    {app.job_listings?.min_salary && app.job_listings?.max_salary
-                                                        ? `${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)} - ${formatCurrency(app.job_listings.max_salary, app.job_listings.currency)}`
-                                                        : app.job_listings?.min_salary
-                                                        ? `Mulai ${formatCurrency(app.job_listings.min_salary, app.job_listings.currency)}`
-                                                        : "-"
-                                                    }
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
-                                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                                <span>{formatTimeAgo(app.submitted_at)}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
@@ -499,20 +450,37 @@ export function ApplicationsPageClient({
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                asChild
-                                                className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
-                                            >
-                                                <Link 
-                                                    href={`/job-seeker/applications/${app.id}`}
-                                                    className="flex items-center gap-1.5"
+                                            <div className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
+                                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>{formatTimeAgo(app.submitted_at)}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setSelectedApplication(app)}
+                                                    className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
                                                 >
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                    Detail
-                                                </Link>
-                                            </Button>
+                                                    <Info className="h-3.5 w-3.5 mr-1.5" />
+                                                    Detail Lowongan
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                    className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                                                >
+                                                    <Link 
+                                                        href={`/job-seeker/applications/${app.id}`}
+                                                        className="flex items-center gap-1.5"
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5 mr-1.5" />
+                                                        Detail Lamaran
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -544,6 +512,119 @@ export function ApplicationsPageClient({
                     )}
                 </CardContent>
             </Card>
+
+            {/* Detail Lowongan Modal */}
+            {selectedApplication && selectedApplication.job_listings && (
+                <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Detail Lowongan</DialogTitle>
+                            <DialogDescription>
+                                Informasi lengkap tentang lowongan pekerjaan
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 mt-4">
+                            <div className="flex items-start gap-4">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                                    <ImageWithFallback
+                                        src={(selectedApplication as any).companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedApplication.job_listings?.company_name || "Company")}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
+                                        alt={selectedApplication.job_listings?.company_name || "Company"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                                        {selectedApplication.job_listings.title}
+                                    </h3>
+                                    <p className="text-lg text-gray-700">
+                                        {selectedApplication.job_listings.company_name}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <MapPin className="w-4 h-4" />
+                                        <span>Lokasi</span>
+                                    </div>
+                                    <p className="font-medium text-gray-900">
+                                        {selectedApplication.job_listings.location_city || "-"}
+                                        {selectedApplication.job_listings.location_province && 
+                                            `, ${selectedApplication.job_listings.location_province}`
+                                        }
+                                    </p>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <Clock className="w-4 h-4" />
+                                        <span>Tipe Pekerjaan</span>
+                                    </div>
+                                    <Badge variant="outline" className="mt-1">
+                                        {selectedApplication.job_listings.employment_type 
+                                            ? formatEmploymentType(selectedApplication.job_listings.employment_type)
+                                            : "-"
+                                        }
+                                    </Badge>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <DollarSign className="w-4 h-4" />
+                                        <span>Gaji</span>
+                                    </div>
+                                    <p className="font-medium text-gray-900">
+                                        {selectedApplication.job_listings.min_salary && selectedApplication.job_listings.max_salary
+                                            ? `${formatCurrency(selectedApplication.job_listings.min_salary, selectedApplication.job_listings.currency)} - ${formatCurrency(selectedApplication.job_listings.max_salary, selectedApplication.job_listings.currency)}`
+                                            : selectedApplication.job_listings.min_salary
+                                            ? `Mulai dari ${formatCurrency(selectedApplication.job_listings.min_salary, selectedApplication.job_listings.currency)}`
+                                            : "Tidak disebutkan"
+                                        }
+                                    </p>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <Calendar className="w-4 h-4" />
+                                        <span>Tanggal Lamar</span>
+                                    </div>
+                                    <p className="font-medium text-gray-900">
+                                        {new Date(selectedApplication.submitted_at).toLocaleDateString("id-ID", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-gray-500 mb-1">Status Lamaran</p>
+                                        <Badge
+                                            className={`px-3 py-1.5 border ${getStatusColor(selectedApplication.status)}`}
+                                        >
+                                            {getStatusLabel(selectedApplication.status)}
+                                        </Badge>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        asChild
+                                        className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                                    >
+                                        <Link href={`/job-seeker/applications/${selectedApplication.id}`}>
+                                            <Eye className="h-4 w-4 mr-2" />
+                                            Lihat Detail Lamaran
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }

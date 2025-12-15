@@ -76,8 +76,8 @@ export function DeleteJobButton({ jobId, jobTitle }: DeleteJobButtonProps) {
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="hover:bg-red-50">
+                    <Trash2 className="h-4 w-4 text-red-600" />
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

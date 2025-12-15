@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ApplicationFormEnhanced } from "@/components/job-seeker/ApplicationFormEnhanced";
+import { ApplicationFormPage } from "@/components/job-seeker/ApplicationFormPage";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { notFound, redirect } from "next/navigation";
 import type { JobListing, Profile } from "@/lib/types";
@@ -88,15 +88,14 @@ export default async function ApplyJobPage({ params }: { params: Promise<{ id: s
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Formulir Lamaran</CardTitle>
+                    <CardTitle>Form Lamaran Pekerjaan</CardTitle>
                     <CardDescription>
-                        Lengkapi informasi berikut untuk melamar pekerjaan ini
+                        Lengkapi form berikut untuk melamar posisi {job.title} di {job.company_name}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ApplicationFormEnhanced 
-                        jobId={resolvedParams.id} 
-                        jobTitle={job.title}
+                    <ApplicationFormPage 
+                        job={job}
                         profile={profile}
                     />
                 </CardContent>

@@ -94,9 +94,9 @@ export default async function RecruiterJobsPage() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full max-w-full">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
-                <div >
+                <div>
                     <h1 className="text-3xl font-semibold text-purple-900">Lowongan Saya</h1>
                     <p className="text-gray-500 mt-1">
                         Kelola semua lowongan pekerjaan yang telah Anda publikasikan
@@ -110,91 +110,101 @@ export default async function RecruiterJobsPage() {
                 </Button>
             </div>
 
-            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
+            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm w-full">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
                         Total {jobs.length} lowongan pekerjaan
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0 sm:p-6 w-full overflow-hidden">
                     {jobs.length > 0 ? (
-                        <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                    <TableRow className="bg-gray-50">
-                                        <TableHead className="font-semibold text-center">Judul</TableHead>
-                                        <TableHead className="font-semibold text-center">Perusahaan</TableHead>
-                                        <TableHead className="font-semibold text-center">Lokasi</TableHead>
-                                        <TableHead className="font-semibold text-center">Gaji</TableHead>
-                                        <TableHead className="font-semibold text-center">Tipe</TableHead>
-                                        <TableHead className="font-semibold text-center">Pelamar</TableHead>
-                                        <TableHead className="font-semibold text-center">Status</TableHead>
-                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {jobsWithCounts.map((job: any) => (
-                                        <TableRow key={job.id} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium text-center">{job.title}</TableCell>
-                                        <TableCell className="text-center">{job.company_name}</TableCell>
-                                        <TableCell className="text-center">
-                                            {job.location_city}
-                                            {job.location_province && `, ${job.location_province}`}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {job.min_salary && job.max_salary
-                                                ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
-                                                : job.min_salary
-                                                ? `Mulai dari ${formatCurrency(job.min_salary)}`
-                                                : "Tidak disebutkan"}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge variant="outline">{job.employment_type}</Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Users className="h-4 w-4 text-gray-400" />
-                                                    <span className="font-medium">{job.applicationCount || 0}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex flex-col items-center gap-1">
-                                                {job.is_closed ? (
-                                                    <Badge variant="destructive" className="w-fit">
-                                                        Ditutup
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant={job.featured ? "default" : "secondary"} className="w-fit">
-                                                        {job.featured ? "Featured" : "Aktif"}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                            <TableCell className="text-center">
-                                            <div className="flex justify-center gap-2">
-                                                    <Button variant="ghost" size="sm" asChild title="Lihat Detail">
-                                                    <Link href={`/recruiter/jobs/${job.id}`}>
-                                                        <Eye className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                    <Button variant="ghost" size="sm" asChild title="Edit Lowongan">
-                                                    <Link href={`/recruiter/jobs/${job.id}/edit`}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                    <CloseJobButton 
-                                                        jobId={job.id} 
-                                                        jobTitle={job.title} 
-                                                        isClosed={job.is_closed || false}
-                                                    />
-                                                    <DeleteJobButton jobId={job.id} jobTitle={job.title} />
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="w-full overflow-x-auto">
+                            <Table className="w-full table-fixed">
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead className="font-semibold text-center w-[18%]">Judul</TableHead>
+                                            <TableHead className="font-semibold text-center w-[12%]">Perusahaan</TableHead>
+                                            <TableHead className="font-semibold text-center w-[12%]">Lokasi</TableHead>
+                                            <TableHead className="font-semibold text-center w-[15%]">Gaji</TableHead>
+                                            <TableHead className="font-semibold text-center w-[8%]">Tipe</TableHead>
+                                            <TableHead className="font-semibold text-center w-[8%]">Pelamar</TableHead>
+                                            <TableHead className="font-semibold text-center w-[8%]">Status</TableHead>
+                                            <TableHead className="font-semibold text-center w-[19%]">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {jobsWithCounts.map((job: any) => (
+                                            <TableRow key={job.id} className="hover:bg-gray-50">
+                                                <TableCell className="font-medium text-center">
+                                                    <div className="truncate px-2" title={job.title}>
+                                                        {job.title}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="truncate px-2" title={job.company_name}>
+                                                        {job.company_name}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="truncate px-2" title={`${job.location_city}${job.location_province ? `, ${job.location_province}` : ''}`}>
+                                                        {job.location_city}
+                                                        {job.location_province && `, ${job.location_province}`}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="truncate text-sm px-2">
+                                                        {job.min_salary && job.max_salary
+                                                            ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
+                                                            : job.min_salary
+                                                            ? `Mulai dari ${formatCurrency(job.min_salary)}`
+                                                            : "Tidak disebutkan"}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="outline" className="text-xs whitespace-nowrap">{job.employment_type}</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <Users className="h-4 w-4 text-gray-400" />
+                                                        <span className="font-medium text-sm">{job.applicationCount || 0}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {job.is_closed ? (
+                                                        <Badge variant="destructive" className="text-xs whitespace-nowrap">
+                                                            Ditutup
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant={job.featured ? "default" : "secondary"} className="text-xs whitespace-nowrap">
+                                                            {job.featured ? "Featured" : "Aktif"}
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="flex justify-center gap-1 flex-wrap">
+                                                        <Button variant="ghost" size="sm" asChild title="Lihat Detail" className="h-7 w-7 p-0">
+                                                            <Link href={`/recruiter/jobs/${job.id}`}>
+                                                                <Eye className="h-4 w-4 text-blue-600" />
+                                                            </Link>
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" asChild title="Edit Lowongan" className="h-7 w-7 p-0">
+                                                            <Link href={`/recruiter/jobs/${job.id}/edit`}>
+                                                                <Pencil className="h-4 w-4 text-green-600" />
+                                                            </Link>
+                                                        </Button>
+                                                        <CloseJobButton 
+                                                            jobId={job.id} 
+                                                            jobTitle={job.title} 
+                                                            isClosed={job.is_closed || false}
+                                                        />
+                                                        <DeleteJobButton jobId={job.id} jobTitle={job.title} />
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                         </div>
                     ) : (
                         <div className="text-center py-12">

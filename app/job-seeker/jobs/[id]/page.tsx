@@ -367,14 +367,6 @@ export default async function JobDetailPage({
                                         </p>
                                     </div>
                                 )}
-                                {livingCost.salary_reference && (
-                                    <div>
-                                        <p className="text-sm text-gray-500">Gaji Referensi</p>
-                                        <p className="font-medium mt-1">
-                                            {formatCurrency(livingCost.salary_reference)}
-                                        </p>
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
                     )}
@@ -409,7 +401,11 @@ export default async function JobDetailPage({
                                     </Button>
                                 </div>
                             ) : (
-                                <Button className="w-full" size="lg" asChild>
+                                <Button 
+                                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md" 
+                                    size="lg" 
+                                    asChild
+                                >
                                     <Link href={`/job-seeker/jobs/${job.id}/apply`}>
                                         Lamar Sekarang
                                     </Link>

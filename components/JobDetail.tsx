@@ -241,7 +241,7 @@ export function JobDetail({ job, open, onClose }: JobDetailProps) {
 
           <div className="flex gap-3 pt-4 border-t">
             <Button
-              className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
               size="lg"
               onClick={handleApply}
             >
