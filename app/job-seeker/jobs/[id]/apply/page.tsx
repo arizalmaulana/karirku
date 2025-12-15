@@ -15,7 +15,22 @@ async function getJob(id: string) {
     if (error || !data) {
         return null;
     }
-    return data as JobListing;
+
+    const jobListing = data as JobListing;
+
+    // Check if company is blocked
+    const { data: companyData } = await supabase
+        .from("companies")
+        .select("is_blocked")
+        .eq("name", jobListing.company_name)
+        .maybeSingle();
+
+    // If company is blocked, return null (job not accessible)
+    if (companyData && (companyData as any).is_blocked === true) {
+        return null;
+    }
+
+    return jobListing;
 }
 
 async function checkExistingApplication(userId: string, jobId: string) {

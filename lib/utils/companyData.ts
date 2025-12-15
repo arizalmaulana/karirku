@@ -132,10 +132,11 @@ function generateDescription(companyName: string, jobs: any[]): string {
 export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
   const supabase = await createSupabaseServerClient();
   
-  // Coba ambil dari tabel companies dulu
+  // Coba ambil dari tabel companies dulu (exclude blocked companies)
   const { data: companiesData, error: companiesError } = await supabase
     .from("companies")
     .select("*")
+    .neq("is_blocked", true) // Exclude blocked companies
     .order("name", { ascending: true });
 
   // Jika tabel companies ada dan berisi data, gunakan data tersebut
@@ -192,9 +193,20 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
   }
 
   // Fallback: Aggregate dari job_listings jika tabel companies belum ada atau kosong
+  // First, get blocked company names
+  const { data: blockedCompaniesData } = await supabase
+    .from("companies")
+    .select("name")
+    .eq("is_blocked", true);
+
+  const blockedCompanyNames = new Set(
+    (blockedCompaniesData || []).map((c: { name: string }) => c.name)
+  );
+
   const { data: jobsData, error: jobsError } = await supabase
     .from("job_listings")
     .select("id, company_name, location_city, location_province, employment_type, title, description")
+    .eq("is_closed", false)
     .order("created_at", { ascending: false });
 
   if (jobsError) {
@@ -206,10 +218,15 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
     return [];
   }
 
+  // Filter out jobs from blocked companies
+  const validJobs = jobsData.filter((job: any) => 
+    !blockedCompanyNames.has(job.company_name)
+  );
+
   // Group by company_name
   const companyMap = new Map<string, any>();
 
-  jobsData.forEach((job: any) => {
+  validJobs.forEach((job: any) => {
     const companyName = job.company_name;
     if (!companyMap.has(companyName)) {
       companyMap.set(companyName, {

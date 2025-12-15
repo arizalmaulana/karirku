@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import type { JobListing } from "@/lib/types";
 import type { Job } from "@/types/job";
 import { extractEducationFromJob, extractExperienceFromJob } from "@/lib/utils/jobMatching";
@@ -225,6 +225,7 @@ export function convertJobListingToJob(jobListing: JobListing, logoUrl?: string)
 
 /**
  * Fetch semua jobs dari database dengan logo perusahaan
+ * Filter out job listings dari perusahaan yang diblokir
  */
 export async function fetchJobsFromDatabase(): Promise<Job[]> {
   const supabase = await createSupabaseServerClient();
@@ -247,13 +248,20 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
   const companyNames = [...new Set(data.map((job: any) => job.company_name))];
   const { data: companiesData } = await supabase
     .from("companies")
-    .select("name, logo_url, industry, location_city, location_province, website_url, description")
+    .select("name, logo_url, industry, location_city, location_province, website_url, description, is_blocked")
     .in("name", companyNames);
 
-  // Create maps for company data
+  // Create maps for company data and blocked companies
   const companyDataMap = new Map<string, any>();
+  const blockedCompanies = new Set<string>();
+  
   if (companiesData) {
     companiesData.forEach((company: any) => {
+      // Track blocked companies
+      if (company.is_blocked === true) {
+        blockedCompanies.add(company.name);
+      }
+      
       companyDataMap.set(company.name, {
         logo_url: company.logo_url,
         industry: company.industry,
@@ -261,11 +269,23 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
         location_province: company.location_province,
         website_url: company.website_url,
         description: company.description,
+        is_blocked: company.is_blocked,
       });
     });
   }
 
-  return data.map((jobListing: any) => {
+  // Filter out jobs from blocked companies
+  const filteredJobs = data.filter((job: any) => {
+    // If company exists in companies table, check is_blocked
+    const companyData = companyDataMap.get(job.company_name);
+    if (companyData) {
+      return companyData.is_blocked !== true;
+    }
+    // If company doesn't exist in companies table, include it (backward compatibility)
+    return true;
+  });
+
+  return filteredJobs.map((jobListing: any) => {
     const companyData = companyDataMap.get(jobListing.company_name);
     
     // Use company data from companies table if available, otherwise use job_listings data
@@ -313,33 +333,98 @@ export async function integrateCompanyData(jobListing: JobListing): Promise<JobL
 
 /**
  * Fetch stats untuk landing page
+ * Exclude blocked companies from stats
  */
 export async function fetchStats() {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch total jobs
-  const { count: totalJobs } = await supabase
-    .from("job_listings")
-    .select("*", { count: "exact", head: true });
+  // Fetch blocked company names
+  const { data: blockedCompaniesData } = await supabase
+    .from("companies")
+    .select("name")
+    .eq("is_blocked", true);
 
-  // Fetch unique companies
-  const { data: companiesData } = await supabase
-    .from("job_listings")
-    .select("company_name");
-
-  const uniqueCompanies = new Set(
-    (companiesData || []).map((c: { company_name: string }) => c.company_name)
+  const blockedCompanyNames = new Set(
+    (blockedCompaniesData || []).map((c: { name: string }) => c.name)
   );
 
-  // Fetch total users (profiles)
-  const { count: totalUsers } = await supabase
+  // Fetch total jobs (exclude jobs from blocked companies)
+  const { data: allJobs } = await supabase
+    .from("job_listings")
+    .select("id, company_name")
+    .eq("is_closed", false);
+
+  const validJobs = (allJobs || []).filter((job: any) => 
+    !blockedCompanyNames.has(job.company_name)
+  );
+
+  // Fetch unique companies (exclude blocked)
+  const { data: companiesData } = await supabase
+    .from("companies")
+    .select("name")
+    .neq("is_blocked", true);
+
+  const uniqueCompanies = new Set(
+    (companiesData || []).map((c: { name: string }) => c.name)
+  );
+
+  // Try to use admin client for stats (bypasses RLS)
+  const adminClient = createSupabaseAdminClient();
+  const statsClient = adminClient || supabase;
+  
+  console.log("Using admin client:", !!adminClient, "Service role key available:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  // Fetch total users (profiles) - only job seekers
+  const { data: jobseekerProfiles, error: jobseekerError } = await statsClient
     .from("profiles")
-    .select("*", { count: "exact", head: true });
+    .select("id, role")
+    .eq("role", "jobseeker");
+
+  if (jobseekerError) {
+    console.error("Error fetching jobseekers:", jobseekerError);
+  }
+
+  const totalUsers = jobseekerProfiles?.length || 0;
+  const jobseekerIds = (jobseekerProfiles || []).map((p: any) => p.id);
+
+  console.log("Jobseekers found:", totalUsers, "IDs:", jobseekerIds.length);
+
+  // Fetch accepted applications count - only from jobseekers
+  let acceptedCount = 0;
+  if (jobseekerIds.length > 0) {
+    const { data: acceptedApps, error: acceptedError } = await statsClient
+      .from("applications")
+      .select("id, status, job_seeker_id")
+      .eq("status", "accepted")
+      .in("job_seeker_id", jobseekerIds);
+    
+    if (acceptedError) {
+      console.error("Error fetching accepted applications:", acceptedError);
+    }
+    
+    acceptedCount = acceptedApps?.length || 0;
+    console.log("Accepted applications found:", acceptedCount);
+  } else {
+    // Try to get all accepted apps and filter by jobseeker role
+    const { data: allAcceptedApps, error: allAcceptedError } = await statsClient
+      .from("applications")
+      .select("id, status, job_seeker_id, profiles!inner(role)")
+      .eq("status", "accepted")
+      .eq("profiles.role", "jobseeker");
+    
+    if (allAcceptedError) {
+      console.error("Error fetching all accepted applications:", allAcceptedError);
+    } else {
+      acceptedCount = allAcceptedApps?.length || 0;
+      console.log("Accepted applications (via join):", acceptedCount);
+    }
+  }
 
   return {
-    totalJobs: totalJobs || 0,
+    totalJobs: validJobs.length,
     totalCompanies: uniqueCompanies.size,
     totalUsers: totalUsers || 0,
+    acceptedApplications: acceptedCount || 0,
   };
 }
 

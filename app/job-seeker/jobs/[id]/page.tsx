@@ -31,12 +31,17 @@ async function getJob(id: string) {
 
     const jobListing = data as JobListing;
 
-    // Integrate company data from companies table
+    // Check if company is blocked
     const { data: companyData } = await supabase
         .from("companies")
-        .select("logo_url, industry, location_city, location_province, website_url, description")
+        .select("logo_url, industry, location_city, location_province, website_url, description, is_blocked")
         .eq("name", jobListing.company_name)
         .maybeSingle();
+
+    // If company is blocked, return null (job not accessible)
+    if (companyData && (companyData as any).is_blocked === true) {
+        return null;
+    }
 
     // If company data exists, integrate it with job listing
     if (companyData) {

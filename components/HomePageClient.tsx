@@ -267,23 +267,21 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters Sidebar */}
           <aside className="lg:col-span-1">
-            <div className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
-              <JobFilters
-                filters={filters}
-                onFilterChange={setFilters}
-              />
-            </div>
+            <JobFilters
+              filters={filters}
+              onFilterChange={setFilters}
+            />
           </aside>
 
           {/* Job Listings */}
           <main className="lg:col-span-3">
-            <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
+            <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h2 className="text-3xl font-bold text-purple-900 mb-1">Lowongan Tersedia</h2>
+                <h2 className="text-gray-900 mb-1">Lowongan Tersedia</h2>
                 <p className="text-gray-600" style={{ fontSize: '14px' }}>
                   Menampilkan{" "}
                   <span className="font-semibold gradient-text-cyan">
@@ -292,17 +290,17 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
                   lowongan kerja yang sesuai
                 </p>
               </div>
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 onClick={() => setShowMap(true)}
                 className="flex items-center gap-2 border-2 border-cyan-200 text-cyan-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all"
               >
                 <Map className="w-4 h-4" />
                 Lihat di Map
-              </Button>
+              </Button> */}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {filteredJobs.map((job, index) => (
                 <div 
                   key={job.id}

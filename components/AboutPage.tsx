@@ -1,6 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import { Card } from "./ui/card";
 import { Target, Users, Award, Rocket, CheckCircle2, Sparkles, Heart, Shield, Mail, MapPin, Phone, MessageCircle } from "lucide-react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+
+// Component untuk foto tim dengan error handling
+function TeamMemberPhoto({ src, name }: { src: string; name: string }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (!hasError) {
+      setHasError(true);
+      setImgSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=128&background=6366f1&color=ffffff&bold=true`);
+    }
+  };
+
+  return (
+    <img
+      src={imgSrc}
+      alt={name}
+      className="w-full h-full object-cover"
+      onError={handleError}
+    />
+  );
+}
 
 interface TeamMember {
   id: string;
@@ -12,6 +36,15 @@ interface TeamMember {
   image?: string;
 }
 
+interface AboutPageProps {
+  stats: {
+    totalJobs: number;
+    totalCompanies: number;
+    totalUsers: number;
+    acceptedApplications: number;
+  };
+}
+
 const teamMembers: TeamMember[] = [
   {
     id: "1",
@@ -20,7 +53,7 @@ const teamMembers: TeamMember[] = [
     email: "mutiaraadhanie@gmail.com",
     phone: "+62 812-1029-7813",
     location: "Bandung, Indonesia",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop"
+    image: "/developer/mute.jpeg"
   },
 
   {
@@ -30,17 +63,17 @@ const teamMembers: TeamMember[] = [
     email: "arizalmaulana602@gmail.com",
     phone: "+62 812-1061-7530",
     location: "Bandung, Indonesia",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop"
+    image: "/developer/izal.jpeg"
   },
 
   {
     id: "3",
     name: "Ilham Amri Rozak",
-    role: "Customer Support",
+    role: "UI/UX Designer",
     email: "ilhamamrirozak@gmail.com",
     phone: "+62 822-6849-3749",
     location: "Bandung, Indonesia",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+    image: "/developer/ozak.jpeg"
   },
   
   {
@@ -50,11 +83,11 @@ const teamMembers: TeamMember[] = [
     email: "rizkyfathurrahman11@gmail.com",
     phone: "+62 812-1869-2394",
     location: "Bandung, Indonesia",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+    image: "/developer/rizqi.jpeg"
   }
 ];
   
-export function AboutPage() {
+export function AboutPage({ stats }: AboutPageProps) {
   return (
     <div>
       {/* Hero Section */}
@@ -129,28 +162,36 @@ export function AboutPage() {
           <Card className="group relative p-6 text-center border-2 border-gray-200/50 hover:border-indigo-500/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
-              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>10,000+</div>
+              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>
+                {stats.totalJobs >= 1000 ? `${(stats.totalJobs / 1000).toFixed(1)}k+` : stats.totalJobs.toLocaleString('id-ID')}
+              </div>
               <p className="text-gray-600 font-medium">Lowongan Aktif</p>
             </div>
           </Card>
           <Card className="group relative p-6 text-center border-2 border-gray-200/50 hover:border-indigo-500/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
-              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>5,000+</div>
+              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>
+                {stats.totalCompanies >= 1000 ? `${(stats.totalCompanies / 1000).toFixed(1)}k+` : stats.totalCompanies.toLocaleString('id-ID')}
+              </div>
               <p className="text-gray-600 font-medium">Perusahaan</p>
             </div>
           </Card>
           <Card className="group relative p-6 text-center border-2 border-gray-200/50 hover:border-indigo-500/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
-              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>100,000+</div>
+              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>
+                {stats.totalUsers >= 1000 ? `${(stats.totalUsers / 1000).toFixed(1)}k+` : stats.totalUsers.toLocaleString('id-ID')}
+              </div>
               <p className="text-gray-600 font-medium">Pencari Kerja</p>
             </div>
           </Card>
           <Card className="group relative p-6 text-center border-2 border-gray-200/50 hover:border-indigo-500/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
-              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>50,000+</div>
+              <div className="gradient-text mb-2 font-bold" style={{ fontSize: '32px' }}>
+                {stats.acceptedApplications >= 1000 ? `${(stats.acceptedApplications / 1000).toFixed(1)}k+` : stats.acceptedApplications.toLocaleString('id-ID')}
+              </div>
               <p className="text-gray-600 font-medium">Sukses Diterima</p>
             </div>
           </Card>
@@ -315,11 +356,7 @@ export function AboutPage() {
                   <div className="mb-4 flex justify-center">
                     <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl ring-2 ring-indigo-100 group-hover:ring-indigo-300 transition-all duration-300 group-hover:scale-105">
                       {member.image ? (
-                        <ImageWithFallback
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                        />
+                        <TeamMemberPhoto src={member.image} name={member.name} />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-bold">
                           {member.name.charAt(0).toUpperCase()}
