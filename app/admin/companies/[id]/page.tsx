@@ -21,13 +21,19 @@ async function getCompany(id: string) {
         return null;
     }
 
-    const { data: currentProfile } = await supabase
+    const { data: currentProfile, error: profileError } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", currentUser.id)
         .single();
 
-    if (!currentProfile || currentProfile.role !== "admin") {
+    if (profileError || !currentProfile) {
+        redirect("/");
+        return null;
+    }
+
+    const profile = currentProfile as { role: string };
+    if (profile.role !== "admin") {
         redirect("/");
         return null;
     }

@@ -50,12 +50,12 @@ async function getApplications(userId: string, jobId?: string, status?: string) 
         if (data && data.length > 0) {
             console.log("Applications data sample:", {
                 total: data.length,
-                firstApp: {
-                    id: data[0].id,
-                    cv_url: data[0].cv_url,
-                    job_seeker_id: data[0].job_seeker_id,
-                    hasProfiles: !!data[0].profiles
-                }
+                firstApp: data.length > 0 ? {
+                    id: (data[0] as any).id,
+                    cv_url: (data[0] as any).cv_url,
+                    job_seeker_id: (data[0] as any).job_seeker_id,
+                    hasProfiles: !!(data[0] as any).profiles
+                } : null
             });
         }
         

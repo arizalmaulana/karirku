@@ -169,7 +169,7 @@ export default async function RecruiterDashboardPage() {
                     .eq("id", app.job_seeker_id)
                     .single();
                 if (profileData) {
-                    applicantName = profileData.full_name;
+                    applicantName = (profileData as any).full_name;
                 }
             }
 
@@ -236,7 +236,7 @@ export default async function RecruiterDashboardPage() {
                 <div>
                     <p className="text-sm font-semibold text-purple-600 mb-1">Dashboard Recruiter</p>
                     <h1 className="text-3xl font-bold text-gray-900 mt-1">
-                        Selamat Datang, {profile.full_name || "Recruiter"}!
+                        Selamat Datang, {(profile as any).full_name || "Recruiter"}!
                     </h1>
                     <p className="text-gray-600 mt-2">
                         Pantau performa lowongan, tindak lanjuti kandidat, dan update status lamaran langsung.

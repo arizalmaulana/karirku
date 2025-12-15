@@ -46,7 +46,9 @@ async function getUserProfile(userId: string) {
     return data as Profile;
 }
 
-export default async function ApplyJobPage({ params }: { params: { id: string } }) {
+export default async function ApplyJobPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+    // Handle params as Promise (Next.js 15) or object (Next.js 14)
+    const resolvedParams = params instanceof Promise ? await params : params;
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
@@ -57,8 +59,8 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
     }
 
     const [job, existingApplication, profile] = await Promise.all([
-        getJob(params.id),
-        checkExistingApplication(user.id, params.id),
+        getJob(resolvedParams.id),
+        checkExistingApplication(user.id, resolvedParams.id),
         getUserProfile(user.id),
     ]);
 
@@ -72,7 +74,7 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
     }
 
     if (existingApplication) {
-        redirect(`/job-seeker/jobs/${params.id}`);
+        redirect(`/job-seeker/jobs/${resolvedParams.id}`);
     }
 
     return (
@@ -93,7 +95,7 @@ export default async function ApplyJobPage({ params }: { params: { id: string } 
                 </CardHeader>
                 <CardContent>
                     <ApplicationFormEnhanced 
-                        jobId={params.id} 
+                        jobId={resolvedParams.id} 
                         jobTitle={job.title}
                         profile={profile}
                     />

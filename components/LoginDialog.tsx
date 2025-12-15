@@ -168,11 +168,12 @@ export function LoginDialog({
             .eq("recruiter_id", userId)
             .maybeSingle();
 
-          if (!companyError && companyData && companyData.is_blocked === true) {
+          const company = companyData as { is_blocked?: boolean; blocked_reason?: string } | null;
+          if (!companyError && company && company.is_blocked === true) {
             // Sign out recruiter yang perusahaannya diblokir
             await supabase.auth.signOut();
-            const reason = companyData.blocked_reason 
-              ? `Perusahaan Anda telah diblokir. Alasan: ${companyData.blocked_reason}. Silahkan hubungi admin.`
+            const reason = company.blocked_reason 
+              ? `Perusahaan Anda telah diblokir. Alasan: ${company.blocked_reason}. Silahkan hubungi admin.`
               : "Perusahaan Anda telah diblokir. Silahkan hubungi admin.";
             toast.error(reason);
             setIsLoading(false);

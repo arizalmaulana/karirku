@@ -17,8 +17,8 @@ export function useCompany(recruiterId: string | null) {
 
         async function fetchCompany() {
             try {
-                const { data, error } = await supabase
-                    .from('companies')
+                const { data, error } = await (supabase
+                    .from('companies') as any)
                     .select('*')
                     .eq('recruiter_id', recruiterId)
                     .maybeSingle();

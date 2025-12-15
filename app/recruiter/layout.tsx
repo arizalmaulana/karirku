@@ -25,7 +25,8 @@ export default async function RecruiterLayout({ children }: RecruiterLayoutProps
         .eq("id", user.id)
         .single();
 
-    if (!profile || profile.role !== "recruiter") {
+    const profileData = profile as { role?: string } | null;
+    if (!profileData || profileData.role !== "recruiter") {
         redirect("/");
     }
 

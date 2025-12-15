@@ -74,11 +74,12 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     setCompanyProfile(company);
                     // Auto-fill from company profile if not editing existing job
                     if (!jobId && !initialData) {
+                        const companyData = company as any;
                         setFormData(prev => ({
                             ...prev,
-                            company_name: company.name || prev.company_name,
-                            location_city: company.location_city || prev.location_city,
-                            location_province: company.location_province || prev.location_province,
+                            company_name: companyData.name || prev.company_name,
+                            location_city: companyData.location_city || prev.location_city,
+                            location_province: companyData.location_province || prev.location_province,
                         }));
                     }
                 }

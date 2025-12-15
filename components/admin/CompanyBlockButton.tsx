@@ -60,8 +60,8 @@ export function CompanyBlockButton({
                 updateData.blocked_reason = null;
             }
 
-            const { error } = await supabase
-                .from("companies")
+            const { error } = await (supabase
+                .from("companies") as any)
                 .update(updateData)
                 .eq("id", companyId);
 

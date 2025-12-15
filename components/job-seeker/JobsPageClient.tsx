@@ -305,14 +305,15 @@ interface JobListContentWithMatchProps {
 function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJobClick }: JobListContentWithMatchProps) {
     const jobsWithScores = useMemo(() => {
         return jobs.map(job => {
+            const jobData = job as any;
             const matchScore = calculateMatchScoreFromJobUIAndProfile(
                 {
-                    skills_required: job.skills_required || null,
-                    major_required: job.major_required || null,
-                    education_required: job.education_required || null,
-                    experience_required: job.experience_required || null,
-                    level: job.level,
-                    requirements: job.requirements
+                    skills_required: jobData.skills_required || null,
+                    major_required: jobData.major_required || null,
+                    education_required: jobData.education_required || null,
+                    experience_required: jobData.experience_required || null,
+                    level: jobData.level,
+                    requirements: jobData.requirements
                 },
                 profile
             );

@@ -60,16 +60,19 @@ async function getApplication(id: string, userId: string) {
         return null;
     }
     
+    // Type assertion untuk data dengan join
+    const applicationData = data as any;
+    
     // Debug: log the data structure
     console.log("Application data:", {
-        id: data.id,
-        job_seeker_id: data.job_seeker_id,
-        profiles: data.profiles,
-        hasProfiles: !!data.profiles,
-        profilesFullName: data.profiles?.full_name
+        id: applicationData.id,
+        job_seeker_id: applicationData.job_seeker_id,
+        profiles: applicationData.profiles,
+        hasProfiles: !!applicationData.profiles,
+        profilesFullName: applicationData.profiles?.full_name
     });
     
-    return data as any;
+    return applicationData;
 }
 
 export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {

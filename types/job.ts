@@ -19,4 +19,6 @@ export interface Job {
     // Fields untuk match score calculation
     skills_required?: string[] | null;
     major_required?: string | null;
+    education_required?: string | null;
+    experience_required?: string | null;
 }  
