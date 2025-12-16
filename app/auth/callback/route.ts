@@ -9,6 +9,17 @@ export async function GET(request: NextRequest) {
   const next = requestUrl.searchParams.get('next') || '/'
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
+  const error = requestUrl.searchParams.get('error')
+  const errorDescription = requestUrl.searchParams.get('error_description')
+
+  // Handle error dari Supabase (misalnya 403)
+  if (error) {
+    console.error('Auth callback error:', error, errorDescription)
+    const errorMessage = errorDescription || error || 'Terjadi kesalahan saat konfirmasi email'
+    return NextResponse.redirect(
+      new URL(`/?error=${encodeURIComponent(errorMessage)}`, requestUrl.origin)
+    )
+  }
 
   // Handle email confirmation
   if (code || tokenHash) {
@@ -31,20 +42,36 @@ export async function GET(request: NextRequest) {
     )
 
     if (code) {
-      // Exchange code for session
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-      
-      if (error) {
-        console.error('Error exchanging code for session:', error)
-        // Redirect to login with error message
-        return NextResponse.redirect(
-          new URL(`/?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
-        )
-      }
+      try {
+        // Exchange code for session
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        
+        if (exchangeError) {
+          console.error('Error exchanging code for session:', exchangeError)
+          // Handle error 403 khusus
+          if (exchangeError.message?.includes('403') || exchangeError.status === 403) {
+            return NextResponse.redirect(
+              new URL(`/?error=${encodeURIComponent('URL redirect belum di-whitelist di Supabase Dashboard. Silakan hubungi administrator.')}`, requestUrl.origin)
+            )
+          }
+          // Redirect to login with error message
+          return NextResponse.redirect(
+            new URL(`/?error=${encodeURIComponent(exchangeError.message || 'Gagal konfirmasi email')}`, requestUrl.origin)
+          )
+        }
 
-      // Get user role from metadata or profile
-      if (data?.user) {
-        const userMetadata = data.user.user_metadata
+        // Verify session setelah exchange
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        
+        if (userError || !user) {
+          console.error('Error getting user after exchange:', userError)
+          return NextResponse.redirect(
+            new URL(`/?error=${encodeURIComponent('Gagal mendapatkan data user setelah konfirmasi')}`, requestUrl.origin)
+          )
+        }
+
+        // Get user role from metadata or profile
+        const userMetadata = user.user_metadata
         const role = userMetadata?.role || 'jobseeker'
         
         // Determine redirect path based on role
@@ -58,33 +85,45 @@ export async function GET(request: NextRequest) {
         
         // Redirect to appropriate dashboard
         return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
-      }
-    } else if (tokenHash && type) {
-      // Handle token-based confirmation (for password reset, etc.)
-      const { data, error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: type as any,
-      })
-
-      if (error) {
-        console.error('Error verifying OTP:', error)
+      } catch (err: any) {
+        console.error('Unexpected error in callback:', err)
         return NextResponse.redirect(
-          new URL(`/?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
+          new URL(`/?error=${encodeURIComponent(err.message || 'Terjadi kesalahan tidak terduga')}`, requestUrl.origin)
         )
       }
+    } else if (tokenHash && type) {
+      try {
+        // Handle token-based confirmation (for password reset, etc.)
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as any,
+        })
 
-      if (data?.user) {
-        const userMetadata = data.user.user_metadata
-        const role = userMetadata?.role || 'jobseeker'
-        
-        const roleRedirectMap: Record<string, string> = {
-          admin: '/admin/dashboard',
-          recruiter: '/recruiter/dashboard',
-          jobseeker: '/job-seeker/dashboard',
+        if (verifyError) {
+          console.error('Error verifying OTP:', verifyError)
+          return NextResponse.redirect(
+            new URL(`/?error=${encodeURIComponent(verifyError.message || 'Gagal verifikasi token')}`, requestUrl.origin)
+          )
         }
-        
-        const redirectPath = roleRedirectMap[role] || '/job-seeker/dashboard'
-        return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+
+        if (data?.user) {
+          const userMetadata = data.user.user_metadata
+          const role = userMetadata?.role || 'jobseeker'
+          
+          const roleRedirectMap: Record<string, string> = {
+            admin: '/admin/dashboard',
+            recruiter: '/recruiter/dashboard',
+            jobseeker: '/job-seeker/dashboard',
+          }
+          
+          const redirectPath = roleRedirectMap[role] || '/job-seeker/dashboard'
+          return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+        }
+      } catch (err: any) {
+        console.error('Unexpected error in token verification:', err)
+        return NextResponse.redirect(
+          new URL(`/?error=${encodeURIComponent(err.message || 'Terjadi kesalahan tidak terduga')}`, requestUrl.origin)
+        )
       }
     }
   }
@@ -92,5 +131,3 @@ export async function GET(request: NextRequest) {
   // Fallback: redirect to home or specified next URL
   return NextResponse.redirect(new URL(next, requestUrl.origin))
 }
-
-

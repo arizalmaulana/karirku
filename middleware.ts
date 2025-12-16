@@ -26,8 +26,10 @@ export async function middleware(req: NextRequest) {
   // Ini adalah baris paling penting: menyegarkan sesi jika sudah kedaluwarsa.
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Skip middleware untuk root path dan auth routes
-  if (req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/api')) {
+  // Skip middleware untuk root path, auth routes, dan API routes
+  if (req.nextUrl.pathname === '/' || 
+      req.nextUrl.pathname.startsWith('/api') ||
+      req.nextUrl.pathname.startsWith('/auth/callback')) {
     return res
   }
 
