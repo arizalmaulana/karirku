@@ -145,10 +145,28 @@ export function RegisterDialog({
             }
 
             // 3. Coba signUp - Supabase akan mengembalikan error jika email sudah terdaftar
-            const { data, error } = await supabase.auth.signUp({
+            // Konfigurasi untuk mempercepat email confirmation:
+            // - emailRedirectTo: URL callback yang akan menangani konfirmasi email dan redirect ke dashboard
+            //   CATATAN: URL ini HARUS di-whitelist di Supabase Dashboard → Authentication → URL Configuration
+            //   Jika belum di-whitelist, akan terjadi error 500. Solusi: whitelist URL atau nonaktifkan emailRedirectTo
+            const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+            const redirectPath = formData.role === 'jobseeker' 
+                ? '/job-seeker/dashboard' 
+                : formData.role === 'recruiter' 
+                ? '/recruiter/dashboard' 
+                : '/job-seeker/dashboard';
+            
+            // Buat emailRedirectTo hanya jika baseUrl valid
+            // Jika terjadi error 500, coba tanpa emailRedirectTo sebagai fallback
+            const emailRedirectTo = baseUrl ? `${baseUrl}/auth/callback?next=${encodeURIComponent(redirectPath)}` : undefined;
+
+            // SignUp dengan emailRedirectTo (akan error 500 jika URL belum di-whitelist)
+            // Jika error 500, akan dicoba lagi tanpa emailRedirectTo
+            let { data, error } = await supabase.auth.signUp({
                 email: formData.email.trim().toLowerCase(),
                 password: formData.password,
                 options: {
+                    ...(emailRedirectTo && { emailRedirectTo: emailRedirectTo }),
                     data: {
                         full_name: formData.name,
                         role: formData.role,
@@ -156,10 +174,49 @@ export function RegisterDialog({
                 },
             });
 
+            // Jika error 500 dan ada emailRedirectTo, coba lagi tanpa emailRedirectTo
+            // Error 500 biasanya terjadi karena URL belum di-whitelist di Supabase
+            if (error && (error.status === 500 || error.message?.includes('500')) && emailRedirectTo) {
+                console.warn('Error 500 dengan emailRedirectTo, mencoba tanpa emailRedirectTo:', error.message);
+                // Retry tanpa emailRedirectTo
+                const retryResult = await supabase.auth.signUp({
+                    email: formData.email.trim().toLowerCase(),
+                    password: formData.password,
+                    options: {
+                        data: {
+                            full_name: formData.name,
+                            role: formData.role,
+                        },
+                    },
+                });
+                data = retryResult.data;
+                error = retryResult.error;
+                
+                // Jika masih error, tampilkan pesan yang lebih jelas
+                if (error) {
+                    console.error('Error setelah retry tanpa emailRedirectTo:', error);
+                } else {
+                    console.log('SignUp berhasil setelah retry tanpa emailRedirectTo');
+                }
+            }
+
             if (error) {
                 // Handle error khusus untuk email yang sudah terdaftar
                 const errorMessage = error.message.toLowerCase();
                 const errorCode = error.status || error.code || '';
+                
+                // Handle error "Error sending confirmation email" - biasanya karena SMTP tidak dikonfigurasi
+                if (errorMessage.includes('error sending confirmation email') || 
+                    errorMessage.includes('sending confirmation email') ||
+                    (error.status === 500 && errorMessage.includes('email'))) {
+                    const smtpErrorMsg = "Gagal mengirim email konfirmasi. Pastikan SMTP sudah dikonfigurasi di Supabase Dashboard. Lihat TROUBLESHOOTING_EMAIL_ERROR.md untuk panduan setup.";
+                    console.error('SMTP Error:', error);
+                    toast.error(smtpErrorMsg, {
+                        duration: 8000,
+                    });
+                    setIsLoading(false);
+                    return;
+                }
                 
                 // Cek berbagai kemungkinan error untuk email yang sudah terdaftar
                 if (errorMessage.includes('user already registered') || 
