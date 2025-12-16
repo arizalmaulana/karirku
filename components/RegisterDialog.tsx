@@ -209,10 +209,11 @@ export function RegisterDialog({
                 if (errorMessage.includes('error sending confirmation email') || 
                     errorMessage.includes('sending confirmation email') ||
                     (error.status === 500 && errorMessage.includes('email'))) {
-                    const smtpErrorMsg = "Gagal mengirim email konfirmasi. Pastikan SMTP sudah dikonfigurasi di Supabase Dashboard. Lihat TROUBLESHOOTING_EMAIL_ERROR.md untuk panduan setup.";
+                    const smtpErrorMsg = "Gagal mengirim email konfirmasi. SMTP belum dikonfigurasi di Supabase Dashboard. Solusi cepat: Nonaktifkan 'Confirm email' di Supabase Dashboard → Authentication → Providers → Email. Lihat SOLUSI_CEPAT_DEVELOPMENT.md untuk panduan lengkap.";
                     console.error('SMTP Error:', error);
                     toast.error(smtpErrorMsg, {
-                        duration: 8000,
+                        duration: 10000,
+                        description: "Untuk development: Disable 'Confirm email' di Supabase. Untuk production: Setup SMTP Resend.",
                     });
                     setIsLoading(false);
                     return;
