@@ -74,14 +74,46 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
               jobseeker: "/job-seeker/dashboard",
             };
             const destination = roleRedirectMap[role] || "/job-seeker/dashboard";
-            router.push(destination);
+            
+            // Untuk mobile, gunakan window.location.href untuk full reload yang lebih reliable
+            if (typeof window !== "undefined") {
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+              ) || window.innerWidth < 768;
+
+              if (isMobile) {
+                window.location.href = destination;
+              } else {
+                router.push(destination);
+              }
+            }
           } else {
             // If no profile, default to job-seeker dashboard
-            router.push("/job-seeker/dashboard");
+            if (typeof window !== "undefined") {
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+              ) || window.innerWidth < 768;
+
+              if (isMobile) {
+                window.location.href = "/job-seeker/dashboard";
+              } else {
+                router.push("/job-seeker/dashboard");
+              }
+            }
           }
         } catch {
           // On error, default to job-seeker dashboard
-          router.push("/job-seeker/dashboard");
+          if (typeof window !== "undefined") {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+              navigator.userAgent
+            ) || window.innerWidth < 768;
+
+            if (isMobile) {
+              window.location.href = "/job-seeker/dashboard";
+            } else {
+              router.push("/job-seeker/dashboard");
+            }
+          }
         }
       })();
     }
@@ -140,7 +172,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
   return (
     <>
       {/* Hero Section with Illustration */}
-      <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white py-12 sm:py-16 lg:py-20 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
@@ -148,43 +180,43 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
           <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-3 sm:px-4 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-6 animate-fade-in">
-                <Sparkles className="w-4 h-4 text-yellow-300" />
-                <span style={{ fontSize: '14px' }}>✨ Temukan karir impian Anda bersama kami</span>
+              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full mb-4 sm:mb-6 animate-fade-in text-xs sm:text-sm">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-300 shrink-0" />
+                <span>✨ Temukan karir impian Anda bersama kami</span>
               </div>
 
               {/* Heading */}
-              <h1 className="mb-6 animate-slide-in-up" style={{ fontSize: '48px', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
+              <h1 className="mb-4 sm:mb-6 animate-slide-in-up text-3xl sm:text-4xl lg:text-5xl xl:text-[48px] font-bold" style={{ lineHeight: '1.2', letterSpacing: '-0.02em' }}>
                 Raih Karir yang{" "}
                 <span className="relative inline-block">
                   <span className="relative z-10">Cemerlang</span>
                   <span className="absolute bottom-2 left-0 w-full h-3 bg-yellow-300/40 -rotate-1 rounded"></span>
                 </span>
               </h1>
-              <p className="mb-8 text-indigo-100 animate-slide-in-up" style={{ fontSize: '18px', animationDelay: '0.1s', lineHeight: '1.7' }}>
+              <p className="mb-6 sm:mb-8 text-indigo-100 animate-slide-in-up text-sm sm:text-base lg:text-lg" style={{ animationDelay: '0.1s', lineHeight: '1.7' }}>
                 Jelajahi ribuan lowongan kerja dari perusahaan terpercaya di seluruh Indonesia. Mulai perjalanan karir Anda hari ini!
               </p>
 
               {/* Search Bar */}
-              <div className="glass rounded-2xl p-2 flex gap-2 shadow-2xl animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
-                <div className="flex-1 flex items-center gap-3 px-4 bg-white rounded-xl">
-                  <Search className="w-5 h-5 text-indigo-500" />
+              <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row gap-2 shadow-2xl animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
+                <div className="flex-1 flex items-center gap-3 px-3 sm:px-4 bg-white rounded-xl">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 shrink-0" />
                   <Input
                     type="text"
-                    placeholder="Cari posisi, perusahaan, atau kata kunci..."
+                    placeholder="Cari posisi, perusahaan..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 bg-transparent"
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 bg-transparent text-sm sm:text-base"
                   />
                 </div>
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg px-8 hover:shadow-cyan-500/50 transition-all"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg px-6 sm:px-8 hover:shadow-cyan-500/50 transition-all w-full sm:w-auto"
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Cari
@@ -192,39 +224,39 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 mt-10 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mt-6 sm:mt-8 lg:mt-10 animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <div className="p-2 bg-yellow-400/20 rounded-lg backdrop-blur-sm">
-                      <Briefcase className="w-5 h-5 text-yellow-300" />
+                    <div className="p-1.5 sm:p-2 bg-yellow-400/20 rounded-lg backdrop-blur-sm">
+                      <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalJobs}+</div>
-                  <div className="text-indigo-200" style={{ fontSize: '14px' }}>Lowongan Aktif</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{stats.totalJobs}+</div>
+                  <div className="text-indigo-200 text-xs sm:text-sm">Lowongan Aktif</div>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <div className="p-2 bg-cyan-400/20 rounded-lg backdrop-blur-sm">
-                      <Building2 className="w-5 h-5 text-cyan-300" />
+                    <div className="p-1.5 sm:p-2 bg-cyan-400/20 rounded-lg backdrop-blur-sm">
+                      <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalCompanies}+</div>
-                  <div className="text-indigo-200" style={{ fontSize: '14px' }}>Perusahaan</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{stats.totalCompanies}+</div>
+                  <div className="text-indigo-200 text-xs sm:text-sm">Perusahaan</div>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <div className="p-2 bg-pink-400/20 rounded-lg backdrop-blur-sm">
-                      <Users className="w-5 h-5 text-pink-300" />
+                    <div className="p-1.5 sm:p-2 bg-pink-400/20 rounded-lg backdrop-blur-sm">
+                      <Users className="w-4 h-4 sm:w-5 sm:h-5 text-pink-300" />
                     </div>
                   </div>
-                  <div style={{ fontSize: '28px' }} className="font-bold">{stats.totalUsers}+</div>
-                  <div className="text-indigo-200" style={{ fontSize: '14px' }}>Pengguna Aktif</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{stats.totalUsers}+</div>
+                  <div className="text-indigo-200 text-xs sm:text-sm">Pengguna Aktif</div>
                 </div>
               </div>
             </div>
 
             {/* Right Illustration */}
-            <div className="hidden lg:block relative animate-float">
+            <div className="hidden lg:block relative animate-float mt-8 lg:mt-0">
               <div className="relative">
                 {/* Main Image */}
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm">
@@ -267,10 +299,10 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {/* Filters Sidebar */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 order-2 lg:order-1">
             <JobFilters
               filters={filters}
               onFilterChange={setFilters}
@@ -278,11 +310,11 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
           </aside>
 
           {/* Job Listings */}
-          <main className="lg:col-span-3">
-            <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <main className="lg:col-span-3 order-1 lg:order-2">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div>
-                <h2 className="text-gray-900 mb-1">Lowongan Tersedia</h2>
-                <p className="text-gray-600" style={{ fontSize: '14px' }}>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Lowongan Tersedia</h2>
+                <p className="text-gray-600 text-sm sm:text-base">
                   Menampilkan{" "}
                   <span className="font-semibold gradient-text-cyan">
                     {filteredJobs.length}
@@ -300,7 +332,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
               </Button> */}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredJobs.map((job, index) => (
                 <div 
                   key={job.id}

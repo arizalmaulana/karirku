@@ -24,26 +24,27 @@ export function AdminSidebar() {
         <>
             {/* MOBILE BUTTON */}
             <button 
-                className="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow"
+                className="lg:hidden fixed top-16 left-3 z-50 bg-white p-2.5 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200"
                 onClick={toggleSidebar}
+                aria-label="Toggle sidebar"
             >
-                <LayoutDashboard />
+                <LayoutDashboard className="w-5 h-5 text-gray-700" />
             </button>
 
-            {/* MOBILE BACKDROP DARK */}
+            {/* MOBILE BACKDROP */}
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity duration-300"
                     onClick={toggleSidebar}
                 />
             )}
 
             {/* SIDEBAR */}
             <aside className={`
-                fixed top-0 left-0 z-50 h-screen w-64 bg-white shadow-xl overflow-y-auto
+                fixed top-0 left-0 z-50 h-screen w-64 sm:w-72 bg-white shadow-2xl overflow-y-auto
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
-                lg:translate-x-0
+                lg:translate-x-0 lg:shadow-xl
             `}>
                 
                 {/* LOGO HEADER */}
@@ -73,17 +74,18 @@ export function AdminSidebar() {
                             <Link
                                 key={item.label}
                                 href={item.href}
+                                onClick={() => setIsOpen(false)}
                                 className={`
-                                    flex items-center gap-3 px-4 py-3 rounded-xl w-full transition-all duration-200
+                                    flex items-center gap-3 px-4 py-3 rounded-xl w-full transition-all duration-200 touch-manipulation
                                     ${
                                         isActive
                                             ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white shadow-lg"
-                                            : "text-gray-600 hover:bg-gray-100"
+                                            : "text-gray-600 hover:bg-gray-100 active:bg-gray-200"
                                     }
                                 `}
                             >
-                                <item.icon className="w-5 h-5" />
-                                <span>{item.label}</span>
+                                <item.icon className="w-5 h-5 shrink-0" />
+                                <span className="truncate">{item.label}</span>
                             </Link>
                         );
                     })}

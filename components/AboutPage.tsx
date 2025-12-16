@@ -91,29 +91,29 @@ export function AboutPage({ stats }: AboutPageProps) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white py-12 sm:py-16 lg:py-20 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-1/4 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-3 sm:px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-6 animate-fade-in">
-              <Heart className="w-4 h-4" />
-              <span style={{ fontSize: '14px' }}>Dipercaya oleh ribuan pencari kerja</span>
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full mb-4 sm:mb-6 animate-fade-in text-xs sm:text-sm">
+              <Heart className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+              <span>Dipercaya oleh ribuan pencari kerja</span>
             </div>
 
-            <h1 className="mb-4 animate-slide-in-up" style={{ fontSize: '48px', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
+            <h1 className="mb-3 sm:mb-4 animate-slide-in-up text-3xl sm:text-4xl lg:text-5xl xl:text-[48px] font-bold" style={{ lineHeight: '1.2', letterSpacing: '-0.02em' }}>
               Tentang{" "}
               <span className="relative inline-block">
                 <span className="relative z-10">KarirKu</span>
                 <span className="absolute bottom-2 left-0 w-full h-3 bg-yellow-300/30 -rotate-1"></span>
               </span>
             </h1>
-            <p className="text-indigo-100 animate-slide-in-up" style={{ fontSize: '18px', animationDelay: '0.1s' }}>
+            <p className="text-indigo-100 animate-slide-in-up text-sm sm:text-base lg:text-lg px-2" style={{ animationDelay: '0.1s' }}>
               Platform terpercaya untuk menghubungkan talenta terbaik dengan perusahaan impian
             </p>
           </div>
@@ -121,7 +121,7 @@ export function AboutPage({ stats }: AboutPageProps) {
       </section>
 
       {/* Mission & Vision */}
-      <section className="container mx-auto px-4 py-6 max-w-7xl">
+      <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <Card className="group relative p-8 border-2 border-gray-200/50 hover:border-indigo-500/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

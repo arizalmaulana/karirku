@@ -33,3 +33,5 @@ Jika masih 0, pastikan:
 2. Ada data aplikasi dengan `status = 'accepted'` di tabel `applications`
 3. Service role key sudah benar atau public policy sudah dijalankan
 
+
+

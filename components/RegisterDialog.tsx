@@ -639,8 +639,11 @@ export function RegisterDialog({
                 setTimeout(() => {
                     // Menggunakan window.location.href untuk full page reload.
                     // Ini memastikan middleware berjalan dengan benar setelah registrasi.
-                    window.location.href = dashboardPath;
-                }, 2000); // Delay 2 detik agar notifikasi terlihat
+                    // Lebih reliable untuk mobile dan desktop
+                    if (typeof window !== "undefined") {
+                        window.location.href = dashboardPath;
+                    }
+                }, 1500); // Delay 1.5 detik agar notifikasi terlihat
             } else {
                 // Tidak ada session, perlu email confirmation
                 if (isJobseeker) {
@@ -715,10 +718,14 @@ export function RegisterDialog({
                     <div className="space-y-2">
                         <Label htmlFor="register-email">Email</Label>
                         <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
                         <Input
                             id="register-email"
                             type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            autoCorrect="off"
                             placeholder="nama@email.com"
                             value={formData.email}
                             onChange={(e) => {
@@ -729,7 +736,7 @@ export function RegisterDialog({
                                 }
                             }}
                             onBlur={handleEmailBlur}
-                            className={`pl-10 ${emailError ? 'border-red-500 focus:border-red-500' : ''}`}
+                            className={`pl-10 relative z-0 ${emailError ? 'border-red-500 focus:border-red-500' : ''}`}
                             required
                         />
                         </div>

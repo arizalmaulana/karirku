@@ -196,20 +196,31 @@ export function LoginDialog({
       onClose();
 
       // Tunggu sedikit untuk memastikan session ter-set dan notifikasi terlihat
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Tunggu lagi agar notifikasi terlihat sebelum redirect (total ~2 detik)
-      setTimeout(() => {
-        // Gunakan router.push untuk navigasi yang lebih smooth
-        router.push(destination);
-        
-        // Fallback: jika router.push tidak bekerja, gunakan window.location
-        setTimeout(() => {
-          if (window.location.pathname === '/') {
-            window.location.href = destination;
-          }
-        }, 1000);
-      }, 1500); // Delay tambahan 1.5 detik agar notifikasi terlihat
+      // Untuk mobile, gunakan window.location.href untuk full page reload yang lebih reliable
+      // Untuk desktop, bisa menggunakan router.push
+      if (typeof window !== "undefined") {
+        // Deteksi mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) || window.innerWidth < 768;
+
+        if (isMobile) {
+          // Mobile: gunakan window.location.href untuk full reload
+          window.location.href = destination;
+        } else {
+          // Desktop: gunakan router.push untuk smooth navigation
+          router.push(destination);
+          
+          // Fallback: jika router.push tidak bekerja setelah 1 detik
+          setTimeout(() => {
+            if (window.location.pathname !== destination) {
+              window.location.href = destination;
+            }
+          }, 1000);
+        }
+      }
     } catch (err: any) {
       let message = "Terjadi kesalahan saat login";
       
@@ -242,37 +253,10 @@ export function LoginDialog({
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      toast.info("Masukkan email terlebih dahulu untuk mengatur ulang password.");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        formData.email,
-      );
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success("Tautan reset password telah dikirim ke email Anda.");
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Gagal mengirim tautan reset password";
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Masuk ke Akun Anda</DialogTitle>
           <DialogDescription>
@@ -286,16 +270,20 @@ export function LoginDialog({
           <div className="space-y-2">
             <Label htmlFor="login-email">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
               <Input
                 id="login-email"
                 type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
                 placeholder="nama@email.com"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="pl-10"
+                className="pl-10 relative z-0"
                 required
               />
             </div>
@@ -303,16 +291,7 @@ export function LoginDialog({
 
           {/* Password Field */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="login-password">Password</Label>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-blue-600 transition hover:text-blue-700"
-              >
-                Lupa password?
-              </button>
-            </div>
+            <Label htmlFor="login-password">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <Input
