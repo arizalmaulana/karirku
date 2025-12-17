@@ -22,49 +22,49 @@ export function RecruiterSidebar() {
         <>
             {/* MOBILE BUTTON */}
             <button 
-                className="lg:hidden fixed top-16 left-3 z-50 bg-white p-2.5 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200"
+                className="lg:hidden fixed top-16 left-3 z-50 bg-gradient-to-br from-white to-purple-50/30 p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all border-0 hover:bg-gradient-to-br hover:from-indigo-50 hover:to-purple-50"
                 onClick={toggleSidebar}
                 aria-label="Toggle sidebar"
             >
-                <LayoutDashboard className="w-5 h-5 text-gray-700" />
+                <LayoutDashboard className="w-5 h-5 text-indigo-600" />
             </button>
 
             {/* MOBILE BACKDROP */}
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity duration-300"
+                    className="fixed inset-0 bg-gradient-to-br from-indigo-900/15 via-purple-900/15 to-pink-900/15 z-40 lg:hidden backdrop-blur-md transition-opacity duration-300"
                     onClick={toggleSidebar}
                 />
             )}
 
             {/* SIDEBAR */}
             <aside className={`
-                fixed top-0 left-0 z-50 h-screen w-64 sm:w-72 bg-white shadow-2xl overflow-y-auto
+                fixed top-0 left-0 z-50 h-screen w-56 sm:w-60 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 border-0 shadow-lg overflow-y-auto
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
-                lg:translate-x-0 lg:shadow-xl
+                lg:translate-x-0
             `}>
                 
                 {/* LOGO HEADER */}
-                <div className="h-20 flex items-center justify-between px-6 border-b">
+                <div className="h-20 flex items-center justify-between px-6 border-0 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md">
                             <Briefcase className="w-6 h-6 text-white" />
                         </div>
-                        <span className="font-semibold text-gray-900">KarirKu</span>
+                        <span className="font-bold text-gray-900 text-lg">KarirKu</span>
                     </div>
 
                     {/* CLOSE BUTTON MOBILE */}
                     <button 
                         onClick={toggleSidebar}
-                        className="lg:hidden text-gray-400 hover:text-gray-600"
+                        className="lg:hidden text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* MENU */}
-                <nav className="p-4 space-y-1">
+                <nav className="p-4 space-y-2">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -77,13 +77,13 @@ export function RecruiterSidebar() {
                                     flex items-center gap-3 px-4 py-3 rounded-xl w-full transition-all duration-200 touch-manipulation
                                     ${
                                         isActive
-                                            ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white shadow-lg"
-                                            : "text-gray-600 hover:bg-gray-100 active:bg-gray-200"
+                                            ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-md shadow-indigo-500/20 font-medium"
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600 active:bg-gray-100"
                                     }
                                 `}
                             >
-                                <item.icon className="w-5 h-5 shrink-0" />
-                                <span className="truncate">{item.label}</span>
+                                <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-gray-600"}`} />
+                                <span className="truncate text-sm">{item.label}</span>
                             </Link>
                         );
                     })}

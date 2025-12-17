@@ -406,21 +406,21 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
 
         if (isApproved && status === 'approved') {
             return (
-                <Badge className="bg-green-100 text-green-800 border-green-300">
+                <Badge className="bg-green-100 text-green-800 border-green-300/40">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     Disetujui
                 </Badge>
             );
         } else if (status === 'rejected') {
             return (
-                <Badge className="bg-red-100 text-red-800 border-red-300">
+                <Badge className="bg-red-100 text-red-800 border-red-300/40">
                     <XCircle className="w-3 h-3 mr-1" />
                     Ditolak
                 </Badge>
             );
         } else {
             return (
-                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300/40">
                     <AlertCircle className="w-3 h-3 mr-1" />
                     Menunggu Persetujuan
                 </Badge>
@@ -432,7 +432,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
         <form onSubmit={handleSubmit} className="space-y-8">
             {/* Status Badge */}
             {initialData && (
-                <Card className="border-2">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -711,6 +711,7 @@ export function CompanyProfileForm({ initialData }: CompanyProfileFormProps) {
                     variant="outline"
                     onClick={() => router.back()}
                     disabled={isLoading}
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors disabled:opacity-50"
                 >
                     Batal
                 </Button>

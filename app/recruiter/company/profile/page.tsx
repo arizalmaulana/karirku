@@ -75,7 +75,7 @@ export default async function CompanyProfilePage() {
             </div>
 
             {!company && (
-                <Card className="border-2 border-yellow-200 bg-yellow-50">
+                <Card className="border-0 bg-yellow-50">
                     <CardHeader>
                         <CardTitle className="text-yellow-900">Belum Ada Profile Perusahaan</CardTitle>
                         <CardDescription className="text-yellow-700">

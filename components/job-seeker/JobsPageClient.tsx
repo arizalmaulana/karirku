@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { Job } from "@/types/job";
 import type { Profile } from "@/lib/types";
-import { calculateMatchScore as calculateMatchScoreUtil } from "@/lib/utils/jobMatching";
+import { calculateMatchScoreFromJobUIAndProfile } from "@/lib/utils/jobMatching";
 
 interface JobsPageClientProps {
     jobs: Job[];
@@ -30,6 +30,7 @@ interface JobsPageClientProps {
 
 export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCompany }: JobsPageClientProps) {
     const router = useRouter();
+    const filterAsideRef = useRef<HTMLElement>(null);
     const [searchQuery, setSearchQuery] = useState(initialCompany || "");
     const [showMap, setShowMap] = useState(false);
     const [filters, setFilters] = useState({
@@ -57,6 +58,44 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         }
     }, [initialJobId, router]);
 
+    // Apply sticky positioning for filter sidebar
+    useEffect(() => {
+        if (typeof window === "undefined" || !filterAsideRef.current) return;
+
+        const aside = filterAsideRef.current;
+
+        const applySticky = () => {
+            if (window.innerWidth >= 1024) {
+                // Apply sticky positioning - now that container is separated, this should work
+                aside.style.position = 'sticky';
+                aside.style.top = '1rem';
+                aside.style.alignSelf = 'flex-start';
+                aside.style.maxHeight = 'calc(100vh - 6rem)';
+                aside.style.overflowY = 'auto';
+                aside.style.zIndex = '10';
+            } else {
+                aside.style.position = '';
+                aside.style.top = '';
+                aside.style.alignSelf = '';
+                aside.style.maxHeight = '';
+                aside.style.overflowY = '';
+                aside.style.zIndex = '';
+            }
+        };
+
+        requestAnimationFrame(() => {
+            applySticky();
+            setTimeout(applySticky, 100);
+        });
+
+        window.addEventListener('resize', applySticky);
+
+        return () => {
+            window.removeEventListener('resize', applySticky);
+        };
+    }, []);
+
+
     // Helper function to convert display type to database type
     const getDatabaseTypeFromDisplay = (displayType: string): string => {
         const typeMap: Record<string, string> = {
@@ -76,12 +115,9 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
             return 0;
         }
         
-        return calculateMatchScoreUtil(
-            userProfile.skills || [],
-            job.skills_required || null,
-            userProfile.major || null,
-            job.major_required || null
-        );
+        // Use same function as dashboard: calculateMatchScoreFromJobUIAndProfile
+        // This uses all 4 variables: skills, major, education, experience
+        return calculateMatchScoreFromJobUIAndProfile(job, userProfile);
     };
 
     // Filter jobs based on active tab and filters
@@ -91,19 +127,9 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
         // Apply tab filter
         if (activeTab === "bookmark") {
             result = result.filter((job) => savedJobs.includes(job.id));
-        } else if (activeTab === "matched" && profile) {
-            // Filter jobs based on profile skills (simple matching)
-            if (profile.skills && profile.skills.length > 0) {
-                const userSkills = profile.skills.map(s => s.toLowerCase());
-                result = result.filter((job) => {
-                    // Simple matching: check if job description or requirements contain user skills
-                    const jobText = `${job.description} ${job.requirements?.join(' ')}`.toLowerCase();
-                    return userSkills.some(skill => jobText.includes(skill));
-                });
-            } else {
-                result = [];
-            }
         }
+        // For "matched" tab, we don't filter here - we'll calculate match scores and show top 10 in JobListContentWithMatch
+        // This ensures consistency with dashboard job recommendation logic
 
         // Apply search query and filters
         return result.filter((job) => {
@@ -145,17 +171,20 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
     return (
         <>
             <div className="container mx-auto px-2 py-4">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                    {/* Filters Sidebar */}
-                    <aside className="lg:col-span-1 border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
+                <div className="flex flex-col lg:flex-row gap-4">
+                    {/* Filters Sidebar - Separated Container */}
+                    <aside 
+                        ref={filterAsideRef}
+                        className="lg:w-64 lg:shrink-0 order-2 lg:order-1"
+                    >
                         <JobFilters
                             filters={filters}
                             onFilterChange={setFilters}
                         />
                     </aside>
 
-                    {/* Job Listings */}
-                    <main className="lg:col-span-3">
+                    {/* Job Listings - Main Content */}
+                    <main className="flex-1 order-1 lg:order-2">
                         {/* Header */}
                         <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
                             <div>
@@ -171,7 +200,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                             {/* <Button 
                                 variant="outline" 
                                 onClick={() => setShowMap(true)}
-                                className="flex items-center gap-2 border-2 border-cyan-200 text-cyan-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-400 transition-all"
+                                className="flex items-center gap-2 border border-cyan-200/40 text-cyan-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-300/50 transition-all"
                             >
                                 <Map className="w-4 h-4" />
                                 Lihat di Map
@@ -181,7 +210,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                         {/* Search Bar */}
                         <div className="mb-4">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                                 <Input
                                     type="text"
                                     placeholder="Cari posisi, perusahaan, atau kata kunci..."
@@ -195,16 +224,16 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                         {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
                             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
-                                <TabsTrigger value="all" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-purple-600">
-                                    <Briefcase className="h-4 w-4" />
+                                <TabsTrigger value="all" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
+                                    <Briefcase className="h-5 w-5" />
                                     Semua
                                 </TabsTrigger>
-                                <TabsTrigger value="bookmark" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-purple-600">
-                                    <BookmarkCheck className="h-4 w-4" />
+                                <TabsTrigger value="bookmark" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
+                                    <BookmarkCheck className="h-5 w-5" />
                                     Disimpan ({savedJobs.length})
                                 </TabsTrigger>
-                                <TabsTrigger value="matched" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-purple-600">
-                                    <Sparkles className="h-4 w-4" />
+                                <TabsTrigger value="matched" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800" >
+                                    <Sparkles className="h-5 w-5" />
                                     Job Matcher
                                 </TabsTrigger>
                             </TabsList>
@@ -221,7 +250,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                             <TabsContent value="bookmark" className="mt-4">
                                 {savedJobs.length === 0 ? (
                                     <div className="text-center py-8">
-                                        <Bookmark className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <Bookmark className="h-12 w-12 text-gray-500 mx-auto mb-4" />
                                         <p className="text-gray-500">Belum ada lowongan yang disimpan</p>
                                     </div>
                                 ) : (
@@ -234,7 +263,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                                 )}
                             </TabsContent>
 
-                            <TabsContent value="matched" className="mt-4">
+                            <TabsContent value="matched" className="mt-4 ">
                                 {!profile ? (
                                     <div className="text-center py-8">
                                         <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -310,7 +339,7 @@ function JobListContent({ jobs, savedJobs, onToggleSave, onJobClick }: JobListCo
                             {savedJobs.includes(job.id) ? (
                                 <BookmarkCheck className="w-5 h-5 text-purple-600 fill-purple-600" />
                             ) : (
-                                <Bookmark className="w-5 h-5 text-gray-400 hover:text-purple-600 transition" />
+                                <Bookmark className="w-5 h-5 text-gray-500 hover:text-indigo-600 transition" />
                             )}
                         </button>
                     </div>
@@ -334,18 +363,17 @@ interface JobListContentWithMatchProps {
 }
 
 function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJobClick }: JobListContentWithMatchProps) {
-    // Calculate match scores for all jobs
+    // Calculate match scores for all jobs using same logic as dashboard
+    // This uses all 4 variables: skills, major, education, experience
+    // Get top 10 with highest match score
     const jobsWithScores = useMemo(() => {
         return jobs.map(job => {
-            const matchScore = calculateMatchScoreUtil(
-                profile.skills || [],
-                job.skills_required || null,
-                profile.major || null,
-                job.major_required || null
-            );
+            const matchScore = calculateMatchScoreFromJobUIAndProfile(job, profile);
             
             return { job, matchScore };
-        }).sort((a, b) => b.matchScore - a.matchScore);
+        })
+        .sort((a, b) => b.matchScore - a.matchScore) // Sort by match score descending
+        .slice(0, 10); // Get top 10 jobs with highest match score
     }, [jobs, profile]);
 
     if (jobsWithScores.length === 0) {
@@ -379,7 +407,7 @@ function JobListContentWithMatch({ jobs, savedJobs, profile, onToggleSave, onJob
                             {savedJobs.includes(job.id) ? (
                                 <BookmarkCheck className="w-5 h-5 text-purple-600 fill-purple-600" />
                             ) : (
-                                <Bookmark className="w-5 h-5 text-gray-400 hover:text-purple-600 transition" />
+                                <Bookmark className="w-5 h-5 text-gray-500 hover:text-indigo-600 transition" />
                             )}
                         </button>
                         <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-lg shadow-md text-sm font-semibold">

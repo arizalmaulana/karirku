@@ -44,6 +44,18 @@ async function getApplications(statusFilter?: string) {
     return data as any[];
 }
 
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        draft: "bg-gray-100 text-gray-700 border-0",
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
+}
+
 function getStatusBadgeVariant(status: string) {
     switch (status) {
         case "accepted":
@@ -82,13 +94,13 @@ export default async function ApplicationsManagementPage({
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold text-blue-900">Manajemen Lamaran</h1>
+                <h1 className="text-3xl font-semibold text-purple-600">Manajemen Lamaran</h1>
                 <p className="text-gray-500 mt-1">
                     Kelola dan pantau semua lamaran pekerjaan
                 </p>
             </div>
 
-            <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
+            <Card className="border-0 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>
                         {statusFilter ? "Lamaran Menunggu Tindakan" : "Daftar Lamaran"}
@@ -101,27 +113,28 @@ export default async function ApplicationsManagementPage({
                 </CardHeader>
                 <CardContent>
                     {applications.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Pelamar</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lowongan</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Perusahaan</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Submit</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {applications.map((app: any) => (
-                                    <TableRow key={app.id}>
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-400">
+                                        <TableHead className="font-semibold text-center">Pelamar</TableHead>
+                                        <TableHead className="font-semibold text-center">Lowongan</TableHead>
+                                        <TableHead className="font-semibold text-center">Perusahaan</TableHead>
+                                        <TableHead className="font-semibold text-center">Status</TableHead>
+                                        <TableHead className="font-semibold text-center">Tanggal Submit</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {applications.map((app: any) => (
+                                        <TableRow key={app.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">
                                             {app.profiles?.full_name || "Unknown"}
                                         </TableCell>
                                         <TableCell className="text-center">{app.job_listings?.title || "Unknown"}</TableCell>
                                         <TableCell className="text-center">{app.job_listings?.company_name || "Unknown"}</TableCell>
                                         <TableCell className="text-center">
-                                            <Badge variant={getStatusBadgeVariant(app.status)}>
+                                            <Badge className={getStatusBadgeColor(app.status)}>
                                                 {getStatusLabel(app.status)}
                                             </Badge>
                                         </TableCell>
@@ -130,12 +143,12 @@ export default async function ApplicationsManagementPage({
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center gap-2">
-                                                <Button variant="ghost" size="sm" asChild className="hover:bg-blue-50 transition-all">
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-blue-50 transition-all" title="Lihat Detail">
                                                     <Link href={`/admin/applications/${app.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild className="hover:bg-green-50 transition-all">
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-green-50 transition-all" title="Edit Lamaran">
                                                     <Link href={`/admin/applications/${app.id}/edit`}>
                                                         <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
@@ -145,8 +158,9 @@ export default async function ApplicationsManagementPage({
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-gray-500">Belum ada lamaran pekerjaan</p>

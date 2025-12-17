@@ -38,7 +38,7 @@ export function RecruiterAccessGuard({
     if (!isComplete) {
         return (
             <div className="max-w-2xl mx-auto mt-8">
-                <Card className="border-2 border-yellow-200 bg-yellow-50">
+                <Card className="border-0 bg-yellow-50">
                     <CardHeader>
                         <div className="flex items-center gap-3 mb-2">
                             <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -96,7 +96,7 @@ export function RecruiterAccessGuard({
 
         return (
             <div className="max-w-2xl mx-auto mt-8">
-                <Card className={`border-2 ${isRejected ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                <Card className={`border-0 ${isRejected ? 'bg-red-50' : 'bg-yellow-50'}`}>
                     <CardHeader>
                         <div className="flex items-center gap-3 mb-2">
                             {isRejected ? (
@@ -154,6 +154,11 @@ export function RecruiterAccessGuard({
     // Jika sudah lengkap dan approved, tampilkan children
     return <>{children}</>;
 }
+
+
+
+
+
 
 
 

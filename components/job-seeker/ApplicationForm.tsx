@@ -181,6 +181,7 @@ export function ApplicationForm({ jobId, jobTitle }: ApplicationFormProps) {
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors"
                 >
                     Batal
                 </Button>

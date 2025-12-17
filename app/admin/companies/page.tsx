@@ -14,6 +14,8 @@ import Link from "next/link";
 import { Eye, Building2, CheckCircle2, XCircle, Clock, Lock } from "lucide-react";
 import type { Company, Profile } from "@/lib/types";
 import { redirect } from "next/navigation";
+import { TableActionButton } from "@/components/recruiter/TableActionButton";
+
 
 async function getCompanies(filter?: string) {
     const supabase = await createSupabaseServerClient();
@@ -63,6 +65,15 @@ async function getCompanies(filter?: string) {
     }
     
     return (data || []) as (Company & { profiles?: { full_name: string; email: string } })[];
+}
+
+function getStatusBadgeColor(status: string | null): string {
+    const colors: Record<string, string> = {
+        approved: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+        pending: "bg-yellow-100 text-yellow-700 border-0",
+    };
+    return colors[status || ""] || "bg-gray-100 text-gray-700 border-0";
 }
 
 function getStatusBadgeVariant(status: string | null) {
@@ -133,58 +144,58 @@ export default async function CompaniesManagementPage({
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-blue-700 font-medium mb-1">Total Perusahaan</p>
-                                <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
+                                <p className="text-sm text-gray-600 font-medium mb-1">Total Perusahaan</p>
+                                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                             </div>
-                            <div className="p-3 bg-blue-200 rounded-xl">
-                                <Building2 className="h-6 w-6 text-blue-700" />
+                            <div className="p-3 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl shadow-md">
+                                <Building2 className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-yellow-700 font-medium mb-1">Menunggu</p>
-                                <p className="text-3xl font-bold text-yellow-900">{stats.pending}</p>
+                                <p className="text-sm text-gray-600 font-medium mb-1">Menunggu</p>
+                                <p className="text-3xl font-bold text-gray-900">{stats.pending}</p>
                             </div>
-                            <div className="p-3 bg-yellow-200 rounded-xl">
-                                <Clock className="h-6 w-6 text-yellow-700" />
+                            <div className="p-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-md">
+                                <Clock className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-green-700 font-medium mb-1">Disetujui</p>
-                                <p className="text-3xl font-bold text-green-900">{stats.approved}</p>
+                                <p className="text-sm text-gray-600 font-medium mb-1">Disetujui</p>
+                                <p className="text-3xl font-bold text-gray-900">{stats.approved}</p>
                             </div>
-                            <div className="p-3 bg-green-200 rounded-xl">
-                                <CheckCircle2 className="h-6 w-6 text-green-700" />
+                            <div className="p-3 bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-md">
+                                <CheckCircle2 className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-red-700 font-medium mb-1">Ditolak</p>
-                                <p className="text-3xl font-bold text-red-900">{stats.rejected}</p>
+                                <p className="text-sm text-gray-600 font-medium mb-1">Ditolak</p>
+                                <p className="text-3xl font-bold text-gray-900">{stats.rejected}</p>
                             </div>
-                            <div className="p-3 bg-red-200 rounded-xl">
-                                <XCircle className="h-6 w-6 text-red-700" />
+                            <div className="p-3 bg-gradient-to-br from-red-400 to-red-600 rounded-xl shadow-md">
+                                <XCircle className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -197,7 +208,10 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={!filter ? "default" : "outline"}
                         size="sm" 
-                        className="hover:bg-blue-400 hover:text-white transition-all duration-300"
+                        className={!filter 
+                            ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all"
+                            : "hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors cursor-pointer"
+                        }
                     >
                         Semua ({stats.total})
                     </Button>
@@ -206,7 +220,10 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "pending" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-purple-400 hover:text-white transition-all duration-300"
+                        className={filter === "pending"
+                            ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all"
+                            : "hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors cursor-pointer"
+                        }
                     >
                         Menunggu ({stats.pending})
                     </Button>
@@ -215,7 +232,10 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "approved" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-green-400 hover:text-white transition-all duration-300"
+                        className={filter === "approved"
+                            ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all"
+                            : "hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors cursor-pointer"
+                        }
                     >
                         Disetujui ({stats.approved})
                     </Button>
@@ -224,7 +244,10 @@ export default async function CompaniesManagementPage({
                     <Button
                         variant={filter === "rejected" ? "default" : "outline"}
                         size="sm"
-                        className="hover:bg-red-400 hover:text-white transition-all duration-300"
+                        className={filter === "rejected"
+                            ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all"
+                            : "hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors cursor-pointer"
+                        }
                     >
                         Ditolak ({stats.rejected})
                     </Button>
@@ -232,7 +255,7 @@ export default async function CompaniesManagementPage({
             </div>
 
             {/* Companies Table */}
-            <Card className="border border-purple-200 bg-gradient-to-br from-blue-100 to-pink-100/50 shadow-sm rounded-2xl">
+            <Card className="border-0 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>
                         {filter === "pending" 
@@ -251,27 +274,28 @@ export default async function CompaniesManagementPage({
                 </CardHeader>
                 <CardContent>
                     {companies.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Nama Perusahaan</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Recruiter</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Industri</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lokasi</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Daftar</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {companies.map((company) => (
-                                    <TableRow key={company.id}>
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-400">
+                                        <TableHead className="font-semibold text-center">Nama Perusahaan</TableHead>
+                                        <TableHead className="font-semibold text-center">Recruiter</TableHead>
+                                        <TableHead className="font-semibold text-center">Industri</TableHead>
+                                        <TableHead className="font-semibold text-center">Lokasi</TableHead>
+                                        <TableHead className="font-semibold text-center">Status</TableHead>
+                                        <TableHead className="font-semibold text-center">Tanggal Daftar</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {companies.map((company) => (
+                                        <TableRow key={company.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 {company.name}
                                                 {company.is_blocked && (
-                                                    <Badge variant="destructive" className="text-xs bg-red-100 text-red-500">
-                                                        <Lock className="h-3 w-3 mr-1 text-red-500" />
+                                                    <Badge className="text-xs bg-red-100 text-red-700 border-0">
+                                                        <Lock className="h-3 w-3 mr-1 text-red-700" />
                                                         Diblokir
                                                     </Badge>
                                                 )}
@@ -291,8 +315,7 @@ export default async function CompaniesManagementPage({
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <Badge 
-                                                variant={getStatusBadgeVariant(company.status)} 
-                                                className="flex items-center gap-1 w-fit mx-auto"
+                                                className={`${getStatusBadgeColor(company.status)} flex items-center gap-1 w-fit mx-auto`}
                                             >
                                                 {getStatusIcon(company.status)}
                                                 {getStatusLabel(company.status)}
@@ -302,17 +325,19 @@ export default async function CompaniesManagementPage({
                                             {new Date(company.created_at).toLocaleDateString("id-ID")}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Button variant="ghost" size="sm" asChild className="hover:text-blue-500 transition-all duration-300 rounded-xl">
-                                                <Link href={`/admin/companies/${company.id}`}>
-                                                    <Eye className="h-4 w-4 mr-2 text-blue-500" />
-                                                    Detail
-                                                </Link>
-                                            </Button>
+                                            <TableActionButton
+                                                href={`/admin/companies/${company.id}`}
+                                                color="blue"
+                                            >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                Detail
+                                            </TableActionButton>
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <div className="text-center py-12">
                             <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />

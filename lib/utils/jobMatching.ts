@@ -94,10 +94,19 @@ export function calculateMatchScore(
     jobSeekerExperience: string | null = null,
     jobRequiredExperience: string | null = null
 ): number {
+    // Validasi: Jika skills belum diisi, return 0%
+    // Skills adalah variable paling penting (40% dari total score) untuk job matching
+    if (!jobSeekerSkills || jobSeekerSkills.length === 0) {
+        return 0;
+    }
+
     let skillScore = 0;
     let majorScore = 0;
     let educationScore = 0;
     let experienceScore = 0;
+    
+    // Variabel untuk menyimpan matched skills count (untuk digunakan di akhir)
+    let matchedSkillsCount = 0;
 
     // 1. Hitung skill match score (40% dari total score)
     if (jobRequiredSkills && jobRequiredSkills.length > 0) {
@@ -111,25 +120,40 @@ export function calculateMatchScore(
                 )
             );
 
-            const matchRatio = matchedSkills.length / requiredSkillsLower.length;
+            matchedSkillsCount = matchedSkills.length;
+            const matchRatio = matchedSkillsCount / requiredSkillsLower.length;
             
-            // Jika semua skill match, beri score penuh
-            if (matchRatio === 1) {
-                skillScore = 40;
-            } else if (matchRatio >= 0.75) {
-                // 75%+ match = score sangat tinggi
-                skillScore = 38;
-            } else if (matchRatio >= 0.5) {
-                // 50%+ match = score tinggi
-                skillScore = 32;
-            } else if (matchRatio >= 0.25) {
-                // 25%+ match = score sedang
-                skillScore = 20;
-            } else if (matchRatio > 0) {
-                // Ada match sedikit = score minimal tapi masih ada
-                skillScore = 12;
-            } else {
-                // Tidak ada match sama sekali, tapi user punya skill = score minimal
+            // Perhitungan lebih granular dengan variasi yang lebih halus
+            // Base score berdasarkan match ratio dengan formula linear yang lebih detail
+            let baseSkillScore = matchRatio * 40;
+            
+            // Tambahkan variasi berdasarkan jumlah skill yang match secara detail
+            const matchedCount = matchedSkillsCount;
+            const totalRequired = requiredSkillsLower.length;
+            const extraSkills = seekerSkillsLower.length - matchedCount; // Skills ekstra yang user punya
+            
+            // Bonus jika user punya skill lebih banyak dari required (menunjukkan kompetensi lebih)
+            let extraSkillsBonus = 0;
+            if (extraSkills > 0) {
+                // Bonus kecil untuk setiap skill ekstra (max 3 poin)
+                extraSkillsBonus = Math.min(extraSkills * 0.5, 3);
+            }
+            
+            // Bonus granularitas: semakin banyak skill yang match, semakin baik
+            // Ini memberikan variasi untuk jobs dengan jumlah skill berbeda
+            const granularityBonus = (matchedCount / Math.max(totalRequired, 1)) * 2;
+            
+            // Variasi berdasarkan ratio exact vs partial match
+            // Cek exact match vs partial match untuk variasi lebih lanjut
+            const exactMatches = requiredSkillsLower.filter((requiredSkill) =>
+                seekerSkillsLower.includes(requiredSkill)
+            ).length;
+            const exactMatchBonus = (exactMatches / Math.max(totalRequired, 1)) * 1.5;
+            
+            skillScore = Math.min(baseSkillScore + extraSkillsBonus + granularityBonus + exactMatchBonus, 40);
+            
+            // Jika tidak ada match sama sekali, tapi user punya skill = score minimal
+            if (matchRatio === 0) {
                 skillScore = 8;
             }
         } else {
@@ -154,11 +178,23 @@ export function calculateMatchScore(
                 seekerMajorLower.includes(requiredMajorLower) ||
                 requiredMajorLower.includes(seekerMajorLower)
             ) {
-                // Partial match - beri score tinggi
-                majorScore = 20;
+                // Partial match - hitung similarity untuk variasi lebih halus
+                const longer = seekerMajorLower.length > requiredMajorLower.length 
+                    ? seekerMajorLower 
+                    : requiredMajorLower;
+                const shorter = seekerMajorLower.length <= requiredMajorLower.length 
+                    ? seekerMajorLower 
+                    : requiredMajorLower;
+                
+                // Hitung similarity ratio untuk variasi
+                const similarity = shorter.length / longer.length;
+                majorScore = 18 + (similarity * 4); // Range 18-22 untuk partial match
             } else {
-                // Tidak match exact, tapi user punya major = score sedang
-                majorScore = 10;
+                // Tidak match exact, tapi user punya major = score sedang dengan variasi
+                // Berdasarkan panjang string untuk memberikan variasi kecil
+                const similarity = Math.min(seekerMajorLower.length, requiredMajorLower.length) / 
+                                  Math.max(seekerMajorLower.length, requiredMajorLower.length);
+                majorScore = 8 + (similarity * 3); // Range 8-11
             }
         } else {
             // Jika ada major required tapi user tidak punya major, beri score minimal
@@ -203,20 +239,15 @@ export function calculateMatchScore(
         const requiredLevel = getEducationLevel(requiredEduLower);
 
         if (seekerLevel >= requiredLevel && seekerLevel > 0 && requiredLevel > 0) {
-            // Jika pendidikan job seeker >= required, beri score penuh
-            educationScore = 15;
+            // Jika pendidikan job seeker >= required, beri score penuh dengan variasi kecil
+            // Bonus jika lebih tinggi dari required
+            const levelDifference = seekerLevel - requiredLevel;
+            educationScore = 14 + Math.min(levelDifference * 0.5, 1); // Range 14-15
         } else if (seekerLevel > 0 && requiredLevel > 0) {
-            // Jika pendidikan job seeker < required, beri score parsial (lebih murah hati)
+            // Jika pendidikan job seeker < required, beri score parsial dengan variasi halus
             const ratio = seekerLevel / requiredLevel;
-            if (ratio >= 0.8) {
-                educationScore = 14; // Hampir sesuai
-            } else if (ratio >= 0.6) {
-                educationScore = 11; // Cukup sesuai
-            } else if (ratio >= 0.4) {
-                educationScore = 8; // Agak sesuai
-            } else {
-                educationScore = 6; // Kurang sesuai tapi masih ada
-            }
+            // Gunakan formula linear untuk variasi lebih halus
+            educationScore = 5 + (ratio * 9); // Range 5-14 berdasarkan ratio
         } else {
             // Exact match jika tidak bisa di-parse
             if (seekerEduLower === requiredEduLower) {
@@ -263,22 +294,15 @@ export function calculateMatchScore(
         const requiredYears = extractYears(requiredExpLower);
 
         if (seekerYears >= requiredYears && seekerYears > 0 && requiredYears > 0) {
-            // Jika pengalaman job seeker >= required, beri score penuh
-            experienceScore = 20;
+            // Jika pengalaman job seeker >= required, beri score dengan variasi
+            // Bonus jika jauh lebih banyak dari required
+            const excessRatio = Math.min((seekerYears - requiredYears) / Math.max(requiredYears, 1), 1);
+            experienceScore = 19 + (excessRatio * 1); // Range 19-20
         } else if (seekerYears > 0 && requiredYears > 0) {
-            // Jika pengalaman job seeker < required, beri score parsial (lebih murah hati)
+            // Jika pengalaman job seeker < required, gunakan formula linear untuk variasi halus
             const ratio = seekerYears / requiredYears;
-            if (ratio >= 0.8) {
-                experienceScore = 19; // Hampir sesuai
-            } else if (ratio >= 0.6) {
-                experienceScore = 16; // Cukup sesuai
-            } else if (ratio >= 0.4) {
-                experienceScore = 12; // Agak sesuai
-            } else if (ratio >= 0.2) {
-                experienceScore = 9; // Kurang sesuai tapi masih ada
-            } else {
-                experienceScore = 7; // Sangat kurang tapi masih ada
-            }
+            // Formula linear dengan curve untuk memberikan variasi lebih halus
+            experienceScore = 6 + (ratio * 13); // Range 6-19 berdasarkan ratio
         } else {
             // Jika tidak bisa extract years, cek keyword match
             const experienceKeywords = ['pengalaman', 'experience', 'bekerja', 'kerja', 'tahun'];
@@ -308,7 +332,7 @@ export function calculateMatchScore(
 
     let totalScore = skillScore + majorScore + educationScore + experienceScore;
     
-    // Bonus jika banyak aspek yang match dengan baik
+    // Bonus granular dengan variasi lebih halus
     const excellentMatch = [
         skillScore >= 35,      // Skill match sangat baik
         majorScore >= 20,      // Major match baik
@@ -323,35 +347,93 @@ export function calculateMatchScore(
         experienceScore >= 12   // Experience match cukup
     ].filter(Boolean).length;
     
-    // Bonus berdasarkan jumlah aspek yang match dengan baik
-    if (excellentMatch >= 3) {
-        totalScore += 10; // Bonus besar jika 3+ aspek match sangat baik
+    // Bonus berdasarkan jumlah aspek yang match dengan variasi granular
+    let bonusScore = 0;
+    if (excellentMatch >= 4) {
+        // Bonus maksimal jika semua 4 aspek match sangat baik
+        bonusScore += 15 + (excellentMatch * 1); // Range 19-20
+    } else if (excellentMatch >= 3) {
+        bonusScore += 10 + (excellentMatch * 0.8); // Range 12.4-12.8
     } else if (excellentMatch >= 2) {
-        totalScore += 7; // Bonus jika 2 aspek match sangat baik
+        bonusScore += 7 + (excellentMatch * 0.6); // Range 8.2-8.4
     } else if (goodMatch >= 3) {
-        totalScore += 5; // Bonus jika 3+ aspek match baik
+        bonusScore += 5 + (goodMatch * 0.5); // Range 6.5-6.8
     } else if (goodMatch >= 2) {
-        totalScore += 3; // Bonus jika 2 aspek match baik
+        bonusScore += 3 + (goodMatch * 0.4); // Range 3.8-4
     }
     
-    // Bonus tambahan jika skill match sangat baik (>= 35)
+    // Bonus tambahan jika skill match sangat baik dengan variasi granular
     if (skillScore >= 35) {
-        totalScore += 5;
+        bonusScore += 4 + ((skillScore - 35) / 5 * 1); // Range 4-5
     } else if (skillScore >= 30) {
-        totalScore += 3;
+        bonusScore += 2 + ((skillScore - 30) / 5 * 1); // Range 2-3
     }
     
-    // Bonus jika major exact match
+    // Bonus jika major exact match dengan variasi kecil
     if (majorScore === 25) {
-        totalScore += 3;
+        bonusScore += 2.5; // Exact match bonus
+    } else if (majorScore >= 20) {
+        bonusScore += 1 + ((majorScore - 20) / 5 * 1); // Range 1-2
     }
     
-    // Bonus jika semua aspek ada (tidak ada yang 0 atau sangat kecil)
+    // Bonus jika semua aspek ada dengan variasi kecil
     const allAspectsPresent = skillScore > 5 && majorScore > 5 && educationScore > 5 && experienceScore > 5;
     if (allAspectsPresent) {
-        totalScore += 2;
+        // Bonus lebih granular berdasarkan kualitas keseluruhan
+        const overallQuality = (skillScore + majorScore + educationScore + experienceScore) / 100;
+        bonusScore += 1 + (overallQuality * 1); // Range 1-2
     }
     
+    // Bonus besar jika SEMUA variabel user sudah diisi DAN cocok dengan job
+    const allVariablesFilled = jobSeekerSkills.length > 0 && 
+                               jobSeekerMajor && 
+                               jobSeekerEducation && 
+                               jobSeekerExperience;
+    
+    if (allVariablesFilled) {
+        // Cek apakah semua variabel cocok dengan job requirements
+        const allVariablesMatch = 
+            (skillScore >= 30) &&           // Skill match baik
+            (majorScore >= 18 || !jobRequiredMajor) &&  // Major match baik atau tidak ada requirement
+            (educationScore >= 12 || !jobRequiredEducation) && // Education match baik atau tidak ada requirement
+            (experienceScore >= 16 || !jobRequiredExperience); // Experience match baik atau tidak ada requirement
+        
+        if (allVariablesMatch) {
+            // Bonus besar jika semua variabel terisi dan cocok - mendekati 100%
+            const completenessBonus = 8 + (totalScore / 100 * 5); // Range 8-13, semakin tinggi score base, semakin besar bonus
+            bonusScore += completenessBonus;
+        } else {
+            // Bonus sedang jika semua variabel terisi tapi tidak semuanya cocok sempurna
+            const partialCompletenessBonus = 3 + (totalScore / 100 * 2); // Range 3-5
+            bonusScore += partialCompletenessBonus;
+        }
+    }
+    
+    totalScore += bonusScore;
+    
+    // Tambahkan variasi kecil berdasarkan kombinasi unik faktor-faktor
+    // Ini memberikan variasi konsisten untuk setiap kombinasi job-profile
+    // Variasi berdasarkan jumlah skill required dan match ratio untuk memberikan diferensiasi
+    if (jobRequiredSkills && jobRequiredSkills.length > 0) {
+        const skillVariety = matchedSkillsCount / Math.max(jobRequiredSkills.length, 1);
+        const skillCountFactor = Math.min(jobRequiredSkills.length / 10, 1); // Normalize berdasarkan jumlah skill
+        // Variasi kecil (0-2 poin) berdasarkan kombinasi faktor
+        const varietyBonus = (skillVariety * skillCountFactor) * 1.5;
+        totalScore += varietyBonus;
+    }
+    
+    // Variasi kecil berdasarkan kombinasi education dan experience
+    if (jobSeekerEducation && jobSeekerExperience && jobRequiredEducation && jobRequiredExperience) {
+        const eduMatch = jobSeekerEducation.toLowerCase().includes(jobRequiredEducation.toLowerCase()) ||
+                        jobRequiredEducation.toLowerCase().includes(jobSeekerEducation.toLowerCase());
+        const expMatch = jobSeekerExperience.toLowerCase().includes(jobRequiredExperience.toLowerCase()) ||
+                        jobRequiredExperience.toLowerCase().includes(jobSeekerExperience.toLowerCase());
+        if (eduMatch && expMatch) {
+            totalScore += 0.8; // Bonus kecil jika keduanya match
+        }
+    }
+    
+    // Bulatkan ke integer (variasi sudah tercermin dari perhitungan granular sebelumnya)
     return Math.min(Math.round(totalScore), 100); // Maksimal 100%
 }
 
@@ -362,6 +444,11 @@ export function calculateMatchScoreFromJobAndProfile(
     job: JobListing,
     profile: Profile
 ): number {
+    // Validasi: Jika skills belum diisi, return 0%
+    if (!profile.skills || profile.skills.length === 0) {
+        return 0;
+    }
+
     const jobEducation = extractEducationFromJob(job);
     const jobExperience = extractExperienceFromJob(job);
 
@@ -455,6 +542,11 @@ export function calculateMatchScoreFromJobUIAndProfile(
         }
     }
 
+    // Validasi: Jika skills belum diisi, return 0%
+    if (!profile.skills || profile.skills.length === 0) {
+        return 0;
+    }
+
     return calculateMatchScore(
         profile.skills || [],
         job.skills_required || null,
@@ -475,7 +567,15 @@ export function findMatchingJobs(
     allJobs: JobListing[],
     locationFilter?: string
 ): Array<JobListing & { matchScore: number }> {
+    // Validasi: Jika skills belum diisi, return semua jobs dengan matchScore 0
     const userSkills = profile.skills || [];
+    if (userSkills.length === 0) {
+        return allJobs.map((job) => ({
+            ...job,
+            matchScore: 0,
+        }));
+    }
+
     const userMajor = profile.major || null;
     const userEducation = profile.education || null;
     const userExperience = profile.experience || null;

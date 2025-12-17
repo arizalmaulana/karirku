@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -74,6 +75,24 @@ export async function GET(request: NextRequest) {
         const userMetadata = user.user_metadata
         const role = userMetadata?.role || 'jobseeker'
         
+        // Buat notifikasi di database untuk konfirmasi email berhasil
+        try {
+          const adminClient = createSupabaseAdminClient()
+          if (adminClient) {
+            // Gunakan function create_notification yang sudah dibuat
+            await adminClient.rpc('create_notification', {
+              p_user_id: user.id,
+              p_title: 'Email Berhasil Dikonfirmasi',
+              p_message: 'Selamat! Email Anda telah berhasil dikonfirmasi. Akun Anda sekarang aktif dan siap digunakan.',
+              p_type: 'success',
+              p_link: null
+            })
+          }
+        } catch (notifError) {
+          // Jangan gagalkan proses jika notifikasi gagal dibuat
+          console.error('Error creating notification:', notifError)
+        }
+        
         // Determine redirect path based on role
         const roleRedirectMap: Record<string, string> = {
           admin: '/admin/dashboard',
@@ -83,8 +102,12 @@ export async function GET(request: NextRequest) {
         
         const redirectPath = roleRedirectMap[role] || '/job-seeker/dashboard'
         
+        // Redirect dengan query parameter untuk toast notification
+        const redirectUrl = new URL(redirectPath, requestUrl.origin)
+        redirectUrl.searchParams.set('emailConfirmed', 'true')
+        
         // Redirect to appropriate dashboard
-        return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+        return NextResponse.redirect(redirectUrl)
       } catch (err: any) {
         console.error('Unexpected error in callback:', err)
         return NextResponse.redirect(
@@ -110,6 +133,22 @@ export async function GET(request: NextRequest) {
           const userMetadata = data.user.user_metadata
           const role = userMetadata?.role || 'jobseeker'
           
+          // Buat notifikasi di database untuk konfirmasi email berhasil
+          try {
+            const adminClient = createSupabaseAdminClient()
+            if (adminClient) {
+              await adminClient.rpc('create_notification', {
+                p_user_id: data.user.id,
+                p_title: 'Email Berhasil Dikonfirmasi',
+                p_message: 'Selamat! Email Anda telah berhasil dikonfirmasi. Akun Anda sekarang aktif dan siap digunakan.',
+                p_type: 'success',
+                p_link: null
+              })
+            }
+          } catch (notifError) {
+            console.error('Error creating notification:', notifError)
+          }
+          
           const roleRedirectMap: Record<string, string> = {
             admin: '/admin/dashboard',
             recruiter: '/recruiter/dashboard',
@@ -117,7 +156,10 @@ export async function GET(request: NextRequest) {
           }
           
           const redirectPath = roleRedirectMap[role] || '/job-seeker/dashboard'
-          return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+          const redirectUrl = new URL(redirectPath, requestUrl.origin)
+          redirectUrl.searchParams.set('emailConfirmed', 'true')
+          
+          return NextResponse.redirect(redirectUrl)
         }
       } catch (err: any) {
         console.error('Unexpected error in token verification:', err)

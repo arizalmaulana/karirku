@@ -40,7 +40,7 @@ export default async function EditApplicationPage({ params }: { params: Promise<
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href={`/admin/applications/${application.id}`}>
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali ke Detail

@@ -128,9 +128,25 @@ export function CVDownloadButton({ cvUrl, jobSeekerId }: CVDownloadButtonProps) 
     return (
         <Button
             size="sm"
+            variant="outline"
             onClick={handleDownload}
             disabled={isLoading}
-            className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+            className="shadow-md"
+            style={{ 
+                backgroundColor: '#14b8a6',
+                color: 'white',
+                border: 'none'
+            }}
+            onMouseEnter={(e) => {
+                if (!isLoading) {
+                    e.currentTarget.style.backgroundColor = '#0d9488';
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!isLoading) {
+                    e.currentTarget.style.backgroundColor = '#14b8a6';
+                }
+            }}
         >
             {isLoading ? (
                 <>

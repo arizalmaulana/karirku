@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Briefcase, DollarSign, Home, Utensils, Car } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, DollarSign, Home, Utensils, Car, Sparkles } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { calculateMatchScore } from "@/lib/utils/jobMatching";
+import { calculateMatchScoreFromJobAndProfile } from "@/lib/utils/jobMatching";
 import type { JobListing, LivingCost, Profile } from "@/lib/types";
 
 function formatCurrency(amount: number | null): string {
@@ -15,6 +15,42 @@ function formatCurrency(amount: number | null): string {
         currency: "IDR",
         minimumFractionDigits: 0,
     }).format(amount);
+}
+
+function formatEmploymentType(type: string): string {
+    const typeMap: Record<string, string> = {
+        fulltime: "Full-time",
+        parttime: "Part-time",
+        contract: "Contract",
+        internship: "Internship",
+        remote: "Remote",
+        hybrid: "Hybrid",
+    };
+    return typeMap[type.toLowerCase()] || type;
+}
+
+function getEmploymentTypeColor(type: string): string {
+    const typeColors: Record<string, string> = {
+        "fulltime": "bg-indigo-500 text-white border-0 shadow-sm",
+        "parttime": "bg-purple-500 text-white border-0 shadow-sm",
+        "remote": "bg-green-500 text-white border-0 shadow-sm",
+        "contract": "bg-indigo-500 text-white border-0 shadow-sm",
+        "internship": "bg-pink-500 text-white border-0 shadow-sm",
+        "hybrid": "bg-teal-500 text-white border-0 shadow-sm",
+    };
+    return typeColors[type.toLowerCase()] || "bg-indigo-500 text-white border-0 shadow-sm";
+}
+
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        draft: "bg-gray-100 text-gray-700 border-0",
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
 }
 
 async function getJob(id: string) {
@@ -30,6 +66,11 @@ async function getJob(id: string) {
     }
 
     const jobListing = data as JobListing;
+
+    // Check if job is hidden (only if column exists)
+    if (jobListing.is_hidden === true) {
+        return null;
+    }
 
     // Check if company is blocked
     const { data: companyData } = await supabase
@@ -204,18 +245,13 @@ export default async function JobDetailPage({
     }
 
     const matchScore = profile
-        ? calculateMatchScore(
-              profile.skills || [],
-              job.skills_required,
-              profile.major || null,
-              job.major_required || null
-          )
+        ? calculateMatchScoreFromJobAndProfile(job, profile)
         : 0;
 
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/job-seeker/jobs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -224,9 +260,37 @@ export default async function JobDetailPage({
                 <div className="flex-1">
                     <h1 className="text-3xl font-semibold text-gray-900">{job.title}</h1>
                     <p className="text-gray-500 mt-1">{job.company_name}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        {job.category && (
+                            <Badge className={`${
+                                job.category === "Technology" ? "bg-indigo-50 text-indigo-700" :
+                                job.category === "Design" ? "bg-pink-50 text-pink-700" :
+                                job.category === "Marketing" ? "bg-purple-50 text-purple-700" :
+                                job.category === "Business" ? "bg-cyan-50 text-cyan-700" :
+                                job.category === "Finance" ? "bg-emerald-50 text-emerald-700" :
+                                job.category === "Healthcare" ? "bg-red-50 text-red-700" :
+                                job.category === "Education" ? "bg-blue-50 text-blue-700" :
+                                "bg-gray-50 text-gray-700"
+                            } border-0 px-3 py-1.5 font-medium`}>
+                                {job.category}
+                            </Badge>
+                        )}
+                        {job.level && (
+                            <Badge className={`${
+                                job.level === "Entry Level" ? "bg-green-50 text-green-700" :
+                                job.level === "Mid Level" ? "bg-amber-50 text-amber-700" :
+                                job.level === "Senior Level" ? "bg-red-50 text-red-700" :
+                                job.level === "Executive" ? "bg-gray-50 text-gray-700" :
+                                "bg-gray-50 text-gray-700"
+                            } border-0 px-3 py-1.5 font-medium`}>
+                                {job.level}
+                            </Badge>
+                        )}
+                    </div>
                 </div>
                 {matchScore > 0 && (
-                    <Badge variant={matchScore >= 50 ? "default" : "secondary"}>
+                    <Badge className="bg-indigo-500 text-white border-0 shadow-md font-semibold px-3 py-1.5">
+                        <Sparkles className="w-3 h-3 mr-1.5 inline" />
                         {matchScore}% Match
                     </Badge>
                 )}
@@ -266,7 +330,9 @@ export default async function JobDetailPage({
                                 <CardTitle>Jurusan yang Diperlukan</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <Badge variant="secondary">{job.major_required}</Badge>
+                                <Badge className="bg-indigo-50 text-indigo-700 border-0 px-3 py-1.5 font-medium">
+                                    {job.major_required}
+                                </Badge>
                             </CardContent>
                         </Card>
                     )}
@@ -279,7 +345,7 @@ export default async function JobDetailPage({
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
                                     {job.skills_required.map((skill, index) => (
-                                        <Badge key={index} variant="outline">
+                                        <Badge key={index} className="bg-purple-50 text-purple-700 border-0 px-3 py-1.5 font-medium">
                                             {skill}
                                         </Badge>
                                     ))}
@@ -310,8 +376,8 @@ export default async function JobDetailPage({
                                     <Briefcase className="h-4 w-4" />
                                     Tipe Pekerjaan
                                 </p>
-                                <Badge variant="outline" className="mt-1">
-                                    {job.employment_type}
+                                <Badge className={`mt-1 ${getEmploymentTypeColor(job.employment_type)} px-3 py-1.5 font-medium`}>
+                                    {formatEmploymentType(job.employment_type)}
                                 </Badge>
                             </div>
                             <div>
@@ -396,7 +462,7 @@ export default async function JobDetailPage({
                                     <p className="text-sm text-gray-500">
                                         Anda sudah melamar untuk posisi ini
                                     </p>
-                                    <Badge variant="outline">
+                                    <Badge className={getStatusBadgeColor(existingApplication.status)}>
                                         Status: {existingApplication.status}
                                     </Badge>
                                     <Button variant="outline" className="w-full" asChild>

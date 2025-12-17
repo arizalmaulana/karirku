@@ -62,9 +62,24 @@ export function DeleteJobForm({ jobId }: DeleteJobFormProps) {
 
             <div className="flex gap-4">
                 <Button
-                    variant="destructive"
+                    variant="outline"
                     onClick={handleDelete}
                     disabled={isLoading}
+                    className="text-white border-0 shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
+                    style={{
+                        backgroundColor: '#ef4444',
+                        backgroundImage: 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isLoading) {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!isLoading) {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                        }
+                    }}
                 >
                     {isLoading ? (
                         <>
@@ -75,7 +90,11 @@ export function DeleteJobForm({ jobId }: DeleteJobFormProps) {
                         "Ya, Hapus"
                     )}
                 </Button>
-                <Button variant="outline" asChild>
+                <Button 
+                    variant="outline" 
+                    asChild
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors cursor-pointer"
+                >
                     <Link href="/admin/jobs">Batal</Link>
                 </Button>
             </div>

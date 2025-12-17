@@ -48,7 +48,7 @@ export default async function LivingCostsPage() {
                         Kelola data biaya hidup untuk setiap daerah
                     </p>
                 </div>
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
+                <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" size="lg" asChild>
                     <Link href="/admin/living-costs/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Tambah Data Baru
@@ -56,7 +56,7 @@ export default async function LivingCostsPage() {
                 </Button>
             </div>
 
-            <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
+            <Card className="border-0 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>Data Biaya Hidup</CardTitle>
                     <CardDescription>
@@ -65,21 +65,22 @@ export default async function LivingCostsPage() {
                 </CardHeader>
                 <CardContent>
                     {livingCosts.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Kota</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Provinsi</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Sewa</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Makan</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Rata-rata Transport</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Gaji Referensi</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {livingCosts.map((cost) => (
-                                    <TableRow key={cost.id}>
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-400">
+                                        <TableHead className="font-semibold text-center">Kota</TableHead>
+                                        <TableHead className="font-semibold text-center">Provinsi</TableHead>
+                                        <TableHead className="font-semibold text-center">Rata-rata Sewa</TableHead>
+                                        <TableHead className="font-semibold text-center">Rata-rata Makan</TableHead>
+                                        <TableHead className="font-semibold text-center">Rata-rata Transport</TableHead>
+                                        <TableHead className="font-semibold text-center">Gaji Referensi</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {livingCosts.map((cost) => (
+                                        <TableRow key={cost.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">{cost.city}</TableCell>
                                         <TableCell className="text-center">{cost.province}</TableCell>
                                         <TableCell className="text-center">{formatCurrency(cost.avg_rent)}</TableCell>
@@ -88,17 +89,17 @@ export default async function LivingCostsPage() {
                                         <TableCell className="text-center">{formatCurrency(cost.salary_reference)}</TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center gap-2">
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-blue-50 transition-all" title="Lihat Detail">
                                                     <Link href={`/admin/living-costs/${cost.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-green-50 transition-all" title="Edit Data">
                                                     <Link href={`/admin/living-costs/${cost.id}/edit`}>
                                                         <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-red-50 transition-all" title="Hapus Data">
                                                     <Link href={`/admin/living-costs/${cost.id}/delete`}>
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Link>
@@ -107,8 +108,9 @@ export default async function LivingCostsPage() {
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-gray-500">Belum ada data biaya hidup</p>

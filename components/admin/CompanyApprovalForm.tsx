@@ -118,7 +118,7 @@ export function CompanyApprovalForm({
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={async () => {
                                     setIsLoading(true);
@@ -142,7 +142,21 @@ export function CompanyApprovalForm({
                                         setIsLoading(false);
                                     }
                                 }}
-                                className="bg-yellow-600 hover:bg-yellow-700"
+                                className="text-white border-0 shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
+                                style={{
+                                    backgroundColor: '#eab308',
+                                    backgroundImage: 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isLoading) {
+                                        e.currentTarget.style.backgroundColor = '#ca8a04';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isLoading) {
+                                        e.currentTarget.style.backgroundColor = '#eab308';
+                                    }
+                                }}
                             >
                                 Ya, Batalkan
                             </AlertDialogAction>
@@ -166,7 +180,7 @@ export function CompanyApprovalForm({
                     <AlertDialogTrigger asChild>
                         <Button 
                             variant="default" 
-                            className="w-full"
+                            className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                             disabled={isLoading}
                         >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -182,7 +196,7 @@ export function CompanyApprovalForm({
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleApprove}
                                 disabled={isLoading}
@@ -229,7 +243,7 @@ export function CompanyApprovalForm({
                     <AlertDialogTrigger asChild>
                         <Button 
                             variant="default" 
-                            className="flex-1"
+                            className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                             disabled={isLoading}
                         >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -245,7 +259,7 @@ export function CompanyApprovalForm({
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleApprove}
                                 disabled={isLoading}
@@ -294,11 +308,25 @@ export function CompanyApprovalForm({
                             />
                         </div>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleReject}
                                 disabled={isLoading || !notes.trim()}
-                                className="bg-red-600 hover:bg-red-700"
+                                className="text-white border-0 shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
+                                style={{
+                                    backgroundColor: '#ef4444',
+                                    backgroundImage: 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isLoading && notes.trim()) {
+                                        e.currentTarget.style.backgroundColor = '#dc2626';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isLoading && notes.trim()) {
+                                        e.currentTarget.style.backgroundColor = '#ef4444';
+                                    }
+                                }}
                             >
                                 {isLoading ? (
                                     <>
@@ -316,6 +344,13 @@ export function CompanyApprovalForm({
         </div>
     );
 }
+
+
+
+
+
+
+
 
 
 

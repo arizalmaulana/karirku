@@ -47,6 +47,17 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
 
             if (error) throw error;
 
+            // Buat notifikasi jika recruiter baru saja di-approve
+            if (isApproved && user.role === "recruiter" && !user.is_approved) {
+                try {
+                    const { notifyRecruiterApproval } = await import("@/lib/utils/notifications");
+                    await notifyRecruiterApproval(user.id);
+                } catch (notifError) {
+                    // Jangan gagalkan proses jika notifikasi gagal
+                    console.error("Error creating notification:", notifError);
+                }
+            }
+
             toast.success("Data pengguna berhasil diperbarui");
             router.refresh();
         } catch (error: any) {
@@ -64,7 +75,7 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="!bg-white text-black border border-gray-200">
+                    <SelectContent className="!bg-white text-black border border-gray-200/40">
                         <SelectItem value="jobseeker" className="!bg-white text-black hover:bg-gray-100">Job Seeker</SelectItem>
                         <SelectItem value="recruiter" className="!bg-white text-black hover:bg-gray-100">Recruiter</SelectItem>
                         <SelectItem value="admin" className="!bg-white text-black hover:bg-gray-100">Admin</SelectItem>
@@ -96,7 +107,7 @@ export function UserManagementForm({ user }: UserManagementFormProps) {
             <Button 
                 type="submit" 
                 disabled={isLoading || (role === user.role && isApproved === user.is_approved)}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isLoading ? (
                     <>

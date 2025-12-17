@@ -70,10 +70,11 @@ export function CloseJobButton({ jobId, jobTitle, isClosed }: CloseJobButtonProp
                 <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={isClosed 
-                        ? "text-green-600 hover:text-green-700 hover:bg-green-50" 
-                        : "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                    }
+                    className={`cursor-pointer h-7 w-7 p-0 ${
+                        isClosed 
+                            ? "text-green-600 hover:text-green-700 hover:bg-green-50" 
+                            : "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    }`}
                     title={isClosed ? "Buka Kembali Lowongan" : "Tutup Lowongan"}
                 >
                     {isClosed ? (
@@ -104,7 +105,7 @@ export function CloseJobButton({ jobId, jobTitle, isClosed }: CloseJobButtonProp
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isLoading} className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={handleToggleClose}
                         disabled={isLoading}

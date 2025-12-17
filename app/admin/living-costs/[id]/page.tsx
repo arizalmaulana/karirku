@@ -44,7 +44,7 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/admin/living-costs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -57,14 +57,14 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                         {livingCost.city}, {livingCost.province}
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" asChild className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 shadow-md hover:shadow-lg transition-all">
+                <div className="flex gap-1">
+                    <Button variant="outline" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" size="default">
                         <Link href={`/admin/living-costs/${livingCost.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all">
+                    <Button variant="destructive" asChild>
                         <Link href={`/admin/living-costs/${livingCost.id}/delete`}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Hapus
@@ -89,7 +89,7 @@ export default async function LivingCostDetailPage({ params }: { params: Promise
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Mata Uang</p>
-                            <Badge variant="outline" className="bg-gradient-to-r from-blue-50 to-green-100">{livingCost.currency || "IDR"}</Badge>
+                            <Badge variant="outline" className="bg-blue-100 text-blue-700">{livingCost.currency || "IDR"}</Badge>
                         </div>
                     </CardContent>
                 </Card>

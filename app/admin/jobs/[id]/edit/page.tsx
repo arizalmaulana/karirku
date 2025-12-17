@@ -31,7 +31,7 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold text-gray-900">Edit Lowongan</h1>
+                <h1 className="text-3xl font-semibold text-purple-600">Edit Lowongan</h1>
                 <p className="text-gray-500 mt-1">
                     Perbarui informasi lowongan pekerjaan
                 </p>

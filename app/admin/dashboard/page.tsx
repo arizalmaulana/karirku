@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { EmailConfirmationToast } from "@/components/EmailConfirmationToast";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -79,6 +80,18 @@ export default async function AdminDashboardPage() {
         created: formatDateDayMonth(company.created_at),
     }));
 
+    function getStatusBadgeColor(status: string): string {
+        const colors: Record<string, string> = {
+            draft: "bg-gray-100 text-gray-700 border-0",
+            submitted: "bg-yellow-100 text-yellow-700 border-0",
+            review: "bg-blue-100 text-blue-700 border-0",
+            interview: "bg-purple-100 text-purple-700 border-0",
+            accepted: "bg-green-100 text-green-700 border-0",
+            rejected: "bg-red-100 text-red-700 border-0",
+        };
+        return colors[status] || "bg-gray-100 text-gray-700 border-0";
+    }
+
     function getStatusBadgeVariant(status: string) {
         switch (status) {
             case "accepted":
@@ -114,10 +127,12 @@ export default async function AdminDashboardPage() {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
+        <>
+            <EmailConfirmationToast />
+            <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-blue-600 mb-1">Dashboard Admin</p>
+                    <p className="text-sm font-semibold text-purple-600 mb-1">Dashboard Admin</p>
                     <h1 className="text-3xl font-bold text-gray-900 mt-1">Kontrol Sistem Terpadu</h1>
                     <p className="text-gray-600 mt-2">
                         Pantau metrik utama, verifikasi lowongan baru, dan pastikan data biaya hidup selalu
@@ -127,30 +142,40 @@ export default async function AdminDashboardPage() {
             </div>
 
             <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                {summaryStats.map((stat) => (
-                    <Card key={stat.title} className="border-2 border-blue-200/50 bg-gradient-to-br from-blue-100 via-blue-50/50 to-blue shadow-lg text-black-700 hover:bg-purple-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                            <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
-                            <div className="p-3 bg-gradient-to-br from-purple-400 to-blue-600 rounded-xl shadow-md hover:bg-pink-600 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                                <stat.icon className="h-5 w-5 text-white" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                            {stat.delta && <p className="text-sm text-emerald-600 font-medium">{stat.delta}</p>}
-                        </CardContent>
-                    </Card>
-                ))}
+                {summaryStats.map((stat, index) => {
+                    const iconBgClasses = [
+                        'from-indigo-400 to-indigo-600',
+                        'from-blue-400 to-blue-600',
+                        'from-purple-400 to-purple-600',
+                        'from-green-400 to-green-600',
+                    ];
+                    const iconBgClass = iconBgClasses[index % iconBgClasses.length];
+                    
+                    return (
+                        <Card key={stat.title} className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                                <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
+                                <div className={`p-3 bg-gradient-to-br ${iconBgClass} rounded-xl shadow-md`}>
+                                    <stat.icon className="h-5 w-5 text-white" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                                {stat.delta && <p className="text-sm text-emerald-600 font-medium">{stat.delta}</p>}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border-2 shadow-lg border-blue-300 text-black-700 hover:bg-blue-50">
+                <Card className="lg:col-span-2 border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle className="text-xl font-bold">Lowongan Terbaru</CardTitle>
+                            <CardTitle className="text-xl font-bold text-gray-900">Lowongan Terbaru</CardTitle>
                             <CardDescription>Lowongan yang baru diajukan oleh recruiter</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/jobs">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -162,13 +187,13 @@ export default async function AdminDashboardPage() {
                             {recentJobs.length > 0 ? (
                                 recentJobs.map((job: any) => (
                                     <Link key={job.id} href={`/admin/jobs/${job.id}`}>
-                                        <div className="flex items-center justify-between rounded-2xl border-2 border-blue-200 p-5 hover:border-purple-200 hover:bg-purple-50/50 to-blue-50/50 text-black-700 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md mb-2">
+                                        <div className="flex items-center justify-between rounded-2xl border-0 p-5 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-purple-50/30">
                                             <div className="flex-1">
                                                 <p className="font-bold text-gray-900 mb-1">{job.title}</p>
                                                 <p className="text-sm text-gray-600 font-medium mb-2">{job.company}</p>
                                                 <p className="text-xs text-gray-500">Diajukan pada {job.submitted}</p>
                                             </div>
-                                            <ArrowUpRight className="h-5 w-5 text-blue-600" />
+                                            <ArrowUpRight className="h-5 w-5 text-purple-600" />
                                         </div>
                                     </Link>
                                 ))
@@ -182,30 +207,30 @@ export default async function AdminDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-2 border-blue-200/50 shadow-lg border-blue-300 text-black-700 hover:bg-blue-50">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
-                            <CardTitle className="text-xl font-bold">Aktivitas Lamaran</CardTitle>
+                            <CardTitle className="text-xl font-bold text-gray-900">Aktivitas Lamaran</CardTitle>
                             <CardDescription>Lamaran terbaru yang masuk</CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/admin/applications">
                                 Lihat Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent className="space-y-4 text-black-700">
+                    <CardContent className="space-y-4">
                         {recentApplications.length > 0 ? (
                             recentApplications.map((application: any) => (
                                 <Link key={application.id} href={`/admin/applications/${application.id}`}>
-                                    <div className="rounded-2xl border-2 border-gray-200 p-4 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
+                                    <div className="rounded-2xl border-0 p-4 hover:shadow-lg transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-purple-50/30 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50">
                                         <p className="font-bold text-gray-900 mb-1">{application.candidate}</p>
                                         <p className="text-sm text-gray-600 font-medium mb-2">
                                             {application.job}
                                         </p>
                                         <p className="text-xs text-gray-500 mb-3">{application.submitted}</p>
-                                        <Badge className="w-fit" variant={getStatusBadgeVariant(application.status)}>
+                                        <Badge className={`w-fit ${getStatusBadgeColor(application.status)}`}>
                                             {getStatusLabel(application.status)}
                                         </Badge>
                                     </div>
@@ -222,7 +247,7 @@ export default async function AdminDashboardPage() {
             </section>
 
             {/* Validasi Perusahaan */}
-            <Card className="border-2 border-amber-200/50 bg-gradient-to-br from-amber-50/50 to-blue-50/50 shadow-lg">
+            <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                 <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl font-bold">
                         <div className="p-2 bg-amber-100 rounded-xl">
@@ -255,8 +280,8 @@ export default async function AdminDashboardPage() {
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <p className="font-medium text-gray-900">{company.name}</p>
                                                             {company.isBlocked && (
-                                                                <Badge variant="destructive" className="text-xs">
-                                                                    <Lock className="h-3 w-3 mr-1" />
+                                                                <Badge className="text-xs bg-red-100 text-red-700 border-0">
+                                                                    <Lock className="h-3 w-3 mr-1 text-red-700" />
                                                                     Diblokir
                                                                 </Badge>
                                                             )}
@@ -297,7 +322,7 @@ export default async function AdminDashboardPage() {
                                             </Link>
                                         ))}
                                     </div>
-                                    <Button variant="outline" size="sm" asChild className="w-full">
+                                    <Button variant="outline" size="sm" asChild className="w-full border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm">
                                         <Link href="/admin/companies?filter=pending">
                                             <CheckCircle2 className="h-4 w-4 mr-2" />
                                             Kelola Perusahaan ({pendingCompanies.length})
@@ -319,22 +344,22 @@ export default async function AdminDashboardPage() {
                     )}
 
                     {/* Quick Actions */}
-                    <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+                    <div className="rounded-xl border border-purple-200 bg-purple-50/50 p-4">
                         <p className="font-semibold text-gray-900 mb-3">Aksi Cepat</p>
                         <div className="grid grid-cols-3 gap-5">
-                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/companies">
                                     <Building2 className="h-4 w-4 mr-2" />
                                     Semua Perusahaan
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/living-costs/new">
-                                    <Wallet className="h-2 w-2 mr-2" />
+                                    <Wallet className="h-4 w-4 mr-2" />
                                     Tambah Biaya Hidup
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                            <Button variant="outline" size="sm" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all">
                                 <Link href="/admin/users">
                                     <Users className="h-4 w-4 mr-2" />
                                     Kelola Pengguna
@@ -345,5 +370,6 @@ export default async function AdminDashboardPage() {
                 </CardContent>
             </Card>
         </div>
+        </>
     );
 }

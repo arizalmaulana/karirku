@@ -344,7 +344,7 @@ export function MapModal({ jobs, open, onClose, onJobSelect }: MapModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 backdrop-blur-md flex">
       <div className="relative w-full h-full bg-white flex">
         {/* Sidebar */}
         <div 
@@ -375,7 +375,7 @@ export function MapModal({ jobs, open, onClose, onJobSelect }: MapModalProps) {
 
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <Input
                   type="text"
                   placeholder="Cari posisi atau perusahaan..."
@@ -482,10 +482,10 @@ export function MapModal({ jobs, open, onClose, onJobSelect }: MapModalProps) {
                       onMouseEnter={() => setHoveredJobId(job.id)}
                       onMouseLeave={() => setHoveredJobId(null)}
                       className={`
-                        p-3 rounded-lg border-2 cursor-pointer transition-all
+                        p-3 rounded-lg border cursor-pointer transition-all
                         ${hoveredJobId === job.id 
-                          ? 'border-indigo-500 bg-indigo-50 shadow-md' 
-                          : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow'
+                          ? 'border-indigo-500/50 bg-indigo-50 shadow-md' 
+                          : 'border-gray-200/40 bg-white hover:border-indigo-300/40 hover:shadow'
                         }
                       `}
                     >
@@ -513,7 +513,7 @@ export function MapModal({ jobs, open, onClose, onJobSelect }: MapModalProps) {
                             <span className="truncate">{job.location}</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-gray-500 flex-shrink-0" />
                       </div>
                     </div>
                   ))}
@@ -521,7 +521,7 @@ export function MapModal({ jobs, open, onClose, onJobSelect }: MapModalProps) {
                   {filteredJobs.filter(j => j.coordinates).length === 0 && (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Search className="w-8 h-8 text-gray-400" />
+                        <Search className="w-8 h-8 text-gray-500" />
                       </div>
                       <p className="text-gray-600 text-sm">Tidak ada lowongan ditemukan</p>
                       <p className="text-gray-500 text-xs mt-1">Coba ubah filter pencarian</p>

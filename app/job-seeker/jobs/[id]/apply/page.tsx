@@ -18,6 +18,11 @@ async function getJob(id: string) {
 
     const jobListing = data as JobListing;
 
+    // Check if job is hidden (only if column exists)
+    if (jobListing.is_hidden === true) {
+        return null;
+    }
+
     // Check if company is blocked
     const { data: companyData } = await supabase
         .from("companies")

@@ -125,11 +125,11 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                     <select
                         value={filters.industry || "all"}
                         onChange={(e) => handleFilterChange("industry", e.target.value)}
-                        className="px-4 py-2 border rounded-lg"
+                        className="px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm hover:border-purple-400 transition-colors min-w-[180px]"
                     >
-                        <option value="all">Semua Industri</option>
+                        <option value="all" className="text-gray-900 font-medium">Semua Industri</option>
                         {industries.map((industry) => (
-                            <option key={industry} value={industry}>
+                            <option key={industry} value={industry} className="text-gray-900 font-medium">
                                 {industry}
                             </option>
                         ))}
@@ -138,11 +138,11 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                     <select
                         value={filters.location || "all"}
                         onChange={(e) => handleFilterChange("location", e.target.value)}
-                        className="px-4 py-2 border rounded-lg"
+                        className="px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm hover:border-purple-400 transition-colors min-w-[180px]"
                     >
-                        <option value="all">Semua Lokasi</option>
+                        <option value="all" className="text-gray-900 font-medium">Semua Lokasi</option>
                         {locations.map((location) => (
-                            <option key={location} value={location}>
+                            <option key={location} value={location} className="text-gray-900 font-medium">
                                 {location}
                             </option>
                         ))}
@@ -155,7 +155,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                 {filteredCompanies.map((company) => (
                     <div
                         key={company.id}
-                        className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 group flex flex-col"
+                        className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200/40 group flex flex-col"
                     >
                         {/* Header - Logo & Company Name */}
                         <div className="flex items-start gap-3 mb-4">
@@ -206,7 +206,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1 text-xs h-8"
+                                className="flex-1 text-xs h-8 bg-gray-100 text-gray-900 hover:shadow-md cursor-pointer hover:bg-gray-200"
                                 onClick={() => setSelectedCompany(company)}
                             >
                                 <Eye className="w-3.5 h-3.5 mr-1.5" />
@@ -215,7 +215,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                             <Button
                                 asChild
                                 size="sm"
-                                className="flex-1 text-xs h-8 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-md"
+                                className="flex-1 text-xs h-8 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-md"
                             >
                                 <Link href={`/job-seeker/jobs?company=${encodeURIComponent(company.name)}`}>
                                     Lowongan
@@ -261,13 +261,13 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                             {/* Status Badge */}
                             <div className="flex items-center gap-2">
                                 {selectedCompany.status === 'approved' && selectedCompany.is_approved && (
-                                    <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1">
+                                    <Badge className="bg-green-100 text-green-700 border-0 flex items-center gap-1">
                                         <CheckCircle2 className="w-3 h-3" />
                                         Terverifikasi
                                     </Badge>
                                 )}
                                 {selectedCompany.is_blocked && (
-                                    <Badge variant="destructive" className="flex items-center gap-1">
+                                    <Badge className="bg-red-100 text-red-700 border-0 flex items-center gap-1">
                                         <Shield className="w-3 h-3" />
                                         Diblokir
                                     </Badge>
@@ -423,7 +423,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                             <div className="flex gap-3 pt-4">
                                 <Button
                                     asChild
-                                    className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white"
+                                    className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
                                 >
                                     <Link href={`/job-seeker/jobs?company=${encodeURIComponent(selectedCompany.name)}`}>
                                         Lihat Semua Lowongan ({selectedCompany.openPositions || 0})
@@ -433,6 +433,7 @@ export function CompaniesPageClient({ companies, profile, userId }: CompaniesPag
                                 <Button
                                     variant="outline"
                                     onClick={() => setSelectedCompany(null)}
+                                    className="flex-1 text-xs h-8 bg-gray-100 text-gray-900 hover:shadow-md cursor-pointer hover:bg-gray-200"
                                 >
                                     Tutup
                                 </Button>

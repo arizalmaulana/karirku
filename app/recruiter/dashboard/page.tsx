@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { EmailConfirmationToast } from "@/components/EmailConfirmationToast";
 import { 
     Briefcase, Users, FileText, ArrowUpRight, Mail, FileCheck, CalendarCheck, UserCheck, 
     Building2, AlertCircle, CheckCircle2, XCircle, Clock, TrendingUp, Eye, BarChart3,
@@ -105,26 +106,48 @@ function getStatusCounts(applications: any[]) {
 function getStatusBadge(status: string | null, isApproved: boolean | null) {
     if (isApproved && status === 'approved') {
         return (
-            <Badge className="bg-green-100 text-green-800 border-green-300">
+            <Badge className="bg-green-100 text-green-700 border-0">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Disetujui
             </Badge>
         );
     } else if (status === 'rejected') {
         return (
-            <Badge className="bg-red-100 text-red-800 border-red-300">
+            <Badge className="bg-red-100 text-red-700 border-0">
                 <XCircle className="w-3 h-3 mr-1" />
                 Ditolak
             </Badge>
         );
     } else {
         return (
-            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+            <Badge className="bg-yellow-100 text-yellow-700 border-0">
                 <Clock className="w-3 h-3 mr-1" />
                 Menunggu Persetujuan
             </Badge>
         );
     }
+}
+
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        draft: "bg-gray-100 text-gray-700 border-0",
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
+}
+
+function getJobStatusColor(featured: boolean, isClosed: boolean): string {
+    if (isClosed) {
+        return "bg-red-100 text-red-700 border-0";
+    }
+    if (featured) {
+        return "bg-indigo-500 text-white border-0";
+    }
+    return "bg-green-100 text-green-700 border-0";
 }
 
 export default async function RecruiterDashboardPage() {
@@ -230,7 +253,9 @@ export default async function RecruiterDashboardPage() {
     ];
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto px-4 py-6">
+        <>
+            <EmailConfirmationToast />
+            <div className="space-y-8 max-w-7xl mx-auto px-4 py-6">
             {/* Header Section */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -256,7 +281,7 @@ export default async function RecruiterDashboardPage() {
                     <Button 
                         size="lg" 
                         variant="outline"
-                        className="w-full sm:w-fit border-purple-300 text-purple-700 hover:bg-purple-50" 
+                        className="w-full sm:w-fit border-0 bg-gray-200 text-purple-700 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 shadow-sm" 
                         asChild
                     >
                         <Link href="/recruiter/applications">
@@ -269,12 +294,12 @@ export default async function RecruiterDashboardPage() {
 
             {/* Company Profile Status Alert */}
             {company && (
-                <Card className={`border-2 ${
+                <Card className={`border-0 ${
                     company.is_approved && company.status === 'approved' 
-                        ? 'border-green-200 bg-green-50' 
+                        ? 'bg-green-50' 
                         : company.status === 'rejected'
-                        ? 'border-red-200 bg-red-50'
-                        : 'border-yellow-200 bg-yellow-50'
+                        ? 'bg-red-50'
+                        : 'bg-yellow-50'
                 }`}>
                     <CardContent className="pt-6">
                         <div className="flex items-start gap-4">
@@ -313,7 +338,7 @@ export default async function RecruiterDashboardPage() {
                                         Profile perusahaan sedang menunggu persetujuan admin. Setelah disetujui, profile akan terlihat oleh publik.
                                     </p>
                                 )}
-                                <Button variant="outline" size="sm" asChild className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                                <Button variant="outline" size="sm" asChild className="border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm">
                                     <Link href="/recruiter/company/profile">
                                         <Building2 className="h-4 w-4 mr-2" />
                                         Kelola Profile Perusahaan
@@ -326,7 +351,7 @@ export default async function RecruiterDashboardPage() {
             )}
 
             {!company && (
-                <Card className="border-2 border-amber-200 bg-amber-50">
+                <Card className="border-0 bg-amber-50">
                     <CardContent className="pt-6">
                         <div className="flex items-start gap-4">
                             <div className="p-3 rounded-xl bg-amber-100">
@@ -363,7 +388,7 @@ export default async function RecruiterDashboardPage() {
                     
                     return (
                         <Link key={stat.label} href={stat.link || "#"} className="block">
-                            <Card className="border-2 border-purple-200/50 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer h-full">
+                            <Card className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer h-full">
                             <CardHeader className="flex flex-row items-center justify-between pb-3">
                                 <CardTitle className="text-sm font-semibold text-gray-600">
                                     {stat.label}
@@ -384,7 +409,7 @@ export default async function RecruiterDashboardPage() {
 
             {/* Additional Stats Row */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-2 border-gray-200/50 shadow-lg">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-semibold text-gray-600 flex items-center gap-2">
                             <BarChart3 className="h-4 w-4" />
@@ -396,7 +421,7 @@ export default async function RecruiterDashboardPage() {
                         <p className="text-sm text-gray-600">Semua lamaran</p>
                     </CardContent>
                 </Card>
-                <Card className="border-2 border-gray-200/50 shadow-lg">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-semibold text-gray-600 flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
@@ -408,7 +433,7 @@ export default async function RecruiterDashboardPage() {
                         <p className="text-sm text-gray-600">Tingkat penerimaan</p>
                     </CardContent>
                 </Card>
-                <Card className="border-2 border-gray-200/50 shadow-lg">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-semibold text-gray-600 flex items-center gap-2">
                             <Activity className="h-4 w-4" />
@@ -424,7 +449,7 @@ export default async function RecruiterDashboardPage() {
 
             {/* Main Content Grid */}
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border-2 border-gray-200/50 shadow-lg">
+                <Card className="lg:col-span-2 border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
                             <CardTitle className="text-xl font-bold">Lowongan Aktif</CardTitle>
@@ -432,7 +457,7 @@ export default async function RecruiterDashboardPage() {
                                 Update status tiap lowongan untuk menjaga pipeline rapih
                             </CardDescription>
                         </div>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
+                        <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" variant="outline" size="sm" asChild>
                             <Link href="/recruiter/jobs">
                                 Kelola Semua
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -453,18 +478,18 @@ export default async function RecruiterDashboardPage() {
                                     : "0.0";
 
                                 return (
-                                    <div key={job.id} className="rounded-2xl border-2 border-gray-200 p-6 hover:border-purple-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30">
+                                    <div key={job.id} className="rounded-2xl border-0 p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex-1">
                                                 <p className="font-bold text-lg text-gray-900 mb-1">{job.title}</p>
                                                 <p className="text-sm text-gray-600 font-medium">{job.company_name}</p>
                                             </div>
-                                            <Badge variant={job.featured ? "default" : "secondary"} className="shadow-sm">
+                                            <Badge className={`shadow-sm ${getJobStatusColor(job.featured || false, job.is_closed || false)}`}>
                                                 {job.featured ? "Featured" : "Aktif"}
                                             </Badge>
                                         </div>
                                         <div className="mt-5 grid gap-4 md:grid-cols-3">
-                                            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                                            <div className="p-4 bg-purple-50 rounded-xl border-0">
                                                 <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">
                                                     Pelamar
                                                 </p>
@@ -472,7 +497,7 @@ export default async function RecruiterDashboardPage() {
                                                     {jobApplications.length}
                                                 </p>
                                             </div>
-                                            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                            <div className="p-4 bg-blue-50 rounded-xl border-0">
                                                 <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">
                                                     Diterima
                                                 </p>
@@ -480,7 +505,7 @@ export default async function RecruiterDashboardPage() {
                                                     {acceptedInJob}
                                                 </p>
                                             </div>
-                                            <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                                            <div className="p-4 bg-green-50 rounded-xl border-0">
                                                 <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">
                                                     Conversion
                                                 </p>
@@ -490,13 +515,13 @@ export default async function RecruiterDashboardPage() {
                                             </div>
                                         </div>
                                         <div className="mt-5 flex gap-3">
-                                            <Button variant="outline" size="sm" className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
+                                            <Button variant="outline" size="sm" className="flex-1 border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm" asChild>
                                                 <Link href={`/recruiter/jobs/${job.id}`}>
                                                     <Eye className="h-3 w-3 mr-1" />
                                                     Detail
                                                 </Link>
                                             </Button>
-                                            <Button variant="outline" size="sm" className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50" asChild>
+                                            <Button variant="outline" size="sm" className="flex-1 border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm" asChild>
                                                 <Link href={`/recruiter/applications?job=${job.id}`}>
                                                     <Users className="h-3 w-3 mr-1" />
                                                     Pelamar
@@ -518,7 +543,7 @@ export default async function RecruiterDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-2 border-gray-200/50 shadow-lg">
+                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-xl font-bold">Pelamar Terbaru</CardTitle>
                         <CardDescription>Kandidat yang baru mendaftar</CardDescription>
@@ -526,14 +551,14 @@ export default async function RecruiterDashboardPage() {
                     <CardContent className="space-y-4">
                         {recentApplicationsWithFallback.length > 0 ? (
                             recentApplicationsWithFallback.map((app: any) => (
-                                <div key={app.id} className="rounded-2xl border-2 border-gray-200 p-5 hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                                <div key={app.id} className="rounded-2xl border-0 p-5 hover:shadow-lg transition-all duration-300 shadow-sm bg-gradient-to-br from-white to-purple-50/30 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50">
                                     <p className="font-bold text-gray-900 mb-1">
                                         {app.applicantName}
                                     </p>
                                     <p className="text-sm text-gray-600 font-medium mb-3">
                                         {app.job_listings?.title || "Unknown"}
                                     </p>
-                                    <Badge className="mb-3" variant="outline">
+                                    <Badge className={`mb-3 ${getStatusBadgeColor(app.status)}`}>
                                         {app.status}
                                     </Badge>
                                     <p className="text-xs text-gray-500 mb-4">
@@ -546,7 +571,7 @@ export default async function RecruiterDashboardPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
+                                        className="w-full border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm"
                                         asChild
                                     >
                                         <Link href={`/recruiter/applications/${app.id}`}>
@@ -568,5 +593,6 @@ export default async function RecruiterDashboardPage() {
                 </Card>
             </section>
         </div>
+        </>
     );
 }

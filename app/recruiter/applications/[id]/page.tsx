@@ -5,9 +5,20 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { ApplicationEditForm } from "@/components/admin/ApplicationEditForm";
+import { ApplicationStatusFormEnhanced } from "@/components/recruiter/ApplicationStatusFormEnhanced";
 import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
 import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
+
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
+}
 
 function getStatusBadgeVariant(status: string) {
     switch (status) {
@@ -33,6 +44,18 @@ function getStatusLabel(status: string) {
         rejected: "Ditolak",
     };
     return labels[status] || status;
+}
+
+function getEmploymentTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+        fulltime: "bg-indigo-500 text-white border-0",
+        parttime: "bg-purple-500 text-white border-0",
+        remote: "bg-green-500 text-white border-0",
+        contract: "bg-indigo-500 text-white border-0",
+        internship: "bg-pink-500 text-white border-0",
+        hybrid: "bg-teal-500 text-white border-0",
+    };
+    return colors[type.toLowerCase()] || "bg-indigo-500 text-white border-0";
 }
 
 async function getApplication(id: string, userId: string) {
@@ -124,7 +147,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors" size="sm" asChild>
                     <Link href="/recruiter/applications">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -136,7 +159,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         {applicantName || "Unknown"} - {job?.title || "Unknown"}
                     </p>
                 </div>
-                <Badge variant={getStatusBadgeVariant(application.status)}>
+                <Badge className={getStatusBadgeColor(application.status)}>
                     {getStatusLabel(application.status)}
                 </Badge>
             </div>
@@ -205,7 +228,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                                     <p className="text-sm text-gray-500 mb-2">Skills</p>
                                     <div className="flex flex-wrap gap-2">
                                         {profile.skills.map((skill: string, index: number) => (
-                                            <Badge key={index} variant="outline">
+                                            <Badge key={index} className="bg-purple-100 text-purple-700 border-0">
                                                 {skill}
                                             </Badge>
                                         ))}
@@ -221,7 +244,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                                 <CardTitle>Cover Letter</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <div className="bg-gradient-to-br from-gray-50 to-purple-50/30 border-0 rounded-lg p-4 shadow-sm">
                                     {(() => {
                                         // Coba parse sebagai JSON jika mungkin
                                         try {
@@ -328,7 +351,9 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Tipe Pekerjaan</p>
-                                <Badge variant="outline">{job?.employment_type || "-"}</Badge>
+                                <Badge className={getEmploymentTypeColor(job?.employment_type || "")}>
+                                    {job?.employment_type || "-"}
+                                </Badge>
                             </div>
                         </CardContent>
                     </Card>
@@ -340,7 +365,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         <CardContent className="space-y-4">
                             <div>
                                 <p className="text-sm text-gray-500">Status</p>
-                                <Badge variant={getStatusBadgeVariant(application.status)} className="mt-1">
+                                <Badge className={`${getStatusBadgeColor(application.status)} mt-1`}>
                                     {getStatusLabel(application.status)}
                                 </Badge>
                             </div>
@@ -371,16 +396,14 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         </CardContent>
                     </Card>
 
-                    <ApplicationEditForm
-                                applicationId={application.id}
-                        initialData={{
-                            status: application.status,
-                            notes: application.notes,
-                            rejection_reason: application.rejection_reason,
-                            interview_date: application.interview_date,
-                            interview_location: application.interview_location,
-                        }}
-                            />
+                    <ApplicationStatusFormEnhanced
+                        applicationId={application.id}
+                        currentStatus={application.status}
+                        jobSeekerId={application.job_seeker_id}
+                        jobTitle={job?.title || "Unknown"}
+                        companyName={job?.company_name || "Unknown"}
+                        jobSeekerEmail={profile?.email}
+                    />
                 </div>
             </div>
         </div>

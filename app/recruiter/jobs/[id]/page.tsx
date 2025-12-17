@@ -16,6 +16,28 @@ function formatCurrency(amount: number | null): string {
     }).format(amount);
 }
 
+function getEmploymentTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+        fulltime: "bg-indigo-500 text-white border-0",
+        parttime: "bg-purple-500 text-white border-0",
+        remote: "bg-green-500 text-white border-0",
+        contract: "bg-indigo-500 text-white border-0",
+        internship: "bg-pink-500 text-white border-0",
+        hybrid: "bg-teal-500 text-white border-0",
+    };
+    return colors[type.toLowerCase()] || "bg-indigo-500 text-white border-0";
+}
+
+function getJobStatusColor(featured: boolean, isClosed: boolean): string {
+    if (isClosed) {
+        return "bg-red-100 text-red-700 border-0";
+    }
+    if (featured) {
+        return "bg-indigo-500 text-white border-0";
+    }
+    return "bg-green-100 text-green-700 border-0";
+}
+
 async function getJob(id: string, userId: string) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
@@ -65,7 +87,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/recruiter/jobs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -82,7 +104,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="bg-gradient-to-r from-black to-gray-500 hover:from-gray-600 hover:to-black-700 text-white shadow-md hover:shadow-lg transition-all">
                         <Link href={`/recruiter/applications?job=${job.id}`}>
                             <Users className="h-4 w-4 mr-2" />
                             Lihat Pelamar ({applicationCount})
@@ -92,8 +114,8 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-6 bg-gradient-to-br from-purple-50 to-purple-50/50 rounded-3xl p-4 border-2 border-grey-200/50 shadow-lg">
-                    <Card className="border-2 border-blue-200/50 shadow-lg">
+                <div className="lg:col-span-2 space-y-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 rounded-3xl p-4 border-0 shadow-lg">
+                    <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                         <CardHeader>
                             <CardTitle>Deskripsi Pekerjaan</CardTitle>
                         </CardHeader>
@@ -105,7 +127,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     </Card>
 
                     {job.requirements && job.requirements.length > 0 && (
-                        <Card className="border-3 border-grey-200/50 shadow-lg">
+                        <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Persyaratan</CardTitle>
                             </CardHeader>
@@ -120,14 +142,14 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     )}
 
                     {job.skills_required && job.skills_required.length > 0 && (
-                        <Card className="border-3 border-grey-200/50 shadow-lg">
+                        <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Skills yang Diperlukan</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
                                     {job.skills_required.map((skill, index) => (
-                                        <Badge key={index} variant="outline">
+                                        <Badge key={index} className="bg-purple-100 text-purple-700 border-0">
                                             {skill}
                                         </Badge>
                                     ))}
@@ -137,12 +159,12 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                     )}
 
                     {job.major_required && (
-                        <Card className="border-3 border-grey-200/50 shadow-lg">
+                        <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
                             <CardHeader>
                                 <CardTitle>Jurusan yang Diperlukan</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <Badge variant="secondary">{job.major_required}</Badge>
+                                <Badge className="bg-indigo-100 text-indigo-700 border-0">{job.major_required}</Badge>
                             </CardContent>
                         </Card>
                     )}
@@ -169,7 +191,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                                     <Briefcase className="h-4 w-4" />
                                     Tipe Pekerjaan
                                 </p>
-                                <Badge variant="outline" className="mt-1">
+                                <Badge className={`${getEmploymentTypeColor(job.employment_type)} mt-1`}>
                                     {job.employment_type}
                                 </Badge>
                             </div>
@@ -188,7 +210,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Status</p>
-                                <Badge variant={job.featured ? "default" : "secondary"} className="mt-1">
+                                <Badge className={`${getJobStatusColor(job.featured || false, job.is_closed || false)} mt-1`}>
                                     {job.featured ? "Featured" : "Aktif"}
                                 </Badge>
                             </div>

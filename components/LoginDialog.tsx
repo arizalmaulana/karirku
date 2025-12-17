@@ -5,7 +5,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
+  DialogPortal,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { XIcon } from "lucide-react";
+import { cn } from "@/components/ui/utils";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -256,10 +261,16 @@ export function LoginDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-none bg-transparent pointer-events-none" />
+        <DialogPrimitive.Content
+          className={cn(
+            "bg-white dark:bg-gray-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[70] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border border-gray-200/40 p-6 shadow-xl duration-200 sm:max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+          )}
+        >
         <DialogHeader>
-          <DialogTitle>Masuk ke Akun Anda</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900">Masuk ke Akun Anda</DialogTitle>
+          <DialogDescription className="text-gray-700">
             {message ||
               "Masukkan email dan password Anda untuk melanjutkan"}
           </DialogDescription>
@@ -268,9 +279,9 @@ export function LoginDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="login-email">Email</Label>
+            <Label htmlFor="login-email" className="text-gray-700">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+              <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 pointer-events-none z-10" />
               <Input
                 id="login-email"
                 type="email"
@@ -291,9 +302,9 @@ export function LoginDialog({
 
           {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="login-password">Password</Label>
+            <Label htmlFor="login-password" className="text-gray-700" >Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
               <Input
                 id="login-password"
                 type={showPassword ? "text" : "password"}
@@ -308,7 +319,7 @@ export function LoginDialog({
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5" />
@@ -322,7 +333,7 @@ export function LoginDialog({
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:to-purple-600"
+            className="w-full cursor-pointer bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
             size="lg"
             disabled={isLoading}
           >
@@ -337,7 +348,7 @@ export function LoginDialog({
           </Button>
 
           {/* Register Link */}
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-700">
             Belum punya akun?{" "}
             <button
               type="button"
@@ -345,13 +356,18 @@ export function LoginDialog({
                 onClose();
                 onSwitchToRegister();
               }}
-              className="text-blue-600 transition hover:text-blue-700"
+              className="cursor-pointer text-indigo-600 font-medium transition hover:text-indigo-700 hover:underline"
             >
               Daftar sekarang
             </button>
           </div>
         </form>
-      </DialogContent>
+          <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 p-1.5 transition-all focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
+            <XIcon />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   );
 }

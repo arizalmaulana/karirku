@@ -21,6 +21,17 @@ interface ApplicationsListProps {
     initialStatusFilter?: string;
 }
 
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        submitted: "bg-yellow-100 text-yellow-700 border-yellow-300 border-0",
+        review: "bg-blue-100 text-blue-700 border-blue-300 border-0",
+        interview: "bg-purple-100 text-purple-700 border-purple-300 border-0",
+        accepted: "bg-green-100 text-green-700 border-green-300 border-0",
+        rejected: "bg-red-100 text-red-700 border-red-300 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-gray-300 border-0";
+}
+
 function getStatusBadgeVariant(status: string) {
     switch (status) {
         case "accepted":
@@ -160,7 +171,7 @@ export function ApplicationsList({
                                         {app.job_listings?.company_name || "Unknown"}
                                     </p>
                                 </div>
-                                <Badge variant={getStatusBadgeVariant(app.status)}>
+                                <Badge className={getStatusBadgeColor(app.status)}>
                                     {getStatusLabel(app.status)}
                                 </Badge>
                             </div>
@@ -168,7 +179,7 @@ export function ApplicationsList({
                             {app.profiles?.skills && app.profiles.skills.length > 0 && (
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {app.profiles.skills.slice(0, 5).map((skill: string, index: number) => (
-                                        <Badge key={index} variant="secondary">
+                                        <Badge key={index} className="bg-purple-100 text-purple-700 border-0">
                                             {skill}
                                         </Badge>
                                     ))}

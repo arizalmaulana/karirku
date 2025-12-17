@@ -26,6 +26,28 @@ function formatCurrency(amount: number | null): string {
     }).format(amount);
 }
 
+function getEmploymentTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+        fulltime: "bg-indigo-500 text-white border-0",
+        parttime: "bg-purple-500 text-white border-0",
+        remote: "bg-green-500 text-white border-0",
+        contract: "bg-indigo-500 text-white border-0",
+        internship: "bg-pink-500 text-white border-0",
+        hybrid: "bg-teal-500 text-white border-0",
+    };
+    return colors[type.toLowerCase()] || "bg-indigo-500 text-white border-0";
+}
+
+function getJobStatusColor(featured: boolean, isClosed: boolean): string {
+    if (isClosed) {
+        return "bg-red-100 text-red-700 border-0";
+    }
+    if (featured) {
+        return "bg-indigo-500 text-white border-0";
+    }
+    return "bg-green-100 text-green-700 border-0";
+}
+
 async function getUserProfile(userId: string) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
@@ -95,14 +117,14 @@ export default async function RecruiterJobsPage() {
 
     return (
         <div className="space-y-6 w-full max-w-full">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 shadow-md rounded-2xl p-4">
                 <div>
                     <h1 className="text-3xl font-semibold text-purple-900">Lowongan Saya</h1>
                     <p className="text-gray-500 mt-1">
                         Kelola semua lowongan pekerjaan yang telah Anda publikasikan
                     </p>
                 </div>
-                <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/30">
+                <Button size="lg" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-lg shadow-indigo-500/30">
                     <Link href="/recruiter/jobs/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Tambah Lowongan Baru
@@ -110,7 +132,7 @@ export default async function RecruiterJobsPage() {
                 </Button>
             </div>
 
-            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm w-full">
+            <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-sm w-full">
                 <CardHeader>
                     <CardTitle>Daftar Lowongan</CardTitle>
                     <CardDescription>
@@ -119,10 +141,11 @@ export default async function RecruiterJobsPage() {
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6 w-full overflow-hidden">
                     {jobs.length > 0 ? (
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white w-full">
                         <div className="w-full overflow-x-auto">
                             <Table className="w-full table-fixed">
                                     <TableHeader>
-                                        <TableRow className="bg-gray-50">
+                                        <TableRow className="bg-gray-400">
                                             <TableHead className="font-semibold text-center w-[18%]">Judul</TableHead>
                                             <TableHead className="font-semibold text-center w-[12%]">Perusahaan</TableHead>
                                             <TableHead className="font-semibold text-center w-[12%]">Lokasi</TableHead>
@@ -135,7 +158,7 @@ export default async function RecruiterJobsPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {jobsWithCounts.map((job: any) => (
-                                            <TableRow key={job.id} className="hover:bg-gray-50">
+                                            <TableRow key={job.id} className="hover:bg-gray-50/50 bg-white">
                                                 <TableCell className="font-medium text-center">
                                                     <div className="truncate px-2" title={job.title}>
                                                         {job.title}
@@ -162,7 +185,9 @@ export default async function RecruiterJobsPage() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge variant="outline" className="text-xs whitespace-nowrap">{job.employment_type}</Badge>
+                                                    <Badge className={`text-xs whitespace-nowrap ${getEmploymentTypeColor(job.employment_type)}`}>
+                                                        {job.employment_type}
+                                                    </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <div className="flex items-center justify-center gap-1">
@@ -171,24 +196,18 @@ export default async function RecruiterJobsPage() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    {job.is_closed ? (
-                                                        <Badge variant="destructive" className="text-xs whitespace-nowrap">
-                                                            Ditutup
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant={job.featured ? "default" : "secondary"} className="text-xs whitespace-nowrap">
-                                                            {job.featured ? "Featured" : "Aktif"}
-                                                        </Badge>
-                                                    )}
+                                                    <Badge className={`text-xs whitespace-nowrap ${getJobStatusColor(job.featured || false, job.is_closed || false)}`}>
+                                                        {job.is_closed ? "Ditutup" : (job.featured ? "Featured" : "Aktif")}
+                                                    </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <div className="flex justify-center gap-1 flex-wrap">
-                                                        <Button variant="ghost" size="sm" asChild title="Lihat Detail" className="h-7 w-7 p-0">
+                                                        <Button variant="ghost" size="sm" asChild title="Lihat Detail" className="cursor-pointer h-7 w-7 p-0">
                                                             <Link href={`/recruiter/jobs/${job.id}`}>
                                                                 <Eye className="h-4 w-4 text-blue-600" />
                                                             </Link>
                                                         </Button>
-                                                        <Button variant="ghost" size="sm" asChild title="Edit Lowongan" className="h-7 w-7 p-0">
+                                                        <Button variant="ghost" size="sm" asChild title="Edit Lowongan" className="cursor-pointer h-7 w-7 p-0">
                                                             <Link href={`/recruiter/jobs/${job.id}/edit`}>
                                                                 <Pencil className="h-4 w-4 text-green-600" />
                                                             </Link>
@@ -205,6 +224,7 @@ export default async function RecruiterJobsPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
+                            </div>
                         </div>
                     ) : (
                         <div className="text-center py-12">

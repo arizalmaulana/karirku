@@ -320,6 +320,30 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
 
             if (result.error) throw result.error;
 
+            // Buat notifikasi untuk recruiter saat ada lamaran baru
+            try {
+                // Ambil informasi job dan recruiter
+                const { data: jobData } = await supabase
+                    .from("job_listings")
+                    .select("title, company_name, recruiter_id")
+                    .eq("id", jobId)
+                    .single();
+
+                if (jobData && jobData.recruiter_id && profile) {
+                    const { notifyNewApplication } = await import("@/lib/utils/notifications");
+                    await notifyNewApplication(
+                        jobData.recruiter_id,
+                        jobData.title || jobTitle,
+                        profile.full_name || "Pelamar",
+                        result.data.id,
+                        jobId
+                    );
+                }
+            } catch (notifError) {
+                // Jangan gagalkan proses jika notifikasi gagal
+                console.error("Error creating notification:", notifError);
+            }
+
             toast.success("Lamaran berhasil dikirim!");
             
             // Dispatch custom event
@@ -426,7 +450,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
 
             {/* Draft info */}
             {lastSaved && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-3 bg-blue-50 border border-blue-200/40 rounded-lg">
                     <p className="text-sm text-blue-700">
                         ✓ Draft terakhir disimpan: {lastSaved.toLocaleTimeString("id-ID")}
                     </p>
@@ -439,7 +463,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                     variant="outline"
                     onClick={() => handleSaveDraft()}
                     disabled={isSaving}
-                    className="flex-1 border-2 hover:bg-gray-50"
+                    className="flex-1 border border-gray-200/40 hover:bg-gray-50"
                 >
                     {isSaving ? (
                         <>
@@ -456,7 +480,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                 <Button 
                     type="submit" 
                     disabled={isLoading} 
-                    className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all"
+                    className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 hover:shadow-lg transition-all"
                 >
                     {isLoading ? (
                         <>
@@ -474,7 +498,7 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
-                    className="border-2 hover:bg-gray-50"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors"
                 >
                     Batal
                 </Button>

@@ -61,6 +61,7 @@ export interface JobListing {
     living_cost_id: string | null;
     featured: boolean | null;
     is_closed: boolean | null; // Menandai apakah lowongan sudah ditutup (terpenuhi)
+    is_hidden: boolean | null; // Menandai apakah lowongan disembunyikan karena perusahaan diblokir/dihapus
     created_at: string;
 }
 

@@ -26,6 +26,15 @@ async function getUser(id: string) {
     return data as any;
 }
 
+function getRoleBadgeColor(role: string): string {
+    const colors: Record<string, string> = {
+        admin: "bg-red-500 text-white border-0",
+        recruiter: "bg-indigo-500 text-white border-0",
+        jobseeker: "bg-blue-500 text-white border-0",
+    };
+    return colors[role.toLowerCase()] || "bg-gray-100 text-gray-700 border-0";
+}
+
 function getRoleBadgeVariant(role: string) {
     switch (role) {
         case "admin":
@@ -50,7 +59,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/admin/users">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -62,17 +71,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                         {user.full_name || "Tidak ada nama"}
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role}
-                    </Badge>
-                    <Button variant="outline" asChild className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 shadow-md hover:shadow-lg transition-all">
+                <div className="flex gap-1">
+                    <Button variant="outline" asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" size="default">
                         <Link href={`/admin/users/${user.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all">
+                    <Button variant="destructive" asChild>
                         <Link href={`/admin/users/${user.id}/delete`}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Hapus
@@ -198,13 +204,13 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                         <CardContent className="space-y-4">
                             <div>
                                 <p className="text-sm text-gray-500">Role</p>
-                                <Badge variant={getRoleBadgeVariant(user.role)} className="mt-1">
+                                <Badge className={`mt-1 ${getRoleBadgeColor(user.role)}`}>
                                     {user.role}
                                 </Badge>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Status</p>
-                                <Badge variant={user.is_approved ? "default" : "secondary"} className="mt-1">
+                                <Badge className={`mt-1 ${user.is_approved ? "bg-green-100 text-green-700 border-0" : "bg-yellow-100 text-yellow-700 border-0"}`}>
                                     {user.is_approved ? (
                                         <>
                                             <UserCheck className="mr-1 h-3 w-3" />

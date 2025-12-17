@@ -76,6 +76,15 @@ async function getUsers(filter?: string) {
     return (data || []) as Profile[];
 }
 
+function getRoleBadgeColor(role: string): string {
+    const colors: Record<string, string> = {
+        admin: "bg-red-500 text-white border-0",
+        recruiter: "bg-indigo-500 text-white border-0",
+        jobseeker: "bg-blue-500 text-white border-0",
+    };
+    return colors[role.toLowerCase()] || "bg-gray-100 text-gray-700 border-0";
+}
+
 function getRoleBadgeVariant(role: string) {
     switch (role) {
         case "admin":
@@ -87,6 +96,12 @@ function getRoleBadgeVariant(role: string) {
         default:
             return "outline";
     }
+}
+
+function getApprovalStatusColor(isApproved: boolean): string {
+    return isApproved 
+        ? "bg-green-100 text-green-700 border-0"
+        : "bg-yellow-100 text-yellow-700 border-0";
 }
 
 export default async function UsersManagementPage({ 
@@ -106,7 +121,7 @@ export default async function UsersManagementPage({
                     Kelola dan pantau semua pengguna di platform
                 </p>
                 </div>
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" asChild>
+                <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all" size="lg" asChild>
                     <Link href="/admin/users/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Tambah Pengguna
@@ -114,7 +129,7 @@ export default async function UsersManagementPage({
                 </Button>
             </div>
 
-            <Card className="border border-purple-200 bg-gradient-to-br from-blue-100 to-pink-100/50 shadow-sm rounded-2xl p-6">
+            <Card className="border-0 bg-gradient-to-br from-purple-100 to-blue-100/50 shadow-sm rounded-2xl p-6">
                 <CardHeader>
                     <CardTitle>
                         {filter === "pending" ? "Recruiter Menunggu Persetujuan" : "Daftar Pengguna"}
@@ -127,26 +142,27 @@ export default async function UsersManagementPage({
                 </CardHeader>
                 <CardContent>
                     {users.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Nama</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Role</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Lokasi</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Skills</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Status</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Tanggal Bergabung</TableHead>
-                                    <TableHead className="text-sm font-semibold text-gray-700 text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map((user) => (
-                                    <TableRow key={user.id}>
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-400">
+                                        <TableHead className="font-semibold text-center">Nama</TableHead>
+                                        <TableHead className="font-semibold text-center">Role</TableHead>
+                                        <TableHead className="font-semibold text-center">Lokasi</TableHead>
+                                        <TableHead className="font-semibold text-center">Skills</TableHead>
+                                        <TableHead className="font-semibold text-center">Status</TableHead>
+                                        <TableHead className="font-semibold text-center">Tanggal Bergabung</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {users.map((user) => (
+                                        <TableRow key={user.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">
                                             {user.full_name || "Tidak ada nama"}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Badge variant={getRoleBadgeVariant(user.role)}>
+                                            <Badge className={getRoleBadgeColor(user.role)}>
                                                 {user.role}
                                             </Badge>
                                         </TableCell>
@@ -157,7 +173,7 @@ export default async function UsersManagementPage({
                                                 : "-"}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Badge variant={user.is_approved ? "default" : "secondary"}>
+                                            <Badge className={getApprovalStatusColor(user.is_approved || false)}>
                                                 {user.is_approved ? "Aktif" : "Tidak Aktif"}
                                             </Badge>
                                         </TableCell>
@@ -166,17 +182,17 @@ export default async function UsersManagementPage({
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center gap-2">
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-blue-50 transition-all" title="Lihat Detail">
                                                     <Link href={`/admin/users/${user.id}`}>
                                                         <Eye className="h-4 w-4 text-blue-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-green-50 transition-all" title="Edit Pengguna">
                                                     <Link href={`/admin/users/${user.id}/edit`}>
                                                         <Pencil className="h-4 w-4 text-green-600" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="sm" asChild className="cursor-pointer h-7 w-7 p-0 hover:bg-red-50 transition-all" title="Hapus Pengguna">
                                                     <Link href={`/admin/users/${user.id}/delete`}>
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Link>
@@ -185,8 +201,9 @@ export default async function UsersManagementPage({
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-gray-500">Belum ada pengguna terdaftar</p>

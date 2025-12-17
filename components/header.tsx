@@ -80,13 +80,15 @@ export function Header() {
 
     return (
         <>
-        <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
+        <header className="bg-gradient-to-r from-purple-50 via-indigo-50 to-pink-50 border-0 sticky top-0 z-[60] shadow-md">
             <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 cursor-pointer">
-                <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-                <span className="text-lg sm:text-xl font-bold text-slate-800">KarirKu</span>
+                <Link href="/" className="flex items-center gap-2 cursor-pointer group">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">KarirKu</span>
                 </Link>
 
                 {/* Desktop Navigation */}
@@ -99,7 +101,7 @@ export function Header() {
                                 <DropdownMenuTrigger asChild className="cursor-pointer">
                                     <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden">
                                         {profile.role === 'recruiter' && company ? (
-                                            <Avatar className="h-10 w-10 border-2 border-purple-200 rounded-full">
+                                            <Avatar className="h-10 w-10 border border-purple-200/40 rounded-full">
                                                 {company.logo_url ? (
                                                     <AvatarImage 
                                                         src={company.logo_url} 
@@ -112,7 +114,7 @@ export function Header() {
                                                 </AvatarFallback>
                                             </Avatar>
                                         ) : (
-                                            <Avatar className="h-10 w-10 border-2 border-purple-200 rounded-full">
+                                            <Avatar className="h-10 w-10 border border-purple-200/40 rounded-full">
                                                 {profile.avatar_url ? (
                                                     <AvatarImage 
                                                         src={profile.avatar_url} 
@@ -120,7 +122,7 @@ export function Header() {
                                                         className="object-cover object-center"
                                                     />
                                                 ) : null}
-                                                <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white rounded-full">
+                                                <AvatarFallback className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full">
                                                     {getInitials()}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -135,7 +137,7 @@ export function Header() {
                                                 {/* Use Company Logo for Recruiter, User Avatar for others */}
                                                 {profile.role === 'recruiter' && company ? (
                                                     company.logo_url ? (
-                                                        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-purple-200 shrink-0">
+                                                        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-200/40 shrink-0">
                                                             <Image
                                                                 src={company.logo_url}
                                                                 alt={company.name || "Company Logo"}
@@ -155,7 +157,7 @@ export function Header() {
                                                         {profile.avatar_url ? (
                                                             <AvatarImage src={profile.avatar_url} alt={profile.full_name || "User"} />
                                                         ) : null}
-                                                        <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white text-xs">
+                                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white text-xs">
                                                             {getInitials()}
                                                         </AvatarFallback>
                                                     </Avatar>
@@ -164,7 +166,7 @@ export function Header() {
                                                     <p className="text-sm font-medium leading-none truncate">
                                                         {profile.full_name || "Pengguna"}
                                                     </p>
-                                                    <p className="text-xs leading-none text-muted-foreground truncate mt-1">
+                                                    <p className="text-xs leading-none text-gray-600 truncate mt-1">
                                                         {user.email}
                                                     </p>
                                                     <p className="text-xs leading-none text-blue-600 mt-1">
@@ -220,33 +222,37 @@ export function Header() {
                             <>
                                 <Link
                                     href="/"
-                                    className={`transition ${
-                                        isActive("/") ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                                    className={`transition-colors px-3 py-2 rounded-lg ${
+                                        isActive("/") ? "text-indigo-600 bg-indigo-50 font-medium" : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
                                     }`}
                                 >
                                     Cari Kerja
                                 </Link>
                                 <Link
                                     href="/companies"
-                                    className={`transition ${
-                                        isActive("/companies") ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                                    className={`transition-colors px-3 py-2 rounded-lg ${
+                                        isActive("/companies") ? "text-indigo-600 bg-indigo-50 font-medium" : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
                                     }`}
                                 >
                                     Perusahaan
                                 </Link>
                                 <Link
                                     href="/about"
-                                    className={`transition ${
-                                        isActive("/about") ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                                    className={`transition-colors px-3 py-2 rounded-lg ${
+                                        isActive("/about") ? "text-indigo-600 bg-indigo-50 font-medium" : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
                                     }`}
                                 >
                                     Tentang
                                 </Link>
-                                <Button variant="outline" onClick={() => setShowLogin(true)} className="ml-2 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowLogin(true)} 
+                                    className="ml-2 border-0 cursor-pointer bg-gray-200 text-indigo-600 hover:!bg-gray-200 hover:!text-indigo-600 shadow-sm transition-colors"
+                                >
                                     <LogIn className="mr-2 h-4 w-4" />
                                     Masuk
                                 </Button>
-                                <Button variant="outline" onClick={() => setShowRegister(true)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30">
+                                <Button onClick={() => setShowRegister(true)} className="cursor-pointer  bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg">
                                     <UserPlus className="mr-2 h-4 w-4" />
                                     Daftar
                                 </Button>
@@ -263,7 +269,7 @@ export function Header() {
                             <DropdownMenuTrigger asChild className="cursor-pointer">
                                 <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 overflow-hidden">
                                     {profile.role === 'recruiter' && company ? (
-                                        <Avatar className="h-9 w-9 border-2 border-purple-200 rounded-full">
+                                        <Avatar className="h-9 w-9 border border-purple-200/40 rounded-full">
                                             {company.logo_url ? (
                                                 <AvatarImage 
                                                     src={company.logo_url} 
@@ -276,7 +282,7 @@ export function Header() {
                                             </AvatarFallback>
                                         </Avatar>
                                     ) : (
-                                        <Avatar className="h-9 w-9 border-2 border-purple-200 rounded-full">
+                                        <Avatar className="h-9 w-9 border border-purple-200/40 rounded-full">
                                             {profile.avatar_url ? (
                                                 <AvatarImage 
                                                     src={profile.avatar_url} 
@@ -284,7 +290,7 @@ export function Header() {
                                                     className="object-cover object-center"
                                                 />
                                             ) : null}
-                                            <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 text-white rounded-full text-xs">
+                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full text-xs">
                                                 {getInitials()}
                                             </AvatarFallback>
                                         </Avatar>
@@ -297,7 +303,7 @@ export function Header() {
                                         <div className="flex items-center gap-2">
                                             {profile.role === 'recruiter' && company ? (
                                                 company.logo_url ? (
-                                                    <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-purple-200 shrink-0">
+                                                    <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-200/40 shrink-0">
                                                         <Image
                                                             src={company.logo_url}
                                                             alt={company.name || "Company Logo"}
@@ -366,13 +372,13 @@ export function Header() {
 
             {/* Mobile Navigation */}
             {mobileMenuOpen && (
-                <nav className="mt-3 mb-2 border-t border-gray-200 pt-4 pb-2 flex flex-col gap-3">
+                <nav className="mt-3 mb-2 border-0 pt-4 pb-2 flex flex-col gap-3">
                 {mounted && !loading && (
                     <>
                         {user && profile ? (
                             // Setelah login: navigasi menggunakan sidebar, hanya tampilkan menu minimal
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs text-gray-500 px-3">
+                                <p className="text-xs text-gray-600 px-3">
                                     Gunakan sidebar untuk navigasi lengkap
                                 </p>
                                 <Link
@@ -395,7 +401,7 @@ export function Header() {
                                         signOut();
                                         setMobileMenuOpen(false);
                                     }}
-                                    className="w-full mt-2 border-red-200 text-red-600 hover:bg-red-50"
+                                    className="w-full mt-2 border-0 bg-gradient-to-br from-white to-red-50/30 text-red-600 hover:bg-gradient-to-br hover:from-red-50 hover:to-red-100/50 shadow-sm"
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />
                                     Keluar
@@ -405,10 +411,10 @@ export function Header() {
                             <>
                                 <Link
                                     href="/"
-                                    className={`py-2 px-3 rounded-lg transition ${
+                                    className={`py-2 px-3 rounded-lg transition-colors ${
                                         isActive("/") 
-                                            ? "bg-blue-50 text-blue-600 font-medium" 
-                                            : "text-gray-700 hover:bg-gray-50"
+                                            ? "bg-indigo-50 text-indigo-600 font-medium" 
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                                     }`}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
@@ -416,10 +422,10 @@ export function Header() {
                                 </Link>
                                 <Link
                                     href="/companies"
-                                    className={`py-2 px-3 rounded-lg transition ${
+                                    className={`py-2 px-3 rounded-lg transition-colors ${
                                         isActive("/companies") 
-                                            ? "bg-blue-50 text-blue-600 font-medium" 
-                                            : "text-gray-700 hover:bg-gray-50"
+                                            ? "bg-indigo-50 text-indigo-600 font-medium" 
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                                     }`}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
@@ -427,10 +433,10 @@ export function Header() {
                                 </Link>
                                 <Link
                                     href="/about"
-                                    className={`py-2 px-3 rounded-lg transition ${
+                                    className={`py-2 px-3 rounded-lg transition-colors ${
                                         isActive("/about") 
-                                            ? "bg-blue-50 text-blue-600 font-medium" 
-                                            : "text-gray-700 hover:bg-gray-50"
+                                            ? "bg-indigo-50 text-indigo-600 font-medium" 
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                                     }`}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
@@ -443,7 +449,7 @@ export function Header() {
                                             setShowLogin(true);
                                             setMobileMenuOpen(false);
                                         }}
-                                        className="w-full"
+                                        className="w-full border-0 bg-gray-200 text-indigo-600 hover:!bg-gray-600 hover:!text-white shadow-sm transition-colors"
                                     > 
                                         <LogIn className="mr-2 h-4 w-4" />
                                         Masuk
@@ -453,7 +459,7 @@ export function Header() {
                                             setShowRegister(true);
                                             setMobileMenuOpen(false);
                                         }}
-                                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                                        className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md"
                                     > 
                                         <UserPlus className="mr-2 h-4 w-4" />
                                         Daftar

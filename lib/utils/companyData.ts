@@ -141,11 +141,27 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
 
   // Jika tabel companies ada dan berisi data, gunakan data tersebut
   if (!companiesError && companiesData && companiesData.length > 0) {
-    // Ambil jumlah job listings per company
-    const { data: jobsData } = await supabase
+    // Ambil jumlah job listings per company (exclude hidden jobs)
+    let { data: jobsData, error: jobsError } = await supabase
       .from("job_listings")
       .select("company_name")
+      .neq("is_hidden", true) // Exclude hidden jobs
       .order("created_at", { ascending: false });
+    
+    // Fallback if is_hidden column doesn't exist
+    if (jobsError) {
+      const errorMessage = jobsError.message?.toLowerCase() || "";
+      if (errorMessage.includes("column") && errorMessage.includes("does not exist")) {
+        const fallbackResult = await supabase
+          .from("job_listings")
+          .select("company_name")
+          .order("created_at", { ascending: false });
+        
+        if (!fallbackResult.error) {
+          jobsData = fallbackResult.data;
+        }
+      }
+    }
 
     // Hitung jumlah job per company
     const jobCounts = new Map<string, number>();
@@ -203,15 +219,34 @@ export async function fetchCompaniesFromDatabase(): Promise<Company[]> {
     (blockedCompaniesData || []).map((c: { name: string }) => c.name)
   );
 
-  const { data: jobsData, error: jobsError } = await supabase
+  let { data: jobsData, error: jobsError } = await supabase
     .from("job_listings")
     .select("id, company_name, location_city, location_province, employment_type, title, description")
     .eq("is_closed", false)
+    .neq("is_hidden", true) // Exclude hidden jobs
     .order("created_at", { ascending: false });
 
+  // Fallback if is_hidden column doesn't exist
   if (jobsError) {
-    console.error("Error fetching companies from job_listings:", jobsError);
-    return [];
+    const errorMessage = jobsError.message?.toLowerCase() || "";
+    if (errorMessage.includes("column") && errorMessage.includes("does not exist")) {
+      const fallbackResult = await supabase
+        .from("job_listings")
+        .select("id, company_name, location_city, location_province, employment_type, title, description")
+        .eq("is_closed", false)
+        .order("created_at", { ascending: false });
+      
+      if (fallbackResult.error) {
+        console.error("Error fetching companies from job_listings:", fallbackResult.error);
+        return [];
+      }
+      
+      jobsData = fallbackResult.data;
+      jobsError = null;
+    } else {
+      console.error("Error fetching companies from job_listings:", jobsError);
+      return [];
+    }
   }
 
   if (!jobsData || jobsData.length === 0) {

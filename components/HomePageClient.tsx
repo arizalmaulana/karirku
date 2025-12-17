@@ -216,7 +216,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
                 </div>
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg px-6 sm:px-8 hover:shadow-cyan-500/50 transition-all w-full sm:w-auto"
+                  className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-lg px-6 sm:px-8 hover:shadow-indigo-500/50 transition-all w-full sm:w-auto"
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Cari
@@ -276,7 +276,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
                     </div>
                     <div>
                       <div className="text-gray-900" style={{ fontSize: '12px' }}>Success Rate</div>
-                      <div className="gradient-text-cyan" style={{ fontSize: '20px' }}>95%</div>
+                      <div className=" text-indigo-600" style={{ fontSize: '20px' }}>95%</div>
                     </div>
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
                     </div>
                     <div>
                       <div className="text-gray-900" style={{ fontSize: '12px' }}>Fast Response</div>
-                      <div className="gradient-text" style={{ fontSize: '20px' }}>24 Jam</div>
+                      <div className="text-indigo-800" style={{ fontSize: '20px' }}>24 Jam</div>
                     </div>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Lowongan Tersedia</h2>
-                <p className="text-gray-600 text-sm sm:text-base">
+                <p className="text-gray-700 text-sm sm:text-base">
                   Menampilkan{" "}
                   <span className="font-semibold gradient-text-cyan">
                     {filteredJobs.length}
@@ -352,7 +352,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
                     <Search className="w-10 h-10 text-indigo-400" />
                   </div>
                   <h3 className="text-gray-900 mb-2">Tidak ada lowongan ditemukan</h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-700">
                     Coba ubah filter atau kata kunci pencarian Anda
                   </p>
                 </div>

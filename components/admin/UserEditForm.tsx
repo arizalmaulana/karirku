@@ -67,12 +67,27 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
             // Update is_approved untuk semua role (status aktif)
             updateData.is_approved = formData.is_approved;
 
+            // Simpan status is_approved sebelumnya untuk cek apakah recruiter baru di-approve
+            const previousIsApproved = initialData.is_approved;
+            const newIsApproved = formData.is_approved;
+
             const { error } = await (supabase
                 .from("profiles") as any)
                 .update(updateData)
                 .eq("id", userId);
 
             if (error) throw error;
+
+            // Buat notifikasi jika recruiter baru saja di-approve
+            if (newIsApproved && !previousIsApproved && initialData.role === "recruiter") {
+                try {
+                    const { notifyRecruiterApproval } = await import("@/lib/utils/notifications");
+                    await notifyRecruiterApproval(userId);
+                } catch (notifError) {
+                    // Jangan gagalkan proses jika notifikasi gagal
+                    console.error("Error creating notification:", notifError);
+                }
+            }
 
             toast.success("Data pengguna berhasil diperbarui");
             router.push(`/admin/users/${userId}`);
@@ -144,7 +159,7 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white text-black border border-gray-200">
+                        <SelectContent className="!bg-white text-black border border-gray-200/40">
                             <SelectItem value="jobseeker" className="!bg-white text-black hover:bg-gray-100">Job Seeker</SelectItem>
                             <SelectItem value="recruiter" className="!bg-white text-black hover:bg-gray-100">Recruiter</SelectItem>
                             <SelectItem value="admin" className="!bg-white text-black hover:bg-gray-100">Admin</SelectItem>
@@ -221,7 +236,7 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
                 <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                     {isLoading ? (
                         <>
@@ -237,7 +252,7 @@ export function UserEditForm({ initialData, userId }: UserEditFormProps) {
                     variant="outline"
                     onClick={() => router.back()}
                     disabled={isLoading}
-                    className="hover:bg-gray-50 transition-all"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
                 >
                     Batal
                 </Button>

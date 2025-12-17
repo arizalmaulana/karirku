@@ -172,7 +172,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-blue-50 to-pink-200/50 shadow-sm">
                 <CardHeader>
                     <CardTitle>Status Lamaran</CardTitle>
                     <CardDescription>
@@ -203,7 +203,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-blue-50 to-pink-200/50 shadow-sm">
                 <CardHeader>
                     <CardTitle>Informasi Interview</CardTitle>
                     <CardDescription>
@@ -247,7 +247,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-blue-50 to-pink-200/50 shadow-sm">
                 <CardHeader>
                     <CardTitle>Keterangan Ketika Status Diterima</CardTitle>
                     <CardDescription>
@@ -275,7 +275,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-blue-50 to-pink-200/50 shadow-sm">
                 <CardHeader>
                     <CardTitle>Alasan Penolakan</CardTitle>
                     <CardDescription>
@@ -308,7 +308,7 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                 <Button 
                     type="submit" 
                     disabled={isLoading} 
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                     {isLoading ? (
                         <>
@@ -321,6 +321,14 @@ export function ApplicationEditForm({ applicationId, initialData }: ApplicationE
                             Simpan Perubahan
                         </>
                     )}
+                </Button>
+                <Button 
+                    type="button" 
+                    onClick={() => router.back()}
+                    disabled={isLoading}
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                    Batal
                 </Button>
             </div>
         </form>

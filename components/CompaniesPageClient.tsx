@@ -103,7 +103,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                 </div>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg px-8 hover:shadow-cyan-500/50 transition-all"
+                  className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-lg px-8 hover:shadow-indigo-500/50 transition-all"
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Cari
@@ -130,7 +130,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-purple-900 mb-1">Perusahaan Terdaftar</h2>
-          <p className="text-gray-600" style={{ fontSize: "14px" }}>
+            <p className="text-gray-700" style={{ fontSize: "14px" }}>
             Menampilkan <span className="font-semibold gradient-text-cyan">{filteredCompanies.length}</span> perusahaan terpercaya
           </p>
         </div>
@@ -142,7 +142,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
               className="animate-slide-in-up"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <Card className="group relative p-6 hover:shadow-2xl transition-all duration-300 border-2 border-gray-200/60 hover:border-indigo-300 h-full flex flex-col overflow-hidden card-hover">
+              <Card className="group relative p-6 hover:shadow-2xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-purple-50/30 h-full flex flex-col overflow-hidden card-hover">
                 {/* Gradient overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -164,17 +164,17 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
 
                   {/* Company Info */}
                   <div className="flex-1">
-                    <h3 className="mb-2 group-hover:text-indigo-600 transition-colors">{company.name}</h3>
+                    <h3 className="mb-2 text-gray-900 font-semibold text-lg group-hover:text-indigo-600 transition-colors">{company.name}</h3>
                     {company.industry && (
                       <Badge
-                        className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-2 border-indigo-200 shadow-sm px-3 py-1.5 font-medium"
+                        className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-0 shadow-sm px-3 py-1.5 font-medium"
                       >
                         <Sparkles className="w-3 h-3 mr-1.5" />
                         {company.industry}
                       </Badge>
                     )}
 
-                    <div className="space-y-2 mb-4 text-gray-600" style={{ fontSize: "14px" }}>
+                    <div className="space-y-2 mb-4 text-gray-800" style={{ fontSize: "14px" }}>
                       {(company.location || company.location_city) && (
                         <div className="flex items-center gap-2 group/item hover:text-indigo-600 transition-colors">
                           <div className="p-1.5 bg-indigo-50 rounded-lg group-hover/item:bg-indigo-100 transition-colors">
@@ -202,7 +202,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                     </div>
 
                     {company.description && (
-                      <p className="text-gray-600 line-clamp-3 mb-4" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                      <p className="text-gray-800 line-clamp-3 mb-4" style={{ fontSize: "14px", lineHeight: "1.6" }}>
                         {company.description}
                       </p>
                     )}
@@ -219,7 +219,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
                     <Button
                       variant="outline"
                       size="icon"
-                      className="border-2 border-indigo-200 text-indigo-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-400 transition-all"
+                      className="border-0 text-indigo-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all bg-gray-200"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Button>
@@ -276,7 +276,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
 
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
             {selectedCompanyJobs.length === 0 && (
-              <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-gray-600">
+              <div className="rounded-xl border-0 bg-gradient-to-br from-white to-purple-50/30 p-6 text-center text-gray-600">
                 Belum ada lowongan aktif untuk perusahaan ini.
               </div>
             )}
@@ -284,7 +284,7 @@ export function CompaniesPageClient({ companies: initialCompanies, jobs }: Compa
             {selectedCompanyJobs.map((job) => (
               <div
                 key={job.id}
-                className="rounded-xl border border-gray-100 p-4 hover:border-indigo-200 hover:shadow-sm transition-all"
+                className="rounded-xl border-0 bg-gradient-to-br from-white to-purple-50/30 p-4 hover:shadow-sm transition-all"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

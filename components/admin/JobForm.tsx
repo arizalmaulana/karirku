@@ -284,7 +284,11 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
             </div>
 
             <div className="flex gap-4">
-                <Button type="submit" disabled={isLoading}>
+                <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -298,7 +302,8 @@ export function JobForm({ initialData, jobId }: JobFormProps) {
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/admin/jobs")}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+                    disabled={isLoading}
                 >
                     Batal
                 </Button>

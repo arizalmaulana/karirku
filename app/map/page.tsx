@@ -1,16 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { JobMap } from "../../components/JobMap";
 import { JobDetail } from "../../components/JobDetail";
-import { jobs } from "../../data/jobs";
 import type { Job } from "../../types/job";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import Link from "next/link";
+import { fetchJobsFromDatabase } from "@/lib/utils/jobData";
 
 export default function MapPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadJobs() {
+      try {
+        const fetchedJobs = await fetchJobsFromDatabase();
+        setJobs(fetchedJobs);
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadJobs();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-gray-600">Memuat peta lowongan kerja...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

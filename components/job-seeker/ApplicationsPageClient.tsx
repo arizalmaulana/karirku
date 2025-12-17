@@ -76,6 +76,18 @@ function formatEmploymentType(type: string): string {
     return types[type] || type;
 }
 
+function getEmploymentTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+        fulltime: "bg-indigo-500 text-white border-0",
+        parttime: "bg-purple-500 text-white border-0",
+        remote: "bg-green-500 text-white border-0",
+        contract: "bg-indigo-500 text-white border-0",
+        internship: "bg-pink-500 text-white border-0",
+        hybrid: "bg-teal-500 text-white border-0",
+    };
+    return colors[type.toLowerCase()] || "bg-indigo-500 text-white border-0";
+}
+
 function getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
         submitted: "Menunggu",
@@ -89,13 +101,13 @@ function getStatusLabel(status: string): string {
 
 function getStatusColor(status: string): string {
     const colors: Record<string, string> = {
-        submitted: "bg-yellow-100 text-yellow-700 border-yellow-300",
-        review: "bg-blue-100 text-blue-700 border-blue-300",
-        interview: "bg-purple-100 text-purple-700 border-purple-300",
-        accepted: "bg-green-100 text-green-700 border-green-300",
-        rejected: "bg-red-100 text-red-700 border-red-300",
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
     };
-    return colors[status] || "bg-gray-100 text-gray-700 border-gray-300";
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
 }
 
 
@@ -339,8 +351,8 @@ export function ApplicationsPageClient({
                             px-4 py-2 rounded-lg text-sm font-medium transition-all
                             ${
                                 activeStatus === tab.value
-                                    ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white shadow-lg"
-                                    : "bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-300"
+                                    ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg"
+                                    : "bg-white text-gray-700 border border-gray-200/40 hover:border-purple-300/50"
                             }
                         `}
                     >
@@ -351,7 +363,7 @@ export function ApplicationsPageClient({
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm">
+                <Card className="border-0 bg-gradient-to-br from-indigo-50 to-indigo-100/50 shadow-sm">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -365,7 +377,7 @@ export function ApplicationsPageClient({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -379,7 +391,7 @@ export function ApplicationsPageClient({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 shadow-sm">
+                <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100/50 shadow-sm">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -393,7 +405,7 @@ export function ApplicationsPageClient({
                     </CardContent>
                 </Card>
 
-                <Card className="border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
+                <Card className="border-0 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -416,31 +428,28 @@ export function ApplicationsPageClient({
                             <p className="text-gray-500">Memuat data...</p>
                         </div>
                     ) : filteredApplications.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-gray-50">
-                                    <TableHead className="text-left">Posisi</TableHead>
-                                    <TableHead className="text-left">Perusahaan</TableHead>
-                                    <TableHead className="text-center">Status</TableHead>
-                                    <TableHead className="text-center">Tanggal</TableHead>
-                                    <TableHead className="text-center">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredApplications.map((app) => (
-                                    <TableRow 
-                                        key={app.id}
-                                        className="hover:bg-gray-50 transition-colors"
-                                    >
-                                        <TableCell>
-                                            <div className="font-semibold text-gray-900">
-                                                {app.job_listings?.title || "Unknown Position"}
-                                            </div>
+                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-400">
+                                        <TableHead className="font-semibold text-center">Posisi</TableHead>
+                                        <TableHead className="font-semibold text-center">Perusahaan</TableHead>
+                                        <TableHead className="font-semibold text-center">Status</TableHead>
+                                        <TableHead className="font-semibold text-center">Tanggal</TableHead>
+                                        <TableHead className="font-semibold text-center">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredApplications.map((app) => (
+                                        <TableRow 
+                                            key={app.id}
+                                            className="hover:bg-gray-50/50 bg-white"
+                                        >
+                                        <TableCell className="font-medium text-center">
+                                            {app.job_listings?.title || "Unknown Position"}
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="text-gray-700">
-                                                {app.job_listings?.company_name || "Unknown Company"}
-                                            </div>
+                                        <TableCell className="text-center">
+                                            {app.job_listings?.company_name || "Unknown Company"}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <Badge
@@ -461,31 +470,50 @@ export function ApplicationsPageClient({
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => setSelectedApplication(app)}
-                                                    className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
+                                                    className="shadow-md"
+                                                    style={{ 
+                                                        backgroundColor: '#14b8a6',
+                                                        color: 'white',
+                                                        border: 'none'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#0d9488';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#14b8a6';
+                                                    }}
                                                 >
                                                     <Info className="h-3.5 w-3.5 mr-1.5" />
                                                     Detail Lowongan
                                                 </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    asChild
-                                                    className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                                                >
-                                                    <Link 
-                                                        href={`/job-seeker/applications/${app.id}`}
-                                                        className="flex items-center gap-1.5"
+                                                <Link href={`/job-seeker/applications/${app.id}`}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="shadow-md"
+                                                        style={{ 
+                                                            backgroundColor: '#3b82f6',
+                                                            color: 'white',
+                                                            border: 'none'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#2563eb';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#3b82f6';
+                                                        }}
                                                     >
                                                         <Eye className="h-3.5 w-3.5 mr-1.5" />
                                                         Detail Lamaran
-                                                    </Link>
-                                                </Button>
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <div className="p-12 text-center">
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
@@ -502,7 +530,7 @@ export function ApplicationsPageClient({
                                     : "Mulai melamar pekerjaan untuk melihat riwayat lamaran Anda"}
                             </p>
                             {!searchQuery && activeStatus === "all" && (
-                                <Button asChild className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white">
+                                <Button asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600">
                                     <Link href="/job-seeker/jobs">
                                         Cari Lowongan
                                     </Link>
@@ -515,17 +543,17 @@ export function ApplicationsPageClient({
 
             {/* Detail Lowongan Modal */}
             {selectedApplication && selectedApplication.job_listings && (
-                <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)} > 
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
                         <DialogHeader>
-                            <DialogTitle>Detail Lowongan</DialogTitle>
+                            <DialogTitle className="text-2xl font-bold text-gray-900">Detail Lowongan</DialogTitle>
                             <DialogDescription>
                                 Informasi lengkap tentang lowongan pekerjaan
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6 mt-4">
                             <div className="flex items-start gap-4">
-                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200/40">
                                     <ImageWithFallback
                                         src={(selectedApplication as any).companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedApplication.job_listings?.company_name || "Company")}&size=128&background=6366f1&color=ffffff&bold=true&format=png`}
                                         alt={selectedApplication.job_listings?.company_name || "Company"}
@@ -561,7 +589,7 @@ export function ApplicationsPageClient({
                                         <Clock className="w-4 h-4" />
                                         <span>Tipe Pekerjaan</span>
                                     </div>
-                                    <Badge variant="outline" className="mt-1">
+                                    <Badge className={`mt-1 ${getEmploymentTypeColor(selectedApplication.job_listings.employment_type || "")}`}>
                                         {selectedApplication.job_listings.employment_type 
                                             ? formatEmploymentType(selectedApplication.job_listings.employment_type)
                                             : "-"

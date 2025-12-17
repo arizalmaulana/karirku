@@ -7,7 +7,12 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
+    DialogOverlay,
+    DialogPortal,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { XIcon } from "lucide-react";
+import { cn } from "@/components/ui/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -684,6 +689,32 @@ export function RegisterDialog({
                 jobseeker: "/job-seeker/dashboard",
             }[formData.role] || "/job-seeker/dashboard";
 
+            // Buat notifikasi selamat datang untuk user baru
+            try {
+                const notificationResponse = await fetch("/api/notifications/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: newUserId,
+                        title: "Selamat Datang di KarirKu! 🎉",
+                        message: isJobseeker
+                            ? "Terima kasih telah bergabung! Akun Anda sudah aktif. Mulai jelajahi lowongan pekerjaan yang sesuai dengan Anda."
+                            : "Terima kasih telah bergabung! Akun Anda sedang menunggu persetujuan admin. Anda akan mendapat notifikasi setelah akun disetujui.",
+                        type: "success",
+                        link: data.session ? dashboardPath : null,
+                    }),
+                });
+
+                if (!notificationResponse.ok) {
+                    console.error("Gagal membuat notifikasi selamat datang");
+                }
+            } catch (notifError) {
+                // Jangan gagalkan proses jika notifikasi gagal dibuat
+                console.error("Error creating welcome notification:", notifError);
+            }
+
             if (data.session) {
                 // Ada session, tampilkan notifikasi dulu, baru redirect setelah delay
                 if (isJobseeker) {
@@ -745,10 +776,16 @@ export function RegisterDialog({
             }
         }}
         >
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogPortal>
+            <DialogOverlay className="backdrop-blur-none bg-transparent" />
+            <DialogPrimitive.Content
+                className={cn(
+                    "bg-white dark:bg-gray-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[70] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border border-gray-200/40 p-6 shadow-xl duration-200 sm:max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+                )}
+            >
             <DialogHeader>
-            <DialogTitle>Buat Akun Baru</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-gray-900">Buat Akun Baru</DialogTitle>
+            <DialogDescription className="text-gray-700">
                 Daftar sekarang untuk mulai mencari pekerjaan impian Anda
             </DialogDescription>
             </DialogHeader>
@@ -757,9 +794,9 @@ export function RegisterDialog({
                 <div className="space-y-4">
                     {/* Name Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="register-name">Nama Lengkap</Label>
+                        <Label htmlFor="register-name" className="text-gray-700">Nama Lengkap</Label>
                         <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                         <Input
                             id="register-name"
                             type="text"
@@ -774,9 +811,9 @@ export function RegisterDialog({
 
                     {/* Email Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="register-email">Email</Label>
+                        <Label htmlFor="register-email" className="text-gray-700">Email</Label>
                         <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none z-10" />
                         <Input
                             id="register-email"
                             type="email"
@@ -808,7 +845,7 @@ export function RegisterDialog({
 
                     {/* Role Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="register-role">Saya mendaftar sebagai</Label>
+                        <Label htmlFor="register-role" className="text-gray-700">Saya mendaftar sebagai</Label>
                         <Select
                         value={formData.role}
                         onValueChange={(value) => {
@@ -818,9 +855,9 @@ export function RegisterDialog({
                         <SelectTrigger id="register-role">
                             <SelectValue placeholder="Pilih peran" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white text-black">
-                            <SelectItem value="jobseeker" className="text-black hover:bg-gray-100">Pencari Kerja</SelectItem>
-                            <SelectItem value="recruiter" className="text-black hover:bg-gray-100">Recruiter / Perusahaan</SelectItem>
+                        <SelectContent className="bg-white text-gray-900">
+                            <SelectItem value="jobseeker" className="text-gray-900 hover:bg-gray-100">Pencari Kerja</SelectItem>
+                            <SelectItem value="recruiter" className="text-gray-900 hover:bg-gray-100">Recruiter / Perusahaan</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>
@@ -829,9 +866,9 @@ export function RegisterDialog({
                 <div className="space-y-4">
                     {/* Password Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="register-password">Password</Label>
+                        <Label htmlFor="register-password" className="text-gray-700">Password</Label>
                         <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                         <Input
                             id="register-password"
                             type={showPassword ? "text" : "password"}
@@ -847,7 +884,7 @@ export function RegisterDialog({
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
                             {showPassword ? (
                             <EyeOff className="w-5 h-5" />
@@ -860,9 +897,9 @@ export function RegisterDialog({
 
                     {/* Confirm Password Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="register-confirm-password">Konfirmasi Password</Label>
+                        <Label htmlFor="register-confirm-password" className="text-gray-700">Konfirmasi Password</Label>
                         <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                         <Input
                             id="register-confirm-password"
                             type={showConfirmPassword ? "text" : "password"}
@@ -877,7 +914,7 @@ export function RegisterDialog({
                         <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
                             {showConfirmPassword ? (
                             <EyeOff className="w-5 h-5" />
@@ -899,20 +936,20 @@ export function RegisterDialog({
                     }
                     className="mt-0.5 border-black"
                     />
-                    <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer leading-tight">
+                    <label htmlFor="terms" className="text-sm text-gray-700 cursor-pointer leading-tight">
                     Saya menyetujui{" "}
-                    <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                    <a href="/terms" target="_blank" className="text-indigo-600 hover:underline font-medium">
                         Syarat & Ketentuan
                     </a>{" "}
                     serta{" "}
-                    <a href="/privacy" target="_blank" className="text-blue-600 hover:underline">
+                    <a href="/privacy" target="_blank" className="text-indigo-600 hover:underline font-medium">
                         Kebijakan Privasi
                     </a>
                     </label>
                 </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/30" size="lg" disabled={isLoading}>
+            <Button type="submit" className="w-full cursor-pointer bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600" size="lg" disabled={isLoading}>
                 {isLoading ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -924,7 +961,7 @@ export function RegisterDialog({
             </Button>
 
             {/* Login Link */}
-            <div className="text-center text-gray-600">
+            <div className="text-center text-gray-700">
                 Sudah punya akun?{" "}
                 <button
                 type="button"
@@ -932,13 +969,18 @@ export function RegisterDialog({
                     closeDialog();
                     onSwitchToLogin();
                 }}
-                className="text-blue-600 hover:text-blue-700 transition"
+                className="cursor-pointer text-indigo-600 hover:text-indigo-700 transition font-medium hover:underline"
                 >
                 Masuk di sini
                 </button>
             </div>
             </form>
-        </DialogContent>
+                <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 p-1.5 transition-all focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
+                    <XIcon />
+                    <span className="sr-only">Close</span>
+                </DialogPrimitive.Close>
+            </DialogPrimitive.Content>
+        </DialogPortal>
         </Dialog>
     );
 }

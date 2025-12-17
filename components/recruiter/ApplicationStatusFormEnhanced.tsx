@@ -16,11 +16,15 @@ import { toast } from "sonner";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { Loader2, Send } from "lucide-react";
 import type { ApplicationStatus } from "@/lib/types";
+import { notifyApplicationStatusUpdate } from "@/lib/utils/notifications";
 
 interface ApplicationStatusFormEnhancedProps {
     applicationId: string;
     currentStatus: ApplicationStatus;
     jobSeekerEmail?: string;
+    jobSeekerId?: string;
+    jobTitle?: string;
+    companyName?: string;
 }
 
 const statusOptions: { value: ApplicationStatus; label: string; description: string }[] = [
@@ -34,7 +38,10 @@ const statusOptions: { value: ApplicationStatus; label: string; description: str
 export function ApplicationStatusFormEnhanced({ 
     applicationId, 
     currentStatus,
-    jobSeekerEmail 
+    jobSeekerEmail,
+    jobSeekerId,
+    jobTitle,
+    companyName
 }: ApplicationStatusFormEnhancedProps) {
     const router = useRouter();
     const supabase = createBrowserClient();
@@ -96,10 +103,24 @@ export function ApplicationStatusFormEnhanced({
 
             if (error) throw error;
 
-            // TODO: Kirim email notifikasi ke job seeker
-            // if (jobSeekerEmail) {
-            //     await sendStatusUpdateEmail(jobSeekerEmail, status, notes);
-            // }
+            // Buat notifikasi untuk jobseeker jika status berubah
+            if (status !== currentStatus && jobSeekerId && jobTitle && companyName) {
+                try {
+                    await notifyApplicationStatusUpdate(
+                        jobSeekerId,
+                        status,
+                        jobTitle,
+                        companyName,
+                        applicationId,
+                        notes || null,
+                        updateData.interview_date || null,
+                        updateData.interview_location || null
+                    );
+                } catch (notifError) {
+                    // Jangan gagalkan proses jika notifikasi gagal
+                    console.error("Error creating notification:", notifError);
+                }
+            }
 
             toast.success("Status lamaran berhasil diperbarui");
             

@@ -11,14 +11,14 @@ export default function NewRecruiterJobPage() {
                 </p>
             </div>
 
-            <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm p-4">
+            <Card className="border-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 shadow-md p-4">
                 <CardHeader >
                     <CardTitle>Informasi Lowongan</CardTitle>
                     <CardDescription>
                         Isi semua informasi yang diperlukan untuk lowongan pekerjaan
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="p-4 border border-purple-200 bg-gradient-to-br from-pink-50 to-pink-100/50 shadow-sm rounded-2xl">
+                <CardContent className="p-4 border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-sm rounded-2xl">
                     <RecruiterJobForm/>
                 </CardContent >
             </Card>

@@ -131,7 +131,7 @@ export default async function RecruiterApplicationsPage({
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-sm rounded-2xl p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 shadow-md rounded-2xl p-6">
                 <div>
                     <h1 className="text-3xl font-semibold text-purple-900">Pelamar</h1>
                     <p className="text-gray-600 mt-1">
@@ -140,7 +140,7 @@ export default async function RecruiterApplicationsPage({
                 </div>
             </div>
 
-            <Card className="border border-purple-200 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
+            <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
                 <CardContent className="p-6">
                     <ApplicantsTable
                         applications={applications}

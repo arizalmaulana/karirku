@@ -198,9 +198,9 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
             {/* Photo Upload Section */}
-            <Card className="border-2 border-purple-200 bg-white shadow-lg overflow-hidden">
+            <Card className="border border-purple-200/40 bg-white shadow-lg overflow-hidden">
                 <CardContent className="p-0">
-                    <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 p-6">
+                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6">
                         <h3 className="text-2xl font-bold text-white mb-1">Foto Profil</h3>
                         <p className="text-purple-100 text-sm">
                             Unggah foto profil profesional Anda untuk meningkatkan kredibilitas
@@ -210,7 +210,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
                             {/* Photo Preview */}
                             <div className="relative flex-shrink-0">
-                                <div className="w-48 h-48 rounded-2xl overflow-hidden border-4 border-white shadow-2xl bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center relative group">
+                                <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-white/60 shadow-2xl bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 flex items-center justify-center relative group">
                                     {previewImage ? (
                                         <>
                                             <img
@@ -228,7 +228,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                                     }
                                                 }}
                                             />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center pointer-events-none">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/0 via-purple-900/0 to-pink-900/0 group-hover:from-indigo-900/15 group-hover:via-purple-900/15 group-hover:to-pink-900/15 transition-all duration-300 flex items-center justify-center pointer-events-none">
                                                 <Camera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
                                         </>
@@ -240,14 +240,14 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                     <button
                                         type="button"
                                         onClick={handleRemoveImage}
-                                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110 z-10 border-2 border-white"
+                                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110 z-10 border border-white/60"
                                         aria-label="Hapus foto"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>
                                 )}
                                 {/* Decorative rings */}
-                                <div className="absolute -inset-2 rounded-2xl border-2 border-purple-200/50 pointer-events-none"></div>
+                                <div className="absolute -inset-2 rounded-2xl border border-purple-200/30 pointer-events-none"></div>
                             </div>
 
                             {/* Upload Controls */}
@@ -263,7 +263,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                     />
                                     <label
                                         htmlFor="avatar-upload"
-                                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-xl hover:shadow-2xl transition-all cursor-pointer font-semibold text-sm hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
+                                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl hover:shadow-2xl transition-all cursor-pointer font-semibold text-sm hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
                                     >
                                         {isUploading ? (
                                             <>
@@ -283,7 +283,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                             type="button"
                                             variant="outline"
                                             onClick={handleRemoveImage}
-                                            className="w-full lg:w-auto border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 font-medium px-6 py-2.5 rounded-xl transition-all ml-2"
+                                            className="w-full lg:w-auto border border-red-300/40 text-red-600 hover:bg-red-50 hover:border-red-400/50 font-medium px-6 py-2.5 rounded-xl transition-all ml-2"
                                         >
                                             <X className="w-4 h-4 mr-2" />
                                             Hapus Foto
@@ -291,7 +291,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                     )}
                                 </div>
                                 
-                                <div className="bg-purple-50 rounded-lg p-4 border border-gray-200">
+                                <div className="bg-purple-50 rounded-lg p-4 border border-gray-200/40">
                                     <p className="text-sm text-gray-600 flex items-center gap-2">
                                         <span className="font-semibold text-gray-700">Format yang didukung:</span>
                                         <span>JPEG, PNG, JPG</span>
@@ -307,7 +307,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Personal Information */}
-            <Card className="border-2 border-purle-200 shadow-md border-purple-300 text-black-700 hover:bg-purple-50">
+            <Card className="border border-purple-200/40 shadow-md text-black-700 hover:bg-purple-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-sm">
@@ -326,7 +326,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                 required
                                 placeholder="Contoh: John Doe"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                         </div>
 
@@ -339,7 +339,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 value={formData.headline}
                                 onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                                 placeholder="Contoh: Frontend Developer dengan 3 tahun pengalaman"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                         </div>
 
@@ -353,7 +353,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 placeholder="Contoh: john.doe@email.com"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                         </div>
 
@@ -367,7 +367,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 placeholder="Contoh: +62 812-3456-7890"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                         </div>
 
@@ -380,7 +380,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 value={formData.location_city}
                                 onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
                                 placeholder="Contoh: Jakarta, Bandung, Surabaya"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                         </div>
 
@@ -394,7 +394,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                 rows={4}
                                 placeholder="Ceritakan tentang diri Anda, minat, dan tujuan karir..."
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30 resize-none"
                             />
                         </div>
                     </div>
@@ -402,11 +402,11 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Education & Experience */}
-            <Card className="border-2 border-blue-200 shadow-md border-blue-300 text-black-700 hover:bg-blue-50">
+            <Card className="border border-indigo-200/40 shadow-md text-black-700 hover:bg-indigo-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-sm">
-                            <GraduationCap className="w-6 h-6 text-blue-600" />
+                        <div className="p-3 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl shadow-sm">
+                            <GraduationCap className="w-6 h-6 text-indigo-600" />
                         </div>
                         <span>Pendidikan & Pengalaman</span>
                     </h3>
@@ -421,7 +421,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                                 rows={3}
                                 placeholder="Contoh: S1 Teknik Informatika - Universitas Indonesia (2018-2022)"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30 resize-none"
                             />
                         </div>
 
@@ -434,7 +434,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 value={formData.major}
                                 onChange={(e) => setFormData({ ...formData, major: e.target.value })}
                                 placeholder="Contoh: Teknik Informatika, Sistem Informasi, dll"
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30"
                             />
                             <p className="text-sm text-gray-500 mt-1">
                                 Jurusan akan digunakan untuk mencocokkan dengan lowongan yang memerlukan jurusan tertentu
@@ -451,7 +451,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                                 onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                                 rows={4}
                                 placeholder="Jelaskan pengalaman kerja Anda, proyek yang pernah dikerjakan, atau pencapaian penting..."
-                                className="border-2 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 resize-none"
+                                className="border border-gray-200/40 focus:border-purple-400/50 focus:ring-2 focus:ring-purple-200/30 resize-none"
                             />
                         </div>
                     </div>
@@ -459,7 +459,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </Card>
 
             {/* Skills */}
-            <Card className="border-2 border-gray-200 shadow-md border-pink-300 text-black-700 hover:bg-pink-50">
+            <Card className="border border-gray-200/40 shadow-md text-black-700 hover:bg-pink-50">
                 <CardContent className="p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl shadow-sm">
@@ -491,7 +491,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                 <Button 
                     type="submit" 
                     disabled={isLoading || isUploading}
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-xl transition-all px-6 py-2.5 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-xl transition-all px-6 py-2.5 text-sm font-semibold hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>
@@ -506,7 +506,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
                     type="button" 
                     variant="outline"
                     onClick={() => router.back()}
-                    className="border-2 px-6 py-2.5 text-sm font-semibold hover:bg-gray-50"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors px-6 py-2.5 text-sm font-semibold"
                 >
                     Batal
                 </Button>

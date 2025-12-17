@@ -28,6 +28,7 @@ export function DeleteJobButton({ jobId, jobTitle }: DeleteJobButtonProps) {
     const supabase = createBrowserClient();
     const [isLoading, setIsLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     const handleDelete = async () => {
         setIsLoading(true);
@@ -76,7 +77,12 @@ export function DeleteJobButton({ jobId, jobTitle }: DeleteJobButtonProps) {
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="hover:bg-red-50">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="cursor-pointer h-7 w-7 p-0 hover:bg-red-50"
+                    title="Hapus Lowongan"
+                >
                     <Trash2 className="h-4 w-4 text-red-600" />
                 </Button>
             </AlertDialogTrigger>
@@ -89,11 +95,17 @@ export function DeleteJobButton({ jobId, jobTitle }: DeleteJobButtonProps) {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isLoading} className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={handleDelete}
                         disabled={isLoading}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="text-white border-0 shadow-sm transition-colors disabled:opacity-50"
+                        style={{ 
+                            backgroundColor: isHovered ? '#b91c1c' : '#dc2626',
+                            backgroundImage: 'none'
+                        }}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
                     >
                         {isLoading ? (
                             <>

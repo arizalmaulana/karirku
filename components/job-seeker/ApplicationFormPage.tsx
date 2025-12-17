@@ -231,7 +231,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     value={formData.namaLengkap}
                     onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -246,7 +246,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -261,7 +261,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     value={formData.nomorTelepon}
                     onChange={(e) => setFormData({ ...formData, nomorTelepon: e.target.value })}
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -275,7 +275,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     value={formData.domisili}
                     onChange={(e) => setFormData({ ...formData, domisili: e.target.value })}
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -291,7 +291,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                 >
                     <SelectTrigger 
                         id="pendidikanTerakhir"
-                        className="w-full border-2"
+                        className="w-full border border-gray-200/40"
                     >
                         <SelectValue placeholder="Pilih pendidikan terakhir" />
                     </SelectTrigger>
@@ -315,7 +315,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     onChange={(e) => setFormData({ ...formData, pengalamanKerja: e.target.value })}
                     rows={4}
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -331,7 +331,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     rows={3}
                     placeholder="Pisahkan setiap skill dengan koma"
                     required
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -344,7 +344,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     value={formData.portfolio}
                     onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
                     placeholder="https://..."
-                    className="border-2"
+                    className="border border-gray-200/40"
                 />
             </div>
 
@@ -363,7 +363,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     />
                     <label
                         htmlFor="cvFile"
-                        className="flex items-center gap-2 px-4 py-2 border-2 rounded-md cursor-pointer hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-200/40 rounded-md cursor-pointer hover:bg-gray-50"
                     >
                         <Upload className="w-4 h-4" />
                         {formData.cvFile ? formData.cvFile.name : "Pilih File CV"}
@@ -388,7 +388,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
             <div className="flex gap-3 pt-4">
                 <Button
                     type="submit"
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-lg transition-all"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
@@ -407,7 +407,7 @@ export function ApplicationFormPage({ job, profile }: ApplicationFormPageProps) 
                     type="button" 
                     variant="outline" 
                     onClick={() => router.back()}
-                    className="border-2 hover:bg-gray-50"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors"
                 >
                     Batal
                 </Button>

@@ -61,6 +61,15 @@ async function getCompany(id: string) {
     return data as Company & { profiles?: { id: string; full_name: string; email: string; phone: string; headline: string; location_city: string } };
 }
 
+function getStatusBadgeColor(status: string | null): string {
+    const colors: Record<string, string> = {
+        approved: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+        pending: "bg-yellow-100 text-yellow-700 border-0",
+    };
+    return colors[status || ""] || "bg-gray-100 text-gray-700 border-0";
+}
+
 function getStatusBadgeVariant(status: string | null) {
     switch (status) {
         case "approved":
@@ -117,7 +126,7 @@ export default async function CompanyDetailPage({
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/admin/companies">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -130,8 +139,7 @@ export default async function CompanyDetailPage({
                     </p>
                 </div>
                 <Badge 
-                    variant={getStatusBadgeVariant(company.status)} 
-                    className="flex items-center gap-2 px-4 py-2"
+                    className={`flex items-center gap-2 px-4 py-2 ${getStatusBadgeColor(company.status)}`}
                 >
                     {getStatusIcon(company.status)}
                     {getStatusLabel(company.status)}
@@ -210,7 +218,7 @@ export default async function CompanyDetailPage({
                             <CardHeader>
                                 <CardTitle className="flex items-center justify-between">
                                     <span>Informasi Recruiter</span>
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm cursor-pointer">
                                         <Link href={`/admin/users/${recruiter.id}`}>
                                             <Lock className="h-4 w-4 mr-2" />
                                             Lihat User
@@ -264,7 +272,7 @@ export default async function CompanyDetailPage({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Button variant="outline" asChild>
+                                <Button variant="outline" asChild className="border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm cursor-pointer">
                                     <a 
                                         href={company.license_url} 
                                         target="_blank" 

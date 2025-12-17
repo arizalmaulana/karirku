@@ -49,17 +49,17 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
   };
 
   return (
-    <Card className="p-6 sticky top-24 border border-gray-200/60 bg-white shadow-sm">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+    <Card className="p-6 border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg shadow-md">
           <Filter className="w-4 h-4 text-white" />
         </div>
-        <h3 className="text-gray-900">Filter Pencarian</h3>
+        <h3 className="text-gray-900 font-semibold text-lg">Filter Pencarian</h3>
       </div>
 
       {/* Job Type */}
-      <div className="mb-6 pb-6 border-b border-gray-100">
-        <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Tipe Pekerjaan</Label>
+      <div className="mb-6 pb-6 border-b border-gray-200/40">
+        <Label className="mb-3 block text-gray-700 font-medium" style={{ fontSize: '14px' }}>Tipe Pekerjaan</Label>
         <Select
           value={filters.type}
           onValueChange={(value) => handleFilterChange("type", value)}
@@ -67,9 +67,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Pilih tipe pekerjaan" />
           </SelectTrigger>
-          <SelectContent className="!bg-white text-black border border-gray-200">
+          <SelectContent className="!bg-white text-gray-900 border border-gray-200">
             {employmentTypeOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
+              <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}
@@ -78,8 +78,8 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
       </div>
 
       {/* Category */}
-      <div className="mb-6 pb-6 border-b border-gray-100">
-        <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Kategori</Label>
+      <div className="mb-6 pb-6 border-b border-gray-200/40">
+        <Label className="mb-3 block text-gray-700 font-medium" style={{ fontSize: '14px' }}>Kategori</Label>
         <Select
           value={filters.category}
           onValueChange={(value) => handleFilterChange("category", value)}
@@ -87,9 +87,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full ">
             <SelectValue placeholder="Pilih kategori" />
           </SelectTrigger>
-          <SelectContent className="!bg-white text-black border border-gray-200">
+          <SelectContent className="!bg-white text-gray-900 border border-gray-200">
             {categoryOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
+              <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}
@@ -99,7 +99,7 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
 
       {/* Level */}
       <div>
-        <Label className="mb-3 block text-gray-700" style={{ fontSize: '14px' }}>Level</Label>
+        <Label className="mb-3 block text-gray-700 font-medium" style={{ fontSize: '14px' }}>Level</Label>
         <Select
           value={filters.level}
           onValueChange={(value) => handleFilterChange("level", value)}
@@ -107,9 +107,9 @@ export function JobFilters({ filters, onFilterChange }: JobFiltersProps) {
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Pilih level" />
           </SelectTrigger>
-          <SelectContent className="!bg-white text-black border border-gray-200">
+          <SelectContent className="!bg-white text-gray-900 border border-gray-200">
             {levelOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value} className="text-black hover:bg-gray-100" >
+              <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-100" >
                 {option.label}
               </SelectItem>
             ))}

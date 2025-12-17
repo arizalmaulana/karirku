@@ -87,10 +87,10 @@ export function CompanyBlockButton({
                 <Button 
                     variant="outline" 
                     size="sm"
-                    className={isBlocked 
-                        ? "text-green-600 hover:text-green-700 hover:bg-green-50" 
-                        : "text-red-600 hover:text-red-700 hover:bg-red-50"
-                    }
+                    className={`cursor-pointer ${isBlocked 
+                        ? "text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200" 
+                        : "text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    }`}
                     title={isBlocked ? "Buka Blokir Perusahaan" : "Blokir Perusahaan"}
                 >
                     {isBlocked ? (
@@ -137,11 +137,25 @@ export function CompanyBlockButton({
                     </div>
                 )}
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isLoading} className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={handleToggleBlock}
                         disabled={isLoading}
-                        className={isBlocked ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                        className="text-white border-0 shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
+                        style={{
+                            backgroundColor: isBlocked ? '#16a34a' : '#ef4444',
+                            backgroundImage: 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isLoading) {
+                                e.currentTarget.style.backgroundColor = isBlocked ? '#15803d' : '#dc2626';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isLoading) {
+                                e.currentTarget.style.backgroundColor = isBlocked ? '#16a34a' : '#ef4444';
+                            }
+                        }}
                     >
                         {isLoading ? (
                             <>

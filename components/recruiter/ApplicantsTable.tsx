@@ -40,6 +40,17 @@ interface ApplicantsTableProps {
     initialStatusFilter?: string;
 }
 
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        submitted: "bg-yellow-100 text-yellow-700 border-yellow-300 border-0",
+        review: "bg-blue-100 text-blue-700 border-blue-300 border-0",
+        interview: "bg-purple-100 text-purple-700 border-purple-300 border-0",
+        accepted: "bg-green-100 text-green-700 border-green-300 border-0",
+        rejected: "bg-red-100 text-red-700 border-red-300 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-gray-300 border-0";
+}
+
 function getStatusBadgeVariant(status: string) {
     switch (status) {
         case "accepted":
@@ -328,10 +339,10 @@ export function ApplicantsTable({
             </div>
 
             {/* Table */}
-            <div className="border rounded-lg overflow-hidden shadow-sm bg-blue-50">
+            <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-gray-50">
+                        <TableRow className="bg-gray-400">
                             <TableHead className="font-semibold text-center">Name</TableHead>
                             <TableHead className="font-semibold text-center">Nama Lowongan</TableHead>
                             <TableHead className="font-semibold text-center">Phone Number</TableHead>
@@ -345,7 +356,7 @@ export function ApplicantsTable({
                                 const { phone, email, name } = extractApplicationData(app);
                                 const applicantName = name || app.profiles?.full_name || "Unknown";
                                 return (
-                                    <TableRow key={app.id} className="hover:bg-gray-50">
+                                    <TableRow key={app.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">
                                             {applicantName}
                                         </TableCell>
@@ -360,16 +371,27 @@ export function ApplicantsTable({
                                                     cvUrl={app.cv_url}
                                                     jobSeekerId={app.job_seeker_id}
                                                 />
+                                                <Link href={`/recruiter/applications/${app.id}`}>
                                                 <Button
                                                     size="sm"
-                                                    asChild
-                                                    className="bg-green-500 hover:bg-green-600 text-white border-0"
-                                                >
-                                                    <Link href={`/recruiter/applications/${app.id}`}>
+                                                        variant="outline"
+                                                        className="shadow-md"
+                                                        style={{ 
+                                                            backgroundColor: '#3b82f6',
+                                                            color: 'white',
+                                                            border: 'none'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#2563eb';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#3b82f6';
+                                                        }}
+                                                    >
                                                         <Eye className="h-3 w-3 mr-1" />
                                                         Detail
+                                                    </Button>
                                                     </Link>
-                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>

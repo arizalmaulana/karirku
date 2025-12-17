@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { RealtimeNotificationsProvider } from "@/components/RealtimeNotificationsProvider";
 import "@/app/globals.css";
-import "@/styles/global.css";
 
 export const metadata: Metadata = {
   title: "KarirKu - Platform Pencari Kerja Terpercaya",
@@ -19,6 +19,7 @@ export default function RootLayout({
     <html lang="id">
       <body>
         <AuthProvider>
+          <RealtimeNotificationsProvider />
           <div className="min-h-screen bg-gray-50">
             <Header />
             {children}

@@ -29,7 +29,7 @@ export default async function EditLivingCostPage({ params }: { params: Promise<{
     }
 
     return (
-        <div className="space-y-6 ">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-semibold text-gray-900">Edit Data Biaya Hidup</h1>
                 <p className="text-gray-500 mt-1">
@@ -37,8 +37,8 @@ export default async function EditLivingCostPage({ params }: { params: Promise<{
                 </p>
             </div>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-red-100/50">
-                <CardHeader >
+            <Card className="bg-gradient-to-br from-blue-50 to-pink-200/50">
+                <CardHeader>
                     <CardTitle>Informasi Biaya Hidup</CardTitle>
                     <CardDescription>
                         Perbarui informasi yang diperlukan untuk data biaya hidup

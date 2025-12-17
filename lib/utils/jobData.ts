@@ -229,15 +229,38 @@ export function convertJobListingToJob(jobListing: JobListing, logoUrl?: string)
  */
 export async function fetchJobsFromDatabase(): Promise<Job[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  
+  // Try query with is_hidden filter first (if column exists)
+  let { data, error } = await supabase
     .from("job_listings")
     .select("*")
     .eq("is_closed", false) // Hanya ambil lowongan yang belum ditutup
+    .neq("is_hidden", true) // Exclude lowongan yang disembunyikan
     .order("created_at", { ascending: false });
 
+  // If error and it's likely because is_hidden column doesn't exist, retry without it
   if (error) {
-    console.error("Error fetching jobs:", error);
-    return [];
+    // Check if error is about missing column (column does not exist)
+    const errorMessage = error.message?.toLowerCase() || "";
+    if (errorMessage.includes("column") && errorMessage.includes("does not exist")) {
+      // Fallback: query without is_hidden filter (backward compatibility)
+      const fallbackResult = await supabase
+        .from("job_listings")
+        .select("*")
+        .eq("is_closed", false)
+        .order("created_at", { ascending: false });
+      
+      if (fallbackResult.error) {
+        console.error("Error fetching jobs (fallback):", fallbackResult.error);
+        return [];
+      }
+      
+      data = fallbackResult.data;
+      error = null;
+    } else {
+      console.error("Error fetching jobs:", error);
+      return [];
+    }
   }
 
   if (!data) {
@@ -254,12 +277,16 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
   // Create maps for company data and blocked companies
   const companyDataMap = new Map<string, any>();
   const blockedCompanies = new Set<string>();
+  const validCompanyNames = new Set<string>(); // Track valid companies (not blocked)
   
   if (companiesData) {
     companiesData.forEach((company: any) => {
       // Track blocked companies
       if (company.is_blocked === true) {
         blockedCompanies.add(company.name);
+      } else {
+        // Track valid companies (not blocked)
+        validCompanyNames.add(company.name);
       }
       
       companyDataMap.set(company.name, {
@@ -274,14 +301,33 @@ export async function fetchJobsFromDatabase(): Promise<Job[]> {
     });
   }
 
-  // Filter out jobs from blocked companies
+  // Check if companies table is being used (has data or queried successfully)
+  const hasCompaniesTable = companiesData !== null; // Query succeeded (even if empty)
+  
+  // Filter out jobs from blocked companies and deleted companies
   const filteredJobs = data.filter((job: any) => {
-    // If company exists in companies table, check is_blocked
+    // 1. Always exclude if job is explicitly hidden
+    if (job.is_hidden === true) {
+      return false;
+    }
+
     const companyData = companyDataMap.get(job.company_name);
+    
+    // 2. If company exists in companies table
     if (companyData) {
+      // Exclude if company is blocked
       return companyData.is_blocked !== true;
     }
-    // If company doesn't exist in companies table, include it (backward compatibility)
+    
+    // 3. If company doesn't exist in companies table:
+    //    - If companies table exists and we queried it, exclude (company was deleted)
+    //    - If companies table doesn't exist or empty, include for backward compatibility
+    if (hasCompaniesTable) {
+      // Companies table exists, but company not found = deleted, exclude
+      return false;
+    }
+    
+    // 4. Backward compatibility: companies table doesn't exist or not used yet
     return true;
   });
 
@@ -348,15 +394,52 @@ export async function fetchStats() {
     (blockedCompaniesData || []).map((c: { name: string }) => c.name)
   );
 
-  // Fetch total jobs (exclude jobs from blocked companies)
-  const { data: allJobs } = await supabase
+  // Fetch total jobs (exclude jobs from blocked companies and hidden jobs)
+  let { data: allJobs, error: jobsError } = await supabase
     .from("job_listings")
     .select("id, company_name")
-    .eq("is_closed", false);
+    .eq("is_closed", false)
+    .neq("is_hidden", true);
+  
+  // Fallback if is_hidden column doesn't exist
+  if (jobsError) {
+    const errorMessage = jobsError.message?.toLowerCase() || "";
+    if (errorMessage.includes("column") && errorMessage.includes("does not exist")) {
+      const fallbackResult = await supabase
+        .from("job_listings")
+        .select("id, company_name")
+        .eq("is_closed", false);
+      
+      if (!fallbackResult.error) {
+        allJobs = fallbackResult.data;
+      }
+    }
+  }
 
-  const validJobs = (allJobs || []).filter((job: any) => 
-    !blockedCompanyNames.has(job.company_name)
+  // Get all valid company names (not blocked) for filtering
+  const { data: validCompaniesData } = await supabase
+    .from("companies")
+    .select("name")
+    .neq("is_blocked", true);
+
+  const validCompanyNames = new Set(
+    (validCompaniesData || []).map((c: { name: string }) => c.name)
   );
+
+  const validJobs = (allJobs || []).filter((job: any) => {
+    // Exclude if company is blocked
+    if (blockedCompanyNames.has(job.company_name)) {
+      return false;
+    }
+    
+    // If companies table exists and has data, only include jobs from valid companies
+    if (validCompaniesData !== null && validCompaniesData.length > 0) {
+      return validCompanyNames.has(job.company_name);
+    }
+    
+    // Backward compatibility: if companies table is empty or doesn't exist, include all
+    return true;
+  });
 
   // Fetch unique companies (exclude blocked)
   const { data: companiesData } = await supabase

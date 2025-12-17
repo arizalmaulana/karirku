@@ -44,7 +44,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/admin/jobs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -54,14 +54,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     <h1 className="text-3xl font-semibold text-gray-900">{job.title}</h1>
                     <p className="text-gray-500 mt-1">{job.company_name}</p>
                 </div>
-                <div className="flex gap-1">
-                    <Button variant="outline" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all" size="default">
+                <div className="flex gap-2">
+                    <Button asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer" size="default">
                         <Link href={`/admin/jobs/${job.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild>
+                    <Button variant="destructive" asChild className="cursor-pointer">
                         <Link href={`/admin/jobs/${job.id}/delete`}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Hapus
@@ -88,8 +88,20 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-black-500">Tipe Pekerjaan</p>
-                            <Badge variant="outline" className="bg-gradient-to-br from-green-50 to-green-100/50">{job.employment_type}</Badge>
+                            <p className="text-sm text-gray-500">Tipe Pekerjaan</p>
+                            <Badge className={job.employment_type ? (() => {
+                                const colors: Record<string, string> = {
+                                    fulltime: "bg-indigo-500 text-white border-0",
+                                    parttime: "bg-purple-500 text-white border-0",
+                                    remote: "bg-green-500 text-white border-0",
+                                    contract: "bg-indigo-500 text-white border-0",
+                                    internship: "bg-pink-500 text-white border-0",
+                                    hybrid: "bg-teal-500 text-white border-0",
+                                };
+                                return colors[job.employment_type.toLowerCase()] || "bg-indigo-500 text-white border-0";
+                            })() : "bg-indigo-500 text-white border-0"}>
+                                {job.employment_type}
+                            </Badge>
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Gaji</p>
@@ -103,7 +115,15 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Status</p>
-                            <Badge variant={job.featured ? "default" : "secondary"}>
+                            <Badge className={(() => {
+                                if (job.is_closed) {
+                                    return "bg-red-100 text-red-700 border-0";
+                                }
+                                if (job.featured) {
+                                    return "bg-indigo-500 text-white border-0";
+                                }
+                                return "bg-green-100 text-green-700 border-0";
+                            })()}>
                                 {job.featured ? "Featured" : "Aktif"}
                             </Badge>
                         </div>
@@ -148,7 +168,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                                 <p className="text-sm text-gray-500 mb-2">Skills yang Diperlukan</p>
                                 <div className="flex flex-wrap gap-2">
                                     {job.skills_required.map((skill, index) => (
-                                        <Badge key={index} variant="outline" className="bg-gradient-to-br from-blue-100 to-blue-100/50">{skill}</Badge>
+                                        <Badge key={index} className="bg-blue-500 text-white border-0">{skill}</Badge>
                                     ))}
                                 </div>
                             </div>

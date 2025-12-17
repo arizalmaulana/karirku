@@ -32,6 +32,7 @@ export function WithdrawApplicationButton({
     const supabase = createBrowserClient();
     const [isLoading, setIsLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     // Hanya bisa withdraw jika status masih submitted atau review
     const canWithdraw = currentStatus === 'submitted' || currentStatus === 'review';
@@ -136,11 +137,17 @@ export function WithdrawApplicationButton({
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isLoading} className="bg-gray-500 hover:bg-gray-600 text-white border-0 shadow-sm transition-colors disabled:opacity-50">Batal</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleWithdraw}
                             disabled={isLoading}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="text-white border-0 shadow-sm transition-colors disabled:opacity-50"
+                            style={{ 
+                                backgroundColor: isHovered ? '#b91c1c' : '#dc2626',
+                                backgroundImage: 'none'
+                            }}
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
                         >
                             {isLoading ? (
                                 <>

@@ -439,7 +439,7 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
           <div className="flex gap-3 pt-4 flex-col sm:flex-row">
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white hover:shadow-lg transition-all"
+              className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-lg transition-all"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -458,7 +458,7 @@ export function ApplicationForm({ job, open, onClose, onSuccess, profile }: Appl
               type="button" 
               variant="outline" 
               onClick={onClose}
-              className="border-2 hover:bg-gray-50"
+              className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors"
             >
               Batal
             </Button>

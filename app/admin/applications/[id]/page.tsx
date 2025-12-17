@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, Download, ExternalLink, Pencil, Trash2, Calendar, MapPin, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, Pencil, Calendar, MapPin, FileText, MessageSquare } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DeleteApplicationButton } from "@/components/admin/DeleteApplicationButton";
 import { ApplicationDocumentViewer } from "@/components/admin/ApplicationDocumentViewer";
@@ -12,19 +12,28 @@ import { PortfolioViewer } from "@/components/admin/PortfolioViewer";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-function getStatusBadgeVariant(status: string) {
-    switch (status) {
-        case "accepted":
-            return "default";
-        case "rejected":
-            return "destructive";
-        case "interview":
-            return "secondary";
-        case "review":
-            return "outline";
-        default:
-            return "outline";
-    }
+function getStatusBadgeColor(status: string): string {
+    const colors: Record<string, string> = {
+        draft: "bg-gray-100 text-gray-700 border-0",
+        submitted: "bg-yellow-100 text-yellow-700 border-0",
+        review: "bg-blue-100 text-blue-700 border-0",
+        interview: "bg-purple-100 text-purple-700 border-0",
+        accepted: "bg-green-100 text-green-700 border-0",
+        rejected: "bg-red-100 text-red-700 border-0",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700 border-0";
+}
+
+function getEmploymentTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+        fulltime: "bg-indigo-500 text-white border-0",
+        parttime: "bg-purple-500 text-white border-0",
+        remote: "bg-green-500 text-white border-0",
+        contract: "bg-indigo-500 text-white border-0",
+        internship: "bg-pink-500 text-white border-0",
+        hybrid: "bg-teal-500 text-white border-0",
+    };
+    return colors[type.toLowerCase()] || "bg-indigo-500 text-white border-0";
 }
 
 function getStatusLabel(status: string) {
@@ -71,7 +80,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-50 transition-all border-gray-300">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
                     <Link href="/admin/applications">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -84,18 +93,13 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" asChild className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 shadow-md hover:shadow-lg transition-all">
+                    <Button asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
                         <Link href={`/admin/applications/${application.id}/edit`}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
                         </Link>
                     </Button>
-                    <Button variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all">
-                        <Link href={`/admin/applications/${application.id}/delete`}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Hapus
-                        </Link>
-                    </Button>
+                    <DeleteApplicationButton applicationId={application.id} variant="text" />
                 </div>
             </div>
 
@@ -129,7 +133,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                                 <p className="text-xs font-semibold text-gray-500 uppercase">Skills</p>
                                 <div className="flex flex-wrap gap-2">
                                     {profile.skills.map((skill: string, index: number) => (
-                                        <Badge key={index} variant="outline" className="text-xs">{skill}</Badge>
+                                        <Badge key={index} className="bg-blue-500 text-white border-0 text-xs">{skill}</Badge>
                                     ))}
                                 </div>
                             </div>
@@ -178,7 +182,9 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                         </div>
                         <div className="space-y-1">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Tipe Pekerjaan</p>
-                            <Badge variant="outline" className="text-xs">{job?.employment_type || "-"}</Badge>
+                            <Badge className={`${getEmploymentTypeColor(job?.employment_type || "")} text-xs`}>
+                                {job?.employment_type || "-"}
+                            </Badge>
                         </div>
                         {job?.description && (
                             <div className="space-y-2">
@@ -199,7 +205,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Status Lamaran</p>
-                            <Badge variant={getStatusBadgeVariant(application.status)} className="text-sm py-1 px-3">
+                            <Badge className={`${getStatusBadgeColor(application.status)} text-sm py-1 px-3`}>
                                 {getStatusLabel(application.status)}
                             </Badge>
                         </div>

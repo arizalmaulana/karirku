@@ -211,7 +211,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Warning jika belum ada company profile */}
             {!isLoadingCompany && !companyProfile && !jobId && (
-                <Card className="border-amber-200 bg-amber-50">
+                <Card className="border-0 bg-amber-50">
                     <CardContent className="pt-6">
                         <div className="flex items-start gap-3">
                             <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
@@ -222,7 +222,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                                 <p className="text-sm text-amber-700 mb-3">
                                     Anda harus melengkapi profile perusahaan terlebih dahulu sebelum dapat menambah lowongan baru.
                                 </p>
-                                <Button variant="outline" size="sm" asChild className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                                <Button variant="outline" size="sm" asChild className="border-amber-300/40 text-amber-700 hover:bg-amber-100">
                                     <Link href="/recruiter/company/profile">
                                         <Building2 className="h-4 w-4 mr-2" />
                                         Lengkapi Profile Perusahaan
@@ -239,7 +239,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 <>
                     {/* Cek apakah profile lengkap */}
                     {(!companyProfile.name || !companyProfile.license_url) && (
-                        <Card className="border-red-200 bg-red-50">
+                        <Card className="border-0 bg-red-50">
                             <CardContent className="pt-6">
                                 <div className="flex items-start gap-3">
                                     <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
@@ -250,7 +250,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                                         <p className="text-sm text-red-700 mb-3">
                                             Profile perusahaan Anda belum lengkap. Pastikan nama perusahaan dan surat izin sudah diisi sebelum menambah lowongan.
                                         </p>
-                                        <Button variant="outline" size="sm" asChild className="border-red-300 text-red-700 hover:bg-red-100">
+                                        <Button variant="outline" size="sm" asChild className="border-red-300/40 text-red-700 hover:bg-red-100">
                                             <Link href="/recruiter/company/profile">
                                                 <Building2 className="h-4 w-4 mr-2" />
                                                 Lengkapi Profile Perusahaan
@@ -265,7 +265,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     {/* Cek apakah sudah approved */}
                     {companyProfile.name && companyProfile.license_url && 
                      (companyProfile.is_approved !== true || companyProfile.status !== 'approved') && (
-                        <Card className={`border-2 ${companyProfile.status === 'rejected' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                        <Card className={`border-0 ${companyProfile.status === 'rejected' ? 'bg-red-50' : 'bg-yellow-50'}`}>
                             <CardContent className="pt-6">
                                 <div className="flex items-start gap-3">
                                     <AlertCircle className={`h-5 w-5 mt-0.5 ${companyProfile.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`} />
@@ -285,8 +285,8 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                                             size="sm" 
                                             asChild 
                                             className={companyProfile.status === 'rejected' 
-                                                ? 'border-red-300 text-red-700 hover:bg-red-100' 
-                                                : 'border-yellow-300 text-yellow-700 hover:bg-yellow-100'}
+                                                ? 'border-red-300/40 text-red-700 hover:bg-red-100' 
+                                                : 'border-yellow-300/40 text-yellow-700 hover:bg-yellow-100'}
                                         >
                                             <Link href="/recruiter/company/profile">
                                                 <Building2 className="h-4 w-4 mr-2" />
@@ -302,7 +302,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     {/* Info jika sudah approved */}
                     {companyProfile.name && companyProfile.license_url && 
                      companyProfile.is_approved === true && companyProfile.status === 'approved' && (
-                        <Card className="border-green-200 bg-green-50">
+                        <Card className="border-0 bg-green-50">
                             <CardContent className="pt-6">
                                 <div className="flex items-start gap-3">
                                     <Building2 className="h-5 w-5 text-green-600 mt-0.5" />
@@ -533,7 +533,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                 <Button 
                     type="submit" 
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>
@@ -548,7 +548,7 @@ export function RecruiterJobForm({ initialData, jobId }: RecruiterJobFormProps) 
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/recruiter/jobs")}
-                    className="hover:bg-gray-50 transition-all"
+                    className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors"
                 >
                     Batal
                 </Button>
