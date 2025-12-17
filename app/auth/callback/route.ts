@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
               p_message: 'Selamat! Email Anda telah berhasil dikonfirmasi. Akun Anda sekarang aktif dan siap digunakan.',
               p_type: 'success',
               p_link: null
-            })
+            } as any)
           }
         } catch (notifError) {
           // Jangan gagalkan proses jika notifikasi gagal dibuat
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
                 p_message: 'Selamat! Email Anda telah berhasil dikonfirmasi. Akun Anda sekarang aktif dan siap digunakan.',
                 p_type: 'success',
                 p_link: null
-              })
+              } as any)
             }
           } catch (notifError) {
             console.error('Error creating notification:', notifError)

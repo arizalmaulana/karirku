@@ -462,17 +462,17 @@ export default async function JobSeekerDashboardPage() {
     return (
         <>
             <EmailConfirmationToast />
-            <div className="space-y-8 px-4 py-6 max-w-7xl mx-auto">
+            <div className="space-y-6 sm:space-y-8 px-3 sm:px-4 py-4 sm:py-6 max-w-7xl mx-auto">
             {/* Header */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-purple-600 mb-1">Dashboard Job Seeker</p>
-                    <h1 className="text-3xl font-bold text-gray-900">Selamat Datang Kembali!</h1>
-                    <p className="text-gray-600 mt-2">
+                    <p className="text-xs sm:text-sm font-semibold text-purple-600 mb-1">Dashboard Job Seeker</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Selamat Datang Kembali!</h1>
+                    <p className="text-gray-600 mt-2 text-sm sm:text-base">
                         Pantau lamaran Anda, temukan pekerjaan yang sesuai, dan tingkatkan profil Anda
                     </p>
                 </div>
-                <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-lg shadow-indigo-500/30 transition-all duration-500 ease-in-out" asChild>
+                <Button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-lg shadow-indigo-500/30 transition-all duration-500 ease-in-out w-full sm:w-auto" asChild>
                     <Link href="/job-seeker/jobs">
                         <Search className="mr-2 h-4 w-4" />
                         Cari Lowongan
@@ -481,47 +481,47 @@ export default async function JobSeekerDashboardPage() {
             </div>
 
             {/* Bagian 1 - Status Ringkas (3 kartu) */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <Card className="border-0purple-50/50 bg-gradient-to-br from-purple-50 via-purple-50/60 to-white shadow-md hover:shadow-lg transition-all duration-500 ease-in-out hover:scale-[1.02]">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex-1">
-                                <p className="text-sm text-purple-700 font-semibold mb-2">Monitoring Lamaran</p>
-                                <p className="text-4xl font-bold text-purple-800 mb-1">{totalApplications}</p>
+                                <p className="text-xs sm:text-sm text-purple-700 font-semibold mb-2">Monitoring Lamaran</p>
+                                <p className="text-3xl sm:text-4xl font-bold text-purple-800 mb-1">{totalApplications}</p>
                                 <p className="text-xs text-purple-600">Aplikasi terkirim</p>
                             </div>
-                            <Link href="/job-seeker/applications" className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-500 ease-in-out cursor-pointer">
-                                <Send className="h-7 w-7 text-white" />
+                            <Link href="/job-seeker/applications" className="p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-500 ease-in-out cursor-pointer shrink-0">
+                                <Send className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-0indigo-200/20 bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white shadow-md hover:shadow-lg transition-all duration-500 ease-in-out hover:scale-[1.02]">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex-1">
-                                <p className="text-sm text-indigo-700 font-semibold mb-2">Job Alert</p>
-                                <p className="text-4xl font-bold text-indigo-800 mb-1">{jobAlertsCount}</p>
+                                <p className="text-xs sm:text-sm text-indigo-700 font-semibold mb-2">Job Alert</p>
+                                <p className="text-3xl sm:text-4xl font-bold text-indigo-800 mb-1">{jobAlertsCount}</p>
                                 <p className="text-xs text-indigo-600">Sesuai skill Anda</p>
                             </div>
-                            <Link href="/job-seeker/jobs?tab=matched" className="p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-500 ease-in-out cursor-pointer">
-                                <Bell className="h-7 w-7 text-white" />
+                            <Link href="/job-seeker/jobs?tab=matched" className="p-3 sm:p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-500 ease-in-out cursor-pointer shrink-0">
+                                <Bell className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-0green-200/20 bg-gradient-to-br from-green-50 via-green-50/60 to-white shadow-md hover:shadow-lg transition-all duration-500 ease-in-out hover:scale-[1.02]">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex-1">
-                                <p className="text-sm text-green-700 font-semibold mb-2">Kelengkapan Profil</p>
-                                <p className="text-4xl font-bold text-green-800 mb-1">{profileProgress}%</p>
+                                <p className="text-xs sm:text-sm text-green-700 font-semibold mb-2">Kelengkapan Profil</p>
+                                <p className="text-3xl sm:text-4xl font-bold text-green-800 mb-1">{profileProgress}%</p>
                                 <p className="text-xs text-green-600">Profil Anda</p>
                             </div>
-                            <Link href="/job-seeker/profile" className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg hover:from-green-600 hover:to-green-700 transition-all duration-500 ease-in-out cursor-pointer">
-                                <User className="h-7 w-7 text-white" />
+                            <Link href="/job-seeker/profile" className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg hover:from-green-600 hover:to-green-700 transition-all duration-500 ease-in-out cursor-pointer shrink-0">
+                                <User className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
                             </Link>
                         </div>
                     </CardContent>
@@ -530,10 +530,10 @@ export default async function JobSeekerDashboardPage() {
 
             {/* Bagian 2 - Profile Singkat User */}
             <Card className="border-0gray-200/20 shadow-lg bg-gradient-to-br from-white to-purple-50/30">
-                <CardContent className="p-8">
-                    <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-                        <div className="relative">
-                            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-white/60 shadow-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold">
+                <CardContent className="p-4 sm:p-6 lg:p-8">
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 items-start sm:items-center">
+                        <div className="relative shrink-0">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-white/60 shadow-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold">
                                 {profile.avatar_url ? (
                                     <ImageWithFallback
                                         src={profile.avatar_url}
@@ -546,15 +546,15 @@ export default async function JobSeekerDashboardPage() {
                             </div>
                             <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-green-500 rounded-full border-2 border-white/60 shadow-lg"></div>
                         </div>
-                        <div className="flex-1 w-full">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        <div className="flex-1 w-full min-w-0">
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 truncate">
                                 {profile.full_name || "User"}
                             </h3>
-                            <p className="text-base text-gray-600 mb-6">
+                            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 truncate">
                                 {profile.headline || "Job Seeker"}
                             </p>
-                            <div className="mb-6">
-                                <div className="flex justify-between text-sm font-medium text-gray-700 mb-3">
+                            <div className="mb-4 sm:mb-6">
+                                <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                                     <span>Kelengkapan Profil</span>
                                     <span className="font-bold text-purple-600">{profileProgress}%</span>
                                 </div>

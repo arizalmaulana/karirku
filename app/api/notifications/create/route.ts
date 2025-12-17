@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       p_message: message,
       p_type: type,
       p_link: link,
-    });
+    } as any);
 
     if (error) {
       console.error("Error creating notification:", error);

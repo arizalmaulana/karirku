@@ -329,11 +329,11 @@ export function ApplicationFormEnhanced({ jobId, jobTitle, profile }: Applicatio
                     .eq("id", jobId)
                     .single();
 
-                if (jobData && jobData.recruiter_id && profile) {
+                if (jobData && (jobData as any).recruiter_id && profile) {
                     const { notifyNewApplication } = await import("@/lib/utils/notifications");
                     await notifyNewApplication(
-                        jobData.recruiter_id,
-                        jobData.title || jobTitle,
+                        (jobData as any).recruiter_id,
+                        (jobData as any).title || jobTitle,
                         profile.full_name || "Pelamar",
                         result.data.id,
                         jobId

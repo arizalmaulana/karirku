@@ -7,7 +7,6 @@ import type { Job } from "../../types/job";
 import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import Link from "next/link";
-import { fetchJobsFromDatabase } from "@/lib/utils/jobData";
 
 export default function MapPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -17,8 +16,12 @@ export default function MapPage() {
   useEffect(() => {
     async function loadJobs() {
       try {
-        const fetchedJobs = await fetchJobsFromDatabase();
-        setJobs(fetchedJobs);
+        const response = await fetch("/api/jobs");
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data lowongan");
+        }
+        const data = await response.json();
+        setJobs(data.jobs || []);
       } catch (error) {
         console.error("Error loading jobs:", error);
       } finally {

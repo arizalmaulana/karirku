@@ -340,31 +340,34 @@ export function ApplicantsTable({
 
             {/* Table */}
             <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-gray-400">
-                            <TableHead className="font-semibold text-center">Name</TableHead>
-                            <TableHead className="font-semibold text-center">Nama Lowongan</TableHead>
-                            <TableHead className="font-semibold text-center">Phone Number</TableHead>
-                            <TableHead className="font-semibold text-center">Email</TableHead>
-                            <TableHead className="font-semibold text-center">CV</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-400">
+                                <TableHead className="font-semibold text-center min-w-[120px]">Name</TableHead>
+                                <TableHead className="font-semibold text-center min-w-[150px]">Nama Lowongan</TableHead>
+                                <TableHead className="font-semibold text-center min-w-[120px] hidden sm:table-cell">Phone Number</TableHead>
+                                <TableHead className="font-semibold text-center min-w-[150px] hidden md:table-cell">Email</TableHead>
+                                <TableHead className="font-semibold text-center min-w-[100px]">CV</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                         {paginatedApplications.length > 0 ? (
                             paginatedApplications.map((app: any) => {
                                 const { phone, email, name } = extractApplicationData(app);
                                 const applicantName = name || app.profiles?.full_name || "Unknown";
                                 return (
                                     <TableRow key={app.id} className="hover:bg-gray-50/50 bg-white">
-                                        <TableCell className="font-medium text-center">
+                                        <TableCell className="font-medium text-center text-sm sm:text-base">
                                             {applicantName}
                                         </TableCell>
-                                        <TableCell className="text-center">
-                                            {app.job_listings?.title || "Unknown"}
+                                        <TableCell className="text-center text-sm sm:text-base">
+                                            <div className="truncate max-w-[150px] sm:max-w-none" title={app.job_listings?.title || "Unknown"}>
+                                                {app.job_listings?.title || "Unknown"}
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="text-center">{phone}</TableCell>
-                                        <TableCell className="text-center">{email}</TableCell>
+                                        <TableCell className="text-center hidden sm:table-cell text-sm">{phone}</TableCell>
+                                        <TableCell className="text-center hidden md:table-cell text-sm">{email}</TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center gap-2">
                                                 <CVDownloadButton
@@ -399,7 +402,7 @@ export function ApplicantsTable({
                             })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-12">
+                                <TableCell colSpan={5} className="text-center py-8 sm:py-12 text-sm sm:text-base">
                                     <p className="text-gray-500">
                                         {searchQuery || jobFilter || statusFilter
                                             ? "Tidak ada pelamar yang sesuai dengan filter"
@@ -408,8 +411,9 @@ export function ApplicantsTable({
                                 </TableCell>
                             </TableRow>
                         )}
-                    </TableBody>
-                </Table>
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {/* Pagination */}

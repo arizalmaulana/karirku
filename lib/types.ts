@@ -169,7 +169,18 @@ export type Database = {
             };
         };
         Views: Record<string, never>;
-        Functions: Record<string, never>;
+        Functions: {
+            create_notification: {
+                Args: {
+                    p_user_id: string;
+                    p_title: string;
+                    p_message: string;
+                    p_type?: string;
+                    p_link?: string | null;
+                };
+                Returns: string;
+            };
+        };
         Enums: Record<string, never>;
         CompositeTypes: Record<string, never>;
     };

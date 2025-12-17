@@ -249,17 +249,17 @@ export default async function JobDetailPage({
         : 0;
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                <Button variant="outline" size="sm" asChild className="hover:bg-gray-500 text-gray-700 border-0 bg-gray-400 shadow-sm transition-colors w-fit">
                     <Link href="/job-seeker/jobs">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
                     </Link>
                 </Button>
-                <div className="flex-1">
-                    <h1 className="text-3xl font-semibold text-gray-900">{job.title}</h1>
-                    <p className="text-gray-500 mt-1">{job.company_name}</p>
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 leading-tight">{job.title}</h1>
+                    <p className="text-gray-500 mt-1 text-sm sm:text-base">{job.company_name}</p>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                         {job.category && (
                             <Badge className={`${
@@ -271,32 +271,32 @@ export default async function JobDetailPage({
                                 job.category === "Healthcare" ? "bg-red-50 text-red-700" :
                                 job.category === "Education" ? "bg-blue-50 text-blue-700" :
                                 "bg-gray-50 text-gray-700"
-                            } border-0 px-3 py-1.5 font-medium`}>
+                            } border-0 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium`}>
                                 {job.category}
                             </Badge>
                         )}
-                        {job.level && (
+                        {job.job_level && (
                             <Badge className={`${
-                                job.level === "Entry Level" ? "bg-green-50 text-green-700" :
-                                job.level === "Mid Level" ? "bg-amber-50 text-amber-700" :
-                                job.level === "Senior Level" ? "bg-red-50 text-red-700" :
-                                job.level === "Executive" ? "bg-gray-50 text-gray-700" :
+                                job.job_level === "Entry Level" ? "bg-green-50 text-green-700" :
+                                job.job_level === "Mid Level" ? "bg-amber-50 text-amber-700" :
+                                job.job_level === "Senior Level" ? "bg-red-50 text-red-700" :
+                                job.job_level === "Executive" ? "bg-gray-50 text-gray-700" :
                                 "bg-gray-50 text-gray-700"
-                            } border-0 px-3 py-1.5 font-medium`}>
-                                {job.level}
+                            } border-0 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium`}>
+                                {job.job_level}
                             </Badge>
                         )}
                     </div>
                 </div>
                 {matchScore > 0 && (
-                    <Badge className="bg-indigo-500 text-white border-0 shadow-md font-semibold px-3 py-1.5">
-                        <Sparkles className="w-3 h-3 mr-1.5 inline" />
+                    <Badge className="bg-indigo-500 text-white border-0 shadow-md font-semibold px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm w-fit">
+                        <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5 inline" />
                         {matchScore}% Match
                     </Badge>
                 )}
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
