@@ -119,6 +119,28 @@ export default async function AdminDashboardPage() {
         return labels[status] || status;
     }
 
+    function getCompanyStatusBadgeColor(status: string | null): string {
+        const colors: Record<string, string> = {
+            approved: "bg-green-100 text-green-700 border-0",
+            rejected: "bg-red-100 text-red-700 border-0",
+            pending: "bg-yellow-100 text-yellow-700 border-0",
+        };
+        return colors[status || ""] || "bg-gray-100 text-gray-700 border-0";
+    }
+
+    function getCompanyStatusLabel(status: string | null): string {
+        switch (status) {
+            case "approved":
+                return "Disetujui";
+            case "rejected":
+                return "Ditolak";
+            case "pending":
+                return "Menunggu";
+            default:
+                return "Unknown";
+        }
+    }
+
     const summaryStats = [
         { title: "Total Pengguna", value: userCount ?? 0, icon: Users, delta: undefined },
         { title: "Lowongan Aktif", value: jobCount ?? 0, icon: BriefcaseBusiness, delta: undefined },
@@ -151,8 +173,16 @@ export default async function AdminDashboardPage() {
                     ];
                     const iconBgClass = iconBgClasses[index % iconBgClasses.length];
                     
+                    const cardGradients = [
+                        'from-indigo-50 via-indigo-50/50 to-white',
+                        'from-blue-50 via-blue-50/50 to-white',
+                        'from-purple-50 via-purple-50/50 to-white',
+                        'from-green-50 via-green-50/50 to-white',
+                    ];
+                    const cardGradient = cardGradients[index % cardGradients.length];
+                    
                     return (
-                        <Card key={stat.title} className="border-0 bg-gradient-to-br from-purple-50 via-purple-50/50 to-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                        <Card key={stat.title} className={`border-0 bg-gradient-to-br ${cardGradient} shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer`}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                                 <CardTitle className="text-sm font-semibold text-gray-600">{stat.title}</CardTitle>
                                 <div className={`p-3 bg-gradient-to-br ${iconBgClass} rounded-xl shadow-md`}>
@@ -169,7 +199,7 @@ export default async function AdminDashboardPage() {
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
+                <Card className="lg:col-span-2 border-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-white shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
                             <CardTitle className="text-xl font-bold text-gray-900">Lowongan Terbaru</CardTitle>
@@ -187,13 +217,13 @@ export default async function AdminDashboardPage() {
                             {recentJobs.length > 0 ? (
                                 recentJobs.map((job: any) => (
                                     <Link key={job.id} href={`/admin/jobs/${job.id}`}>
-                                        <div className="flex items-center justify-between rounded-2xl border-0 p-5 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-purple-50/30">
+                                        <div className="flex items-center justify-between rounded-2xl border-0 p-5 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-blue-50/30 hover:to-indigo-50/50">
                                             <div className="flex-1">
                                                 <p className="font-bold text-gray-900 mb-1">{job.title}</p>
                                                 <p className="text-sm text-gray-600 font-medium mb-2">{job.company}</p>
                                                 <p className="text-xs text-gray-500">Diajukan pada {job.submitted}</p>
                                             </div>
-                                            <ArrowUpRight className="h-5 w-5 text-purple-600" />
+                                            <ArrowUpRight className="h-5 w-5 text-blue-600" />
                                         </div>
                                     </Link>
                                 ))
@@ -207,7 +237,7 @@ export default async function AdminDashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
+                <Card className="border-0 bg-gradient-to-br from-pink-50 via-rose-50/50 to-white shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div>
                             <CardTitle className="text-xl font-bold text-gray-900">Aktivitas Lamaran</CardTitle>
@@ -224,7 +254,7 @@ export default async function AdminDashboardPage() {
                         {recentApplications.length > 0 ? (
                             recentApplications.map((application: any) => (
                                 <Link key={application.id} href={`/admin/applications/${application.id}`}>
-                                    <div className="rounded-2xl border-0 p-4 hover:shadow-lg transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-purple-50/30 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50">
+                                    <div className="rounded-2xl border-0 p-4 hover:shadow-lg transition-all duration-300 cursor-pointer shadow-sm bg-gradient-to-br from-white to-pink-50/30 hover:bg-gradient-to-br hover:from-pink-50 hover:to-rose-50">
                                         <p className="font-bold text-gray-900 mb-1">{application.candidate}</p>
                                         <p className="text-sm text-gray-600 font-medium mb-2">
                                             {application.job}
@@ -247,7 +277,7 @@ export default async function AdminDashboardPage() {
             </section>
 
             {/* Validasi Perusahaan */}
-            <Card className="border-0 bg-gradient-to-br from-white to-purple-50/30 shadow-lg">
+            <Card className="border-0 bg-gradient-to-br from-amber-50 via-yellow-50/50 to-white shadow-lg">
                 <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl font-bold">
                         <div className="p-2 bg-amber-100 rounded-xl">
@@ -280,7 +310,7 @@ export default async function AdminDashboardPage() {
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <p className="font-medium text-gray-900">{company.name}</p>
                                                             {company.isBlocked && (
-                                                                <Badge className="text-xs bg-red-100 text-red-700 border-0">
+                                                                <Badge className="bg-red-100 text-red-700 border-0">
                                                                     <Lock className="h-3 w-3 mr-1 text-red-700" />
                                                                     Diblokir
                                                                 </Badge>
@@ -311,10 +341,8 @@ export default async function AdminDashboardPage() {
                                                         <p className="text-xs text-gray-400 mt-1">Didaftarkan: {formatDateDayMonth(company.created)}</p>
                                                     </div>
                                                     <div className="flex flex-col items-end gap-2">
-                                                        <Badge 
-                                                            variant={company.status === "pending" ? "outline" : company.status === "approved" ? "default" : "destructive"}
-                                                        >
-                                                            {company.status === "pending" ? "Menunggu" : company.status === "approved" ? "Disetujui" : "Ditolak"}
+                                                        <Badge className={getCompanyStatusBadgeColor(company.status)}>
+                                                            {getCompanyStatusLabel(company.status)}
                                                         </Badge>
                                                         <ArrowUpRight className="h-4 w-4 text-gray-400" />
                                                     </div>
@@ -322,7 +350,7 @@ export default async function AdminDashboardPage() {
                                             </Link>
                                         ))}
                                     </div>
-                                    <Button variant="outline" size="sm" asChild className="w-full border-0 bg-gray-200 text-purple-700 hover:bg-gray-300 shadow-sm">
+                                    <Button variant="outline" size="sm" asChild className="w-full">
                                         <Link href="/admin/companies?filter=pending">
                                             <CheckCircle2 className="h-4 w-4 mr-2" />
                                             Kelola Perusahaan ({pendingCompanies.length})

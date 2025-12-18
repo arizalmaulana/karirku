@@ -452,9 +452,7 @@ export function ApplicationsPageClient({
                                             {app.job_listings?.company_name || "Unknown Company"}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Badge
-                                                className={`px-2.5 py-1 border ${getStatusColor(app.status)}`}
-                                            >
+                                            <Badge className={getStatusColor(app.status)}>
                                                 {getStatusLabel(app.status)}
                                             </Badge>
                                         </TableCell>
@@ -465,48 +463,27 @@ export function ApplicationsPageClient({
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
+                                            <div className="flex justify-center gap-2">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
                                                     onClick={() => setSelectedApplication(app)}
-                                                    className="shadow-md"
-                                                    style={{ 
-                                                        backgroundColor: '#14b8a6',
-                                                        color: 'white',
-                                                        border: 'none'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.backgroundColor = '#0d9488';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.backgroundColor = '#14b8a6';
-                                                    }}
+                                                    className="cursor-pointer h-7 w-7 p-0 hover:bg-teal-50 transition-all" 
+                                                    title="Detail Lowongan"
                                                 >
-                                                    <Info className="h-3.5 w-3.5 mr-1.5" />
-                                                    Detail Lowongan
+                                                    <Info className="h-4 w-4 text-teal-600" />
                                                 </Button>
-                                                <Link href={`/job-seeker/applications/${app.id}`}>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="shadow-md"
-                                                        style={{ 
-                                                            backgroundColor: '#3b82f6',
-                                                            color: 'white',
-                                                            border: 'none'
-                                                        }}
-                                                        onMouseEnter={(e) => {
-                                                            e.currentTarget.style.backgroundColor = '#2563eb';
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            e.currentTarget.style.backgroundColor = '#3b82f6';
-                                                        }}
-                                                    >
-                                                        <Eye className="h-3.5 w-3.5 mr-1.5" />
-                                                        Detail Lamaran
-                                                    </Button>
-                                                </Link>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    asChild 
+                                                    className="cursor-pointer h-7 w-7 p-0 hover:bg-blue-50 transition-all" 
+                                                    title="Detail Lamaran"
+                                                >
+                                                    <Link href={`/job-seeker/applications/${app.id}`}>
+                                                        <Eye className="h-4 w-4 text-blue-600" />
+                                                    </Link>
+                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -530,7 +507,7 @@ export function ApplicationsPageClient({
                                     : "Mulai melamar pekerjaan untuk melihat riwayat lamaran Anda"}
                             </p>
                             {!searchQuery && activeStatus === "all" && (
-                                <Button asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600">
+                                <Button asChild className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 shadow-md transition-all">
                                     <Link href="/job-seeker/jobs">
                                         Cari Lowongan
                                     </Link>
@@ -631,9 +608,7 @@ export function ApplicationsPageClient({
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1">Status Lamaran</p>
-                                        <Badge
-                                            className={`px-3 py-1.5 border ${getStatusColor(selectedApplication.status)}`}
-                                        >
+                                        <Badge className={getStatusColor(selectedApplication.status)}>
                                             {getStatusLabel(selectedApplication.status)}
                                         </Badge>
                                     </div>

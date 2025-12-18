@@ -16,10 +16,10 @@ interface Application {
 }
 
 const statusColors: Record<Application["status"], string> = {
-  Terkirim: "bg-gray-500",
-  Diproses: "bg-blue-500",
-  Diterima: "bg-green-500",
-  Ditolak: "bg-red-500",
+  Terkirim: "bg-yellow-100 text-yellow-700 border-0",
+  Diproses: "bg-blue-100 text-blue-700 border-0",
+  Diterima: "bg-green-100 text-green-700 border-0",
+  Ditolak: "bg-red-100 text-red-700 border-0",
 };
 
 const statusLabels: Record<string, Application["status"]> = {
@@ -197,7 +197,7 @@ export function ApplicationMonitoring() {
                     </div>
                   </div>
                   <Badge
-                    className={`${statusColors[application.status]} text-white`}
+                    className={statusColors[application.status]}
                   >
                     {application.status}
                   </Badge>

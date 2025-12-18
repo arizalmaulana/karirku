@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -72,8 +72,37 @@ async function getUsers(filter?: string) {
         }
         return [];
     }
+
+    if (!data || data.length === 0) {
+        return [];
+    }
+
+    // Get emails from auth.users using admin client
+    const adminClient = createSupabaseAdminClient();
+    const usersWithEmail = await Promise.all(
+        (data as Profile[]).map(async (profile) => {
+            let email: string | null = null;
+            
+            if (adminClient) {
+                try {
+                    // Get user email from auth.users using admin client
+                    const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(profile.id);
+                    if (!authError && authUser?.user) {
+                        email = authUser.user.email || null;
+                    }
+                } catch (err) {
+                    console.error(`Error fetching email for user ${profile.id}:`, err);
+                }
+            }
+            
+            return {
+                ...profile,
+                email: email || profile.email || null,
+            };
+        })
+    );
     
-    return (data || []) as Profile[];
+    return usersWithEmail as Profile[];
 }
 
 function getRoleBadgeColor(role: string): string {
@@ -147,6 +176,7 @@ export default async function UsersManagementPage({
                                 <TableHeader>
                                     <TableRow className="bg-gray-400">
                                         <TableHead className="font-semibold text-center">Nama</TableHead>
+                                        <TableHead className="font-semibold text-center">Email</TableHead>
                                         <TableHead className="font-semibold text-center">Role</TableHead>
                                         <TableHead className="font-semibold text-center">Lokasi</TableHead>
                                         <TableHead className="font-semibold text-center">Skills</TableHead>
@@ -160,6 +190,9 @@ export default async function UsersManagementPage({
                                         <TableRow key={user.id} className="hover:bg-gray-50/50 bg-white">
                                         <TableCell className="font-medium text-center">
                                             {user.full_name || "Tidak ada nama"}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            {user.email || "-"}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <Badge className={getRoleBadgeColor(user.role)}>

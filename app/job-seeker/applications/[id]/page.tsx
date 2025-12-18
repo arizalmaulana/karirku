@@ -192,7 +192,7 @@ export default async function ApplicationDetailPage({
                             </Badge>
                         </div>
                         {application.job_id ? (
-                            <Button variant="outline" asChild>
+                            <Button variant="outline" asChild className="hover:bg-gray-600 text-gray-700 border-0 bg-gray-500 shadow-sm transition-colors">
                                 <Link href={`/job-seeker/jobs/${application.job_id}`}>
                                     Lihat Detail Lowongan
                                     <ExternalLink className="ml-2 h-4 w-4" />
