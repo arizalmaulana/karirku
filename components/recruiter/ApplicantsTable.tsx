@@ -341,17 +341,17 @@ export function ApplicantsTable({
             {/* Table */}
             <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white">
                 <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-gray-400">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-gray-400">
                                 <TableHead className="font-semibold text-center min-w-[120px]">Name</TableHead>
                                 <TableHead className="font-semibold text-center min-w-[150px]">Nama Lowongan</TableHead>
                                 <TableHead className="font-semibold text-center min-w-[120px] hidden sm:table-cell">Phone Number</TableHead>
                                 <TableHead className="font-semibold text-center min-w-[150px] hidden md:table-cell">Email</TableHead>
                                 <TableHead className="font-semibold text-center min-w-[100px]">CV</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {paginatedApplications.length > 0 ? (
                             paginatedApplications.map((app: any) => {
                                 const { phone, email, name } = extractApplicationData(app);
@@ -363,7 +363,7 @@ export function ApplicantsTable({
                                         </TableCell>
                                         <TableCell className="text-center text-sm sm:text-base">
                                             <div className="truncate max-w-[150px] sm:max-w-none" title={app.job_listings?.title || "Unknown"}>
-                                                {app.job_listings?.title || "Unknown"}
+                                            {app.job_listings?.title || "Unknown"}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center hidden sm:table-cell text-sm">{phone}</TableCell>
@@ -411,8 +411,8 @@ export function ApplicantsTable({
                                 </TableCell>
                             </TableRow>
                         )}
-                        </TableBody>
-                    </Table>
+                    </TableBody>
+                </Table>
                 </div>
             </div>
 
