@@ -30,17 +30,15 @@ export default async function ProfilePage() {
     const profile = await getUserProfile(user.id);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
             {/* Header dengan gradient */}
-            <div className="text-3xl font-bold text-purple-900">
+            <div className="text-2xl sm:text-3xl font-bold text-purple-900">
                 <div className="relative z-10">
-                    <h1 className="text-3xl font-bold mb-2">Profil Saya</h1>
-                    <p className="text-gray-600 mt-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profil Saya</h1>
+                    <p className="text-sm sm:text-base text-gray-600 mt-2">
                         Kelola informasi profil Anda untuk meningkatkan peluang matching pekerjaan
                     </p>
                 </div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
             </div>
 
             {/* Profile Form */}

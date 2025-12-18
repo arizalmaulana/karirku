@@ -302,7 +302,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {/* Filters Sidebar */}
-          <aside className="lg:col-span-1 order-2 lg:order-1">
+          <aside className="lg:col-span-1 order-1 lg:order-1">
             <JobFilters
               filters={filters}
               onFilterChange={setFilters}
@@ -310,7 +310,7 @@ export function HomePageClient({ initialJobs, stats }: HomePageClientProps) {
           </aside>
 
           {/* Job Listings */}
-          <main className="lg:col-span-3 order-1 lg:order-2">
+          <main className="lg:col-span-3 order-2 lg:order-2">
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Lowongan Tersedia</h2>

@@ -200,17 +200,17 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             {/* Photo Upload Section */}
             <Card className="border border-purple-200/40 bg-white shadow-lg overflow-hidden">
                 <CardContent className="p-0">
-                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6">
-                        <h3 className="text-2xl font-bold text-white mb-1">Foto Profil</h3>
-                        <p className="text-purple-100 text-sm">
+                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-4 sm:p-6">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">Foto Profil</h3>
+                        <p className="text-purple-100 text-xs sm:text-sm">
                             Unggah foto profil profesional Anda untuk meningkatkan kredibilitas
                         </p>
                     </div>
-                    <div className="p-8">
-                        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                    <div className="p-4 sm:p-8">
+                        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 sm:gap-8">
                             {/* Photo Preview */}
                             <div className="relative flex-shrink-0">
-                                <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-white/60 shadow-2xl bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 flex items-center justify-center relative group">
+                                <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-white/60 shadow-2xl bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 flex items-center justify-center relative group">
                                     {previewImage ? (
                                         <>
                                             <img
@@ -308,14 +308,14 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
             {/* Personal Information */}
             <Card className="border border-purple-200/40 shadow-md text-black-700 hover:bg-purple-50">
-                <CardContent className="p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-sm">
-                            <User className="w-6 h-6 text-purple-600" />
+                <CardContent className="p-4 sm:p-8">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-sm">
+                            <User className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                         </div>
                         <span>Informasi Pribadi</span>
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="full_name" className="text-sm font-semibold text-gray-700">
                                 Nama Lengkap *
@@ -403,14 +403,14 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
             {/* Education & Experience */}
             <Card className="border border-indigo-200/40 shadow-md text-black-700 hover:bg-indigo-50">
-                <CardContent className="p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl shadow-sm">
-                            <GraduationCap className="w-6 h-6 text-indigo-600" />
+                <CardContent className="p-4 sm:p-8">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl shadow-sm">
+                            <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
                         </div>
                         <span>Pendidikan & Pengalaman</span>
                     </h3>
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="education" className="text-sm font-semibold text-gray-700">
                                 Pendidikan
@@ -460,10 +460,10 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
             {/* Skills */}
             <Card className="border border-gray-200/40 shadow-md text-black-700 hover:bg-pink-50">
-                <CardContent className="p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl shadow-sm">
-                            <Award className="w-6 h-6 text-pink-600" />
+                <CardContent className="p-4 sm:p-8">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl shadow-sm">
+                            <Award className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
                         </div>
                         <span>Skills & Keahlian</span>
                     </h3>

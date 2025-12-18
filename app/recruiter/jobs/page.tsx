@@ -141,7 +141,9 @@ export default async function RecruiterJobsPage() {
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6 w-full overflow-hidden">
                     {jobs.length > 0 ? (
-                        <div className="border-0 rounded-lg overflow-hidden shadow-sm bg-white w-full">
+                        <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block border-0 rounded-lg overflow-hidden shadow-sm bg-white w-full">
                         <div className="w-full overflow-x-auto">
                             <Table className="w-full table-fixed">
                                     <TableHeader>
@@ -226,6 +228,64 @@ export default async function RecruiterJobsPage() {
                                 </Table>
                             </div>
                         </div>
+                        
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4 p-4">
+                            {jobsWithCounts.map((job: any) => (
+                                <Card key={job.id} className="border border-gray-200 shadow-sm">
+                                    <CardContent className="p-4 space-y-3">
+                                        <div>
+                                            <h3 className="font-semibold text-gray-900 mb-1">{job.title}</h3>
+                                            <p className="text-sm text-gray-600">{job.company_name}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <span>📍 {job.location_city}{job.location_province ? `, ${job.location_province}` : ''}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                            <span className="font-medium">Gaji: </span>
+                                            {job.min_salary && job.max_salary
+                                                ? `${formatCurrency(job.min_salary)} - ${formatCurrency(job.max_salary)}`
+                                                : job.min_salary
+                                                ? `Mulai dari ${formatCurrency(job.min_salary)}`
+                                                : "Tidak disebutkan"}
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Badge className={`text-xs whitespace-nowrap ${getEmploymentTypeColor(job.employment_type)}`}>
+                                                {job.employment_type}
+                                            </Badge>
+                                            <Badge className={`text-xs whitespace-nowrap ${getJobStatusColor(job.featured || false, job.is_closed || false)}`}>
+                                                {job.is_closed ? "Ditutup" : (job.featured ? "Featured" : "Aktif")}
+                                            </Badge>
+                                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                                                <Users className="h-4 w-4 text-gray-400" />
+                                                <span className="font-medium">{job.applicationCount || 0} Pelamar</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end gap-2 pt-2 border-t">
+                                            <Button variant="ghost" size="sm" asChild title="Lihat Detail" className="cursor-pointer">
+                                                <Link href={`/recruiter/jobs/${job.id}`}>
+                                                    <Eye className="h-4 w-4 text-blue-600 mr-1" />
+                                                    Detail
+                                                </Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" asChild title="Edit Lowongan" className="cursor-pointer">
+                                                <Link href={`/recruiter/jobs/${job.id}/edit`}>
+                                                    <Pencil className="h-4 w-4 text-green-600 mr-1" />
+                                                    Edit
+                                                </Link>
+                                            </Button>
+                                            <CloseJobButton 
+                                                jobId={job.id} 
+                                                jobTitle={job.title} 
+                                                isClosed={job.is_closed || false}
+                                            />
+                                            <DeleteJobButton jobId={job.id} jobTitle={job.title} />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                        </>
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-gray-500 mb-4">Belum ada lowongan pekerjaan</p>

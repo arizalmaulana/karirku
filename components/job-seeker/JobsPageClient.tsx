@@ -175,7 +175,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                     {/* Filters Sidebar - Separated Container */}
                     <aside 
                         ref={filterAsideRef}
-                        className="lg:w-64 lg:shrink-0 order-2 lg:order-1"
+                        className="lg:w-64 lg:shrink-0 order-1 lg:order-1"
                     >
                         <JobFilters
                             filters={filters}
@@ -184,7 +184,7 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
                     </aside>
 
                     {/* Job Listings - Main Content */}
-                    <main className="flex-1 order-1 lg:order-2">
+                    <main className="flex-1 order-2 lg:order-2">
                         {/* Header */}
                         <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
                             <div>
@@ -223,18 +223,21 @@ export function JobsPageClient({ jobs, profile, userId, initialJobId, initialCom
 
                         {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
-                            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
-                                <TabsTrigger value="all" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
-                                    <Briefcase className="h-5 w-5" />
-                                    Semua
+                            <TabsList className="grid w-full grid-cols-3 gap-1 sm:gap-2 bg-gray-100 p-1 rounded-lg">
+                                <TabsTrigger value="all" className="flex items-center justify-center gap-1 sm:gap-2 text-gray-700 font-semibold text-xs sm:text-base px-2 sm:px-4 data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
+                                    <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <span className="hidden sm:inline">Semua</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="bookmark" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
-                                    <BookmarkCheck className="h-5 w-5" />
-                                    Disimpan ({savedJobs.length})
+                                <TabsTrigger value="bookmark" className="flex items-center justify-center gap-1 sm:gap-2 text-gray-700 font-semibold text-xs sm:text-base px-2 sm:px-4 data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800">
+                                    <BookmarkCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <span className="hidden sm:inline">Disimpan</span>
+                                    <span className="sm:hidden">({savedJobs.length})</span>
+                                    <span className="hidden sm:inline">({savedJobs.length})</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="matched" className="flex items-center gap-2 text-gray-700 font-semibold text-base data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800" >
-                                    <Sparkles className="h-5 w-5" />
-                                    Job Matcher
+                                <TabsTrigger value="matched" className="flex items-center justify-center gap-1 sm:gap-2 text-gray-700 font-semibold text-xs sm:text-base px-2 sm:px-4 data-[state=active]:bg-white! data-[state=active]:text-purple-600! data-[state=active]:font-bold! data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-purple-200 transition-all hover:text-gray-800" >
+                                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <span className="hidden sm:inline">Job Matcher</span>
+                                    <span className="sm:hidden">Match</span>
                                 </TabsTrigger>
                             </TabsList>
 
