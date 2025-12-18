@@ -79,6 +79,13 @@ async function getUsers(filter?: string) {
 
     // Get emails from auth.users using admin client
     const adminClient = createSupabaseAdminClient();
+    const hasServiceRoleKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    // Log untuk debugging di production
+    if (!hasServiceRoleKey) {
+        console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY tidak ditemukan. Email akan diambil dari tabel profiles.");
+    }
+    
     const usersWithEmail = await Promise.all(
         (data as Profile[]).map(async (profile) => {
             let email: string | null = null;
@@ -89,10 +96,15 @@ async function getUsers(filter?: string) {
                     const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(profile.id);
                     if (!authError && authUser?.user) {
                         email = authUser.user.email || null;
+                    } else if (authError) {
+                        console.error(`Error fetching email for user ${profile.id}:`, authError.message);
                     }
-                } catch (err) {
-                    console.error(`Error fetching email for user ${profile.id}:`, err);
+                } catch (err: any) {
+                    console.error(`Error fetching email for user ${profile.id}:`, err?.message || err);
                 }
+            } else {
+                // Fallback: gunakan email dari profiles jika ada
+                email = profile.email || null;
             }
             
             return {
